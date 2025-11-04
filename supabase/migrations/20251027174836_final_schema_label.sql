@@ -1,0 +1,4 @@
+-- Final schema label for Sferat project
+-- Includes: posts, comments, votes, republics, follows, bookmarks, reports
+-- All RLS verified, triggers functional, and cleanup jobs active
+-- Migration created on 2025-10-27

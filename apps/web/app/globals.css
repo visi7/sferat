@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ngjyra e sfondit dhe stili bazë */
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-gray-50 text-gray-900;
+}
+body {
+  @apply bg-gray-100 text-gray-900;
+}
+
+header {
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+article {
+  transition: box-shadow 0.2s;
+}
+article:hover {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+}
+@media (prefers-color-scheme: dark) {
+  body { @apply bg-gray-900 text-gray-100; }
+  header { @apply bg-gray-800/80; }
+  article { @apply bg-gray-800 border-gray-700; }
+  section { @apply bg-gray-800 border-gray-700; }
+}
