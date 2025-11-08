@@ -1,44 +1,14 @@
 "use client";
+import type { PostCardProps, Author, CommentRow } from "@/types/content";
+import PostHeader from "./post/PostHeader";
+import PostBody from "./post/PostBody";
+import PostToolbar from "./post/PostToolbar";
+import PostKebab from "./post/PostKebab";
+import PostEditModal from "@/components/PostEditModal";
+import Avatar from "./Avatar";
 
 import { useEffect, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
-
-type PostCardProps = {
-  id: string;
-  title: string;
-  body: string;
-  republic_id: string;
-  inSavedList?: boolean; // default false
-  onRemovedFromSaved?: (postId: string) => void;
-  author_id: string;
-  score: number;
-  created_at: string;
-  status?: string;
-  profiles?: { id: string; username: string; avatar_url: string | null };
-  
-  post_type?: "text" | "link" | "image" | "poll";
-  url?: string | null;
-  image_url?: string | null;
-
-  republicTitle?: string;
-  onChanged?: () => void;
-};
-
-type Author = {
-  id: string;
-  username: string | null;
-  display_name: string | null;
-  avatar_url: string | null;
-};
-
-type CommentRow = {
-  id: string;
-  body: string;
-  created_at: string;
-  author_id: String;
-  profiles: { username: string | null; avatar_url: string | null }; // ← shto avatar_url
-};
-
 
 function timeSince(date: Date) {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -79,6 +49,7 @@ const [comments, setComments] = useState<CommentRow[]>([]);
   const [author, setAuthor] = useState<Author | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [commentCount, setCommentCount] = useState<number>(0);
+const [editing, setEditing] = useState(false);
 
   // Score dhe vota e përdoruesit në post
   const [localScore, setLocalScore] = useState<number>(p.score);
@@ -101,6 +72,15 @@ const [comments, setComments] = useState<CommentRow[]>([]);
   const [replyingId, setReplyingId] = useState<string | null>(null);
   const [replyValue, setReplyValue] = useState("");
   const [commentMenuFor, setCommentMenuFor] = useState<string|null>(null);
+
+useEffect(() => {
+  function onDoc(e: MouseEvent) {
+    if (!menuRef.current) return;
+    if (!menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+  }
+  if (menuOpen) document.addEventListener("mousedown", onDoc);
+  return () => document.removeEventListener("mousedown", onDoc);
+}, [menuOpen]);
 
 useEffect(() => {
   (async () => {
@@ -460,101 +440,61 @@ async function removePost() {
 
   return (
     <article className="relative bg-white border rounded-xl p-4">
-      {/* kebab menu */}
-      <div className="absolute right-2 top-2" ref={menuRef}>
-        <button
-          className="h-8 w-8 grid place-items-center rounded-md hover:bg-gray-50 border text-sm"
-          onClick={() => setMenuOpen((s) => !s)}
-          aria-label="More"
-        >
-          ⁝
-        </button>
-    {menuOpen && (
-  <div className="absolute right-0 mt-2 w-44 bg-white border rounded-lg shadow-md overflow-hidden z-10">
+      <div ref={menuRef} className="absolute right-2 top-2 z-20">
+  <button
+    className="h-8 w-8 grid place-items-center rounded-md hover:bg-gray-50 border text-sm"
+    onClick={() => setMenuOpen(s => !s)}
+    aria-label="More"
+  >
+    ⁝
+  </button>
 
-    {p.inSavedList ? (
-      // Jemi në /saved -> vetëm heqje nga saved
-      <button
-        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
-        onClick={async () => {
-          if (!me) return alert("You must be logged in.");
-          const { error } = await supa
-            .from("bookmarks")
-            .delete()
-            .eq("user_id", me)
-            .eq("post_id", p.id);
-          if (error) return alert(error.message);
-          p.onChanged?.(); // njofto faqen të heqë kartën
-           p.onRemovedFromSaved?.(p.id);
+  {menuOpen && (
+    <div className="absolute right-0 mt-1 z-10">
+      <PostKebab
+        inSavedList={p.inSavedList ?? false}
+        saved={saved}
+        onToggleSave={toggleSave}
+        onRemoveFromSaved={async () => {
+          await supa.from("bookmarks").delete().eq("user_id", me).eq("post_id", p.id);
+          p.onRemovedFromSaved?.(p.id);
+          p.onChanged?.();
         }}
-      >
-        🗑️ Remove from saved
-      </button>
-    ) : (
-      // Jemi në feed normal -> Save/Unsave
-      <button
-        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
-        onClick={toggleSave}
-      >
-        {saved ? "★ Unsave" : "☆ Save"}
-      </button>
-    )}
-
-    {me === p.author_id ? (
-      <button
-        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
-        onClick={async () => {
+        onDelete={async () => {
           if (!confirm("Delete this post?")) return;
           const { error } = await supa.from("posts").delete().eq("id", p.id);
           if (error) return alert(error.message);
           p.onChanged?.();
         }}
+        onReport={report}
       >
-        ✖ Delete post
-      </button>
-    ) : null}
-
-    <button
-      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
-      onClick={report}
-    >
-      🚩 Report
-    </button>
-  </div>
-)}
+        {me === p.author_id && (
+          <button
+            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+            onClick={() => setEditing(true)}
+          >
+            ✎ Edit post
+          </button>
+        )}
+      </PostKebab>
+    </div>
+  )}
 </div>
+
+
+
 
       {/* header: Republic · Author · Follow (majtas) */}
-       <div className="flex items-center gap-2">
-  <img
-    src={p.profiles?.avatar_url || "/default-avatar.png"}
-    className="w-8 h-8 rounded-full object-cover"
-    alt=""
-  />
-  <div className="text-sm text-gray-600">@{p.profiles?.username}</div>
-</div>
+       <PostHeader
+  p={p}
+  author={author}
+  me={me}
+  isFollowing={isFollowing}
+  busy={busy}
+  onFollow={follow}
+  onUnfollow={unfollow}
+/>
 
-      <div className="text-xs text-gray-500 flex items-center gap-2 flex-wrap">
-        <span>{p.republicTitle ?? "Republic"}</span>
-        <span>•</span>
-        {author ? (
-          <a className="hover:underline" href={`/profile/${author.username ?? author.id}`}>
-            {author.display_name ?? `@${author.username ?? author.id.slice(0, 8)}`}
-          </a>
-        ) : (
-          <span>Author</span>
-        )}
-        {me !== p.author_id &&
-          (isFollowing ? (
-            <button className="h-6 px-2 rounded border bg-gray-100 text-[11px]" disabled={busy} onClick={unfollow}>
-              Following ✓
-            </button>
-          ) : (
-            <button className="h-6 px-2 rounded border text-[11px]" disabled={busy} onClick={follow}>
-              Follow
-            </button>
-          ))}
-      </div>
 {(() => {
   const posted = timeSince(new Date(p.created_at));
   const left = timeLeft(p.created_at);
@@ -569,68 +509,33 @@ async function removePost() {
 })()}
 
       {/* title */}
-      <h3 className="font-semibold text-lg mt-1">{p.title}</h3>
+      <PostBody
+  title={p.title}
+  body={p.body}
+  post_type={p.post_type}
+  url={p.url}
+  image_url={p.image_url}
+  onOpenImage={() => setImgOpen(true)}
+/>
 
-      {/* body */}
-      <div className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{p.body}</div>
-
-      {/* link preview / image */}
-      {p.post_type === "link" && p.url ? (
-        <a
-          href={p.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block border rounded-md p-3 mt-2 hover:bg-gray-50 text-blue-600 truncate"
-        >
-          🔗 {p.url}
-        </a>
-      ) : null}
-     {p.post_type === "image" && p.image_url ? (
-  <img
-    src={p.image_url}
-    alt={p.title || "image"}
-    loading="lazy"
-    className="rounded-lg mt-2 max-h-[400px] w-auto object-contain border cursor-pointer hover:opacity-90 transition"
-    onClick={() => setImgOpen(true)}
-  />
-) : null}
 
 
       {/* toolbar (post) */}
-      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-        <button
-          className={`h-8 px-3 rounded-full border bg-white hover:bg-gray-50 ${userVote === 1 ? "border-black" : ""}`}
-          onClick={() => doVote(1)}
-          aria-pressed={userVote === 1}
-        >
-          ▲ Upvote
-        </button>
-        <button
-          className={`h-8 px-3 rounded-full border bg-white hover:bg-gray-50 ${userVote === -1 ? "border-black" : ""}`}
-          onClick={() => doVote(-1)}
-          aria-pressed={userVote === -1}
-        >
-          ▼ Downvote
-        </button>
-        <span className="text-gray-500 ml-1">Score: {localScore}</span>
+      <PostToolbar
+  userVote={userVote}
+  score={localScore}
+  onUpvote={() => doVote(1)}
+  onDownvote={() => doVote(-1)}
+  commentCount={commentCount}
+  commentsOpen={showComments}
+  onToggleComments={async () => {
+    const next = !showComments;
+    setShowComments(next);
+    if (next) await loadCommentsOnce();
+  }}
+  onShare={copyShare}
+/>
 
-        <span className="mx-2 text-gray-300">·</span>
-
-        <button
-          className="h-8 px-3 rounded-full border bg-white hover:bg-gray-50 inline-flex items-center"
-          onClick={async () => {
-            const next = !showComments;
-            setShowComments(next);
-            if (next) await loadCommentsOnce();
-          }}
-        >
-          💬 {commentCount} Comments
-        </button>
-
-        <button className="h-8 px-3 rounded-full border bg-white hover:bg-gray-50" onClick={copyShare}>
-          ↗ Share
-        </button>
-      </div>
 
       {/* comments drawer */}
       {showComments && (
@@ -663,20 +568,11 @@ async function removePost() {
                 return (
                   <li key={c.id} className="bg-gray-50 border rounded-md p-2">
   <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-  <img
-    src={c.profiles?.avatar_url || "/default-avatar.png"}
-    className="w-5 h-5 rounded-full object-cover"
-    alt=""
-  />
+  <Avatar src={c.profiles?.avatar_url ?? null} size={20} />
   <span>{c.profiles?.username ?? "user"}</span>
-  <span>· {new Date(c.created_at).toLocaleString()}</span><button
-  className="ml-auto text-xs"
-  onClick={() => setCommentMenuFor(commentMenuFor === c.id ? null : c.id)}
->
-  ⋯
-</button>
-
-</div>{commentMenuFor === c.id && me === c.author_id && (
+  <span>· {new Date(c.created_at).toLocaleString()}</span>
+</div>
+{commentMenuFor === c.id && me === c.author_id && (
   <div className="absolute right-2 mt-1 bg-white border rounded shadow p-2 text-sm z-10">
     <button
       className="px-2 py-1 hover:bg-gray-50 w-full text-left"
@@ -769,25 +665,23 @@ async function removePost() {
         </div>
       )}
       {imgOpen && p.image_url && (
-  <div
-    className="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center"
-    onClick={() => setImgOpen(false)}
-    onKeyDown={(e) => e.key === "Escape" && setImgOpen(false)}  // ← kjo
-  tabIndex={-1}  
-  >
-    <img
-      src={p.image_url}
-      alt={p.title || "image"}
-      className="max-w-[95vw] max-h-[95vh] object-contain"
-    />
-    <button
-      className="absolute top-4 right-4 h-9 px-3 rounded bg-white/90 hover:bg-white"
-      onClick={(e) => { e.stopPropagation(); setImgOpen(false); }}
-    >
-      ✕ Close
-    </button>
-  </div>
+  <div className="flex items-center gap-2">
+  <Avatar src={p.profiles?.avatar_url ?? null} size={32} />
+  <div className="text-sm text-gray-600">@{p.profiles?.username}</div>
+</div>
+
+  
 )}
+<PostEditModal
+  open={editing}
+  post={{ id: p.id, body: p.body, url: p.url ?? null, image_url: p.image_url ?? null }}
+  onClose={() => setEditing(false)}
+  onSaved={() => {
+    setEditing(false);
+    p.onChanged?.();
+  }}
+/>
+
     </article>
   );
 }
