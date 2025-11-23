@@ -1,4 +1,8 @@
 // apps/web/components/utils.ts
+export function profileHref(handle?: string | null) {
+  return handle ? `/u/${handle}` : "#";
+}
+
 export function timeAgo(iso: string) {
   const diff = Math.floor((Date.now() - new Date(iso).getTime())/1000);
   const units: [number,string][] = [[31536000,'y'],[2592000,'mo'],[604800,'w'],[86400,'d'],[3600,'h'],[60,'m']];

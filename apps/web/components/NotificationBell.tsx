@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
 
@@ -9,6 +8,21 @@ type Noti = {
   created_at: string;
   payload: any | null;
 };
+function bellText(n: { type: string | null; payload: any | null }) {
+  const p = n.payload ?? {};
+  const actor = p.actor_username || p.actor_name || p.actor_handle || "Someone";
+  const t = n.type ?? "";
+
+  switch (t) {
+    case "follow":           return `${actor} followed you.`;
+    case "comment_replied":  return `${actor} replied to your comment.`;
+    case "post_upvoted":     return `${actor} upvoted your post.`;
+    case "comment_upvoted":  return `${actor} upvoted your comment.`;
+    case "report_result":    return `Your report was ${p.status ?? "processed"}.`;
+    default:                 return "You have a new notification.";
+  }
+}
+
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
@@ -84,7 +98,10 @@ export default function NotificationBell() {
                     <span className="text-gray-500"> · {new Date(n.created_at).toLocaleString()}</span>
                   </div>
                   {n.payload?.msg && (
-                    <div className="text-sm text-gray-700 truncate">{String(n.payload.msg)}</div>
+                    <div className="text-sm text-gray-700 truncate">{bellText(n)}</div>
+
+
+
                   )}
                 </li>
               ))}

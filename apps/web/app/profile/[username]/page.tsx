@@ -5,9 +5,9 @@ import { useParams } from "next/navigation";
 import { supa } from "@/lib/supabase";
 import Shell from "@/components/shell";
 import LeftNav from "@/components/LeftNav";
-import ProfileRight from "@/components/ProfileRight";
 import ProfileHeader from "@/components/ProfileHeader";
 import PostCard from "@/components/postCard";
+import ProfileRight, { type ProfileInfo } from "@/components/ProfileRight";
 
 type Profile = { id:string; username:string; display_name:string|null; bio:string|null; avatar_url:string|null };
 type Post = { id:string; title:string; body:string; created_at:string; score:number; republic_id:string; author_id:string };
@@ -20,7 +20,7 @@ export default function ProfilePage() {
   const username = (params?.username ?? "").toString();
 
   const [me, setMe] = useState<string | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<ProfileInfo | null>(null);
   const [tab, setTab] = useState<"profile"|"posts"|"comments"|"activity">("profile");
   const [posts, setPosts] = useState<Post[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -33,7 +33,7 @@ export default function ProfilePage() {
 
       const { data: p } = await supa
         .from("profiles")
-        .select("id,username,display_name,bio,avatar_url")
+        .select("id, username, display_name, bio, avatar_url, created_at, employment, education, location, topics")
         .eq("username", username)
         .single();
 
@@ -51,10 +51,11 @@ export default function ProfilePage() {
       const cs = await supa
         .from("comments")
         .select(`
-  id, body, created_at,
-  author:profiles ( id, username, avatar_url ),
-  posts ( id, title )
+  id, title, body, created_at, author_id, republic_id, score, image_url, post_type,
+  profiles:profiles!posts_author_id_fkey ( id, username, avatar_url ),
+  republics:republics!posts_republic_id_fkey ( id, title )
 `)
+
 
         .eq("author_id", (p as any).id)
         .order("created_at", { ascending: false })
@@ -103,9 +104,12 @@ async function uploadAvatar(file: File) {
   // opsionale: rifresko state-in lokal nëse e mban profilin në state
   // setProfile(p => p ? { ...p, avatar_url: publicUrl } : p);
 }
-
+const isMe = me === profile?.id;
 return (
-  <Shell left={<LeftNav />} right={<ProfileRight />}>
+    <Shell
+      left={<LeftNav />}
+      right={profile ? <ProfileRight profile={profile} isMe={me === profile.id} /> : null}
+    >
     <div className="space-y-4">
       {!profile ? (
         <div className="bg-white border rounded-xl p-5">Profile not found.</div>

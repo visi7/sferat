@@ -1,17 +1,16 @@
 "use client";
 
 type Props = {
-  userVote: -1 | 0 | 1;
+  userVote: 0 | 1 | -1;
   score: number;
   onUpvote: () => void;
   onDownvote: () => void;
-
   commentCount: number;
   commentsOpen: boolean;
   onToggleComments: () => void;
-
-  onShare: () => void;
+       // ➜ tani optional
 };
+
 
 export default function PostToolbar({
   userVote,
@@ -21,7 +20,7 @@ export default function PostToolbar({
   commentCount,
   commentsOpen,
   onToggleComments,
-  onShare,
+  
 }: Props) {
   return (
     <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
@@ -58,12 +57,10 @@ export default function PostToolbar({
         💬 {commentCount} Comments
       </button>
 
-      <button
-        className="h-8 px-3 rounded-full border bg-white hover:bg-gray-50"
-        onClick={onShare}
-      >
-        ↗ Share
-      </button>
+      
+    
+
+
     </div>
   );
 }

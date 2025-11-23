@@ -9,20 +9,23 @@ import PostCard from "@/components/postCard";
 
 type Row = {
   post_id: string;
-  created_at: string;         // nga bookmarks
+  created_at: string;
   posts: {
     id: string;
     title: string | null;
-    body: string;
+    body: string | null;
     post_type: "text" | "link" | "image" | "poll" | null;
     image_url: string | null;
     url: string | null;
     republic_id: string;
     author_id: string;
-    score: number;
-    created_at: string;       // created_at i post-it
+    score: number | null;
+    created_at: string;
+    profiles?: { id: string; username: string | null; avatar_url: string | null } | null;
+    republics?: { id: string; title: string } | null;
   };
 };
+
 
 const PAGE_SIZE = 15;
 
@@ -58,13 +61,16 @@ export default function SavedPage() {
     const { data, error } = await supa
       .from("bookmarks")
       .select(`
-        post_id,
-        created_at,
-        posts (
-          id, title, body, post_type, image_url, url,
-          republic_id, author_id, score, created_at
-        )
-      `)
+  post_id, created_at,
+  posts (
+    id, title, body, post_type, image_url, url,
+    republic_id, author_id, score, created_at,
+    profiles:profiles!posts_author_id_fkey ( id, username, avatar_url ),
+    republics:republics!posts_republic_id_fkey ( id, title )
+  )
+`)
+
+
       .eq("user_id", uid)
       .order("created_at", { ascending: false })
       .range(from, to);
@@ -72,7 +78,8 @@ export default function SavedPage() {
     if (error) throw error;
 
     // 🔥 zgjidhja e gabimit — i themi TS që është any, pastaj konvertojmë në Row[]
-    const newRows = (data as any as Row[]) ?? [];
+    const newRows = (data as unknown as Row[]) ?? [];
+
     setRows((prev) => (reset ? newRows : [...prev, ...newRows]));
     setPage(next);
   } catch (e: any) {
@@ -103,24 +110,26 @@ export default function SavedPage() {
       <div className="space-y-4">
         {rows.map((r) => (
           <PostCard
-            key={r.posts.id}
-            {...{
-              id: r.posts.id,
-              title: r.posts.title ?? "",
-              body: r.posts.body ?? "",
-              republic_id: r.posts.republic_id,
-              author_id: r.posts.author_id,
-              score: r.posts.score ?? 0,
-              created_at: r.posts.created_at,
-              post_type: (r.posts.post_type ?? "text") as any,
-              image_url: r.posts.image_url ?? "",
-              url: r.posts.url ?? "",
-              republicTitle: "Republic", // ose mapa jote nëse e ke
-            }}
-            inSavedList={true}
-            onChanged={refreshAll}                 // ← auto-refresh kur votohet/komentohet
-            onRemovedFromSaved={handleRemoved}     // ← fshi kartën lokalisht kur bëhet Unsave
-          />
+  key={r.posts.id}
+  id={r.posts.id}
+  title={r.posts.title ?? ""}
+  body={r.posts.body ?? ""}
+  republic_id={r.posts.republic_id}
+  author_id={r.posts.author_id}
+  score={r.posts.score ?? 0}
+  created_at={r.posts.created_at}
+  post_type={(r.posts.post_type ?? "text") as any}
+  image_url={r.posts.image_url ?? null}
+  url={r.posts.url ?? null}
+  profiles={r.posts.profiles ?? null}
+  republicTitle={r.posts.republics?.title ?? "Republic"}
+  inSavedList={true}
+  onChanged={refreshAll}
+  onRemovedFromSaved={handleRemoved}
+/>
+
+
+
         ))}
       </div>
 

@@ -2,13 +2,14 @@
 import React from "react";
 
 type Props = {
-  inSavedList: boolean;         // kur jemi te /saved
-  saved: boolean;               // a është i ruajtur ky post nga unë
-  onToggleSave: () => void;     // thërret toggleSave()
-  onRemoveFromSaved?: () => void; // përdoret vetëm në /saved
+  inSavedList: boolean;
+  saved: boolean;
+  onToggleSave: () => void;
+  onRemoveFromSaved?: () => void;
+  onShare?: () => void;             // ➜ SHTUAR
   onDelete?: () => Promise<void>;
   onReport?: () => Promise<void>;
-  children?: React.ReactNode;   // p.sh. butoni "Edit post" nga PostCard
+  children?: React.ReactNode;
 };
 
 export default function PostKebab({
@@ -16,54 +17,60 @@ export default function PostKebab({
   saved,
   onToggleSave,
   onRemoveFromSaved,
+  onShare,
   onDelete,
   onReport,
   children,
 }: Props) {
-  return (
-    <div className="w-48 bg-white border rounded-lg shadow-md overflow-hidden">
+  return ( 
+  <div className="w-48 bg-white/90 hover:bg-white border rounded-lg shadow-md overflow-hidden text-sm backdrop-blur-sm">
       {/* Save / Unsave / Remove from saved */}
       {inSavedList ? (
         <button
-          className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+          className="w-full text-left px-3 py-2 hover:bg-gray-50"
           onClick={onRemoveFromSaved}
         >
-          🗑️ Remove from saved
+          Remove from saved
         </button>
       ) : (
         <button
-          className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+          className="w-full text-left px-3 py-2 hover:bg-gray-50"
           onClick={onToggleSave}
         >
-          {saved ? "★ Unsave" : "☆ Save"}
+          {saved ? "Unsave" : "Save"}
         </button>
       )}
 
-      {/* Divider */}
-      <div className="h-px bg-gray-100" />
+      {/* Share – vetëm nëse është dhënë onShare */}
+      {onShare && (
+        <button
+          className="w-full text-left px-3 py-2 hover:bg-gray-50"
+          onClick={onShare}
+        >
+          Share
+        </button>
+      )}
 
-      {/* Edit (kalon si child nga PostCard kur autori është vetë) */}
-      {children}
-
-      {/* Delete */}
+      {/* Delete – vetëm nëse është dhënë onDelete (pra vetëm autori) */}
       {onDelete && (
         <button
-          className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+          className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50"
           onClick={onDelete}
         >
-          ✖ Delete post
+          Delete post
         </button>
       )}
 
-      {/* Report */}
       {onReport && (
         <button
-          className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+          className="w-full text-left px-3 py-2 hover:bg-gray-50"
           onClick={onReport}
         >
-          🚩 Report
+          Report
         </button>
       )}
+
+      {children}
     </div>
   );
 }

@@ -1,103 +1,266 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { supa } from "@/lib/supabase";
-import Shell from "@/components/shell";
-import LeftNav from "@/components/LeftNav";
-import RightAside from "@/components/RightAside";
+import { useEffect, useState } from 'react';
+import { supa } from '@/lib/supabase';
 
 type ReportRow = {
-  id: string;
+  id: string;                 // ID sintetike për React
+  target_id: string;
+  type: 'post' | 'comment';
   created_at: string;
-  reason: string | null;
-  status: string | null;
-  post_id: string | null;
+  report_count: number;
 };
 
 export default function ModPanel() {
-  const [loading, setLoading] = useState(true);
-  const [allowed, setAllowed] = useState(false);
   const [reports, setReports] = useState<ReportRow[]>([]);
+  const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [postsMap, setPostsMap] = useState<Record<string, any>>({});
+  const [commentsMap, setCommentsMap] = useState<Record<string, any>>({});
 
-  // Guard + load
   useEffect(() => {
     (async () => {
       try {
-        const s = (await supa.auth.getSession()).data.session;
-        const uid = s?.user?.id;
-        if (!uid) { setAllowed(false); setLoading(false); return; }
+        setLoading(true);
+        setErr(null);
 
-        const { data: roles } = await supa
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", uid)
-          .in("role", ["admin","moderator"])
-          .limit(1);
+        const MIN_REPORTS = 3;
 
-        const ok = !!roles && roles.length > 0;
-        setAllowed(ok);
-        if (!ok) { setLoading(false); return; }
-
-        // ngarko raportet e hapura
+        // Lexojmë nga VIEW mod_reports
         const { data, error } = await supa
-          .from("reports")
-          .select("id,created_at,reason,status,post_id")
-          .order("created_at", { ascending: false })
-          .limit(100);
+          .from('mod_reports')
+          .select('target_id, type, report_count, first_reported_at')
+          .gte('report_count', MIN_REPORTS)
+          .order('first_reported_at', { ascending: false });
 
         if (error) throw error;
-        setReports(data ?? []);
+
+        const reportsData: ReportRow[] = (data ?? []).map((r: any) => ({
+          id: `${r.type}:${r.target_id}`,
+          target_id: r.target_id,
+          type: r.type,
+          created_at: r.first_reported_at,
+          report_count: r.report_count,
+        }));
+
+        setReports(reportsData);
+
+        // Mbledhim id-të për të lexuar postet/komentet
+        const postIds = reportsData
+          .filter((r) => r.type === 'post')
+          .map((r) => r.target_id);
+
+        const commentIds = reportsData
+          .filter((r) => r.type === 'comment')
+          .map((r) => r.target_id);
+
+        // Postet
+        if (postIds.length > 0) {
+          const { data: postsData, error: postsError } = await supa
+            .from('posts')
+            .select('id, title, body')
+            .in('id', postIds);
+
+          if (postsError) throw postsError;
+
+          const map: Record<string, any> = {};
+          for (const p of postsData ?? []) {
+            map[p.id] = p;
+          }
+          setPostsMap(map);
+        }
+
+        // Komentet
+        if (commentIds.length > 0) {
+          const { data: commentsData, error: commentsError } = await supa
+            .from('comments')
+            .select('id, body')
+            .in('id', commentIds);
+
+          if (commentsError) throw commentsError;
+
+          const map: Record<string, any> = {};
+          for (const c of commentsData ?? []) {
+            map[c.id] = c;
+          }
+          setCommentsMap(map);
+        }
       } catch (e: any) {
-        setErr(e.message ?? "Error");
+        console.error(e);
+        setErr(e.message ?? 'Error');
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  async function approve(id: string) {
-    const { error } = await supa.rpc("approve_report", { p_report_id: id });
-    if (error) return alert(error.message);
-    setReports(r => r.map(x => x.id === id ? { ...x, status: "accepted" } : x));
+  // ACCEPT: fsheh target-in dhe shënon të gjitha raportet si accepted
+  const handleAccept = async (report: ReportRow) => {
+    try {
+      if (report.type === 'post') {
+        const { error: postErr } = await supa
+          .from('posts')
+          .update({ hidden: true })
+          .eq('id', report.target_id);
+
+        if (postErr) throw postErr;
+      } else {
+        const { error: commentErr } = await supa
+          .from('comments')
+          .update({ hidden: true })
+          .eq('id', report.target_id);
+
+        if (commentErr) throw commentErr;
+      }
+
+      const { error: repErr } = await supa
+        .from('reports')
+        .update({
+          status: 'accepted',
+          resolved_at: new Date().toISOString(),
+        })
+        .eq('target_id', report.target_id)
+        .eq('type', report.type)
+        .eq('status', 'pending');
+
+      if (repErr) throw repErr;
+
+      setReports((prev) => prev.filter((r) => r.id !== report.id));
+    } catch (e: any) {
+      console.error('ACCEPT ERROR:', e);
+      alert(e.message ?? 'Error accepting report');
+    }
+  };
+
+  // REJECT: lë target-in, mbyll raportet si rejected
+  const handleReject = async (report: ReportRow) => {
+    try {
+      const { error: repErr } = await supa
+        .from('reports')
+        .update({
+          status: 'rejected',
+          resolved_at: new Date().toISOString(),
+        })
+        .eq('target_id', report.target_id)
+        .eq('type', report.type)
+        .eq('status', 'pending');
+
+      if (repErr) throw repErr;
+
+      setReports((prev) => prev.filter((r) => r.id !== report.id));
+    } catch (e: any) {
+      console.error('REJECT ERROR:', e);
+      alert(e.message ?? 'Error rejecting report');
+    }
+  };
+
+  // UI
+  if (loading) {
+    return (
+      <div className="p-4">
+        <h1 className="text-xl font-bold mb-4">Moderator Panel</h1>
+        <p>Loading reports...</p>
+      </div>
+    );
   }
-  async function reject(id: string) {
-    const { error } = await supa.rpc("reject_report", { p_report_id: id });
-    if (error) return alert(error.message);
-    setReports(r => r.map(x => x.id === id ? { ...x, status: "rejected" } : x));
+
+  if (err) {
+    return (
+      <div className="p-4">
+        <h1 className="text-xl font-bold mb-4">Moderator Panel</h1>
+        <p className="text-red-600">Error: {err}</p>
+      </div>
+    );
+  }
+
+  if (reports.length === 0) {
+    return (
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-xl font-bold">Moderator Panel</h1>
+          <a href="/" className="px-3 py-1 border rounded text-sm">
+            Home
+          </a>
+        </div>
+        <p>No pending reports.</p>
+      </div>
+    );
   }
 
   return (
-    <Shell left={<LeftNav />} right={<RightAside />}>
-      <h2 className="text-xl font-semibold mb-4">Moderator Panel</h2>
+    <div className="p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-xl font-bold">Moderator Panel</h1>
+        <a href="/" className="px-3 py-1 border rounded text-sm">
+          Home
+        </a>
+      </div>
 
-      {loading && <p>Loading…</p>}
-      {!loading && !allowed && <p className="text-red-600">403 — Only moderators can view this page.</p>}
-      {err && <p className="text-red-600">Error: {err}</p>}
-
-      {allowed && !loading && (
-        <div className="space-y-3">
-          {reports.length === 0 ? (
-            <p className="text-gray-600">No pending reports.</p>
-          ) : reports.map(r => (
-            <div key={r.id} className="border rounded-lg p-3 bg-white">
-              <div className="text-xs text-gray-500">
-                {new Date(r.created_at).toLocaleString()}
-              </div>
-              <div className="mt-1">
-                <div><span className="font-medium">Post:</span> {r.post_id}</div>
-                <div><span className="font-medium">Reason:</span> {r.reason ?? "-"}</div>
-                <div><span className="font-medium">Status:</span> {r.status ?? "pending"}</div>
-              </div>
-              <div className="mt-2 flex gap-2">
-                <button className="px-3 py-1 rounded border hover:bg-gray-50" onClick={() => approve(r.id)}>✓ Accept</button>
-                <button className="px-3 py-1 rounded border hover:bg-gray-50" onClick={() => reject(r.id)}>✗ Reject</button>
-                <a className="px-3 py-1 rounded border hover:bg-gray-50" href={`/post/${r.post_id}`} target="_blank">Open post</a>
-              </div>
+      <div className="space-y-3">
+        {reports.map((r) => (
+          <div
+            key={r.id}
+            className="border rounded p-3 flex flex-col gap-1 bg-white"
+          >
+            <div className="text-xs text-gray-500">
+              {new Date(r.created_at).toLocaleString()}
             </div>
-          ))}
-        </div>
-      )}
-    </Shell>
+
+            <div>
+              <span className="font-semibold">Reports:</span>{' '}
+              {r.report_count}
+            </div>
+
+            <div>
+              <span className="font-semibold">Type:</span> {r.type}
+            </div>
+
+            {r.type === 'post' && (
+              <div>
+                <span className="font-semibold">Post:</span>{' '}
+                {postsMap[r.target_id]
+                  ? postsMap[r.target_id].title ||
+                    postsMap[r.target_id].body?.slice(0, 80)
+                  : r.target_id}
+              </div>
+            )}
+
+            {r.type === 'comment' && (
+              <div>
+                <span className="font-semibold">Comment:</span>{' '}
+                {commentsMap[r.target_id]
+                  ? commentsMap[r.target_id].body?.slice(0, 80)
+                  : r.target_id}
+              </div>
+            )}
+
+            <div className="mt-2 flex gap-2">
+              <button
+                onClick={() => handleAccept(r)}
+                className="px-3 py-1 border rounded"
+              >
+                ✓ Accept
+              </button>
+
+              <button
+                onClick={() => handleReject(r)}
+                className="px-3 py-1 border rounded"
+              >
+                ✕ Reject
+              </button>
+
+              {r.type === 'post' && (
+                <a
+                  href={`/post/${r.target_id}`}
+                  className="px-3 py-1 border rounded"
+                >
+                  Open post
+                </a>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

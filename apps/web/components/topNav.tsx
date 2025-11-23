@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import NotificationBell from "@/components/NotificationBell"; // <- Kjo linjë ishte munguar!
-
+import dynamic from "next/dynamic";
 export default function TopNav() {
   const [isMod, setIsMod] = useState(false);
-
+  const NotificationBell = dynamic(() => import("@/components/NotificationBell"), { ssr: false });
   useEffect(() => {
     (async () => {
       const s = (await supa.auth.getSession()).data.session;

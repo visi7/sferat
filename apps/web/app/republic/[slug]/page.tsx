@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { supa } from "@/lib/supabase";
 import PostCard from "@/components/postCard";
-
 type Section = { slug: string; label: string; position: number };
 
 export default function RepublicPage() {
@@ -71,7 +70,7 @@ useEffect(() => {
   id, title, body, section, created_at, author_id, republic_id, score,
   image_url, post_type,
   profiles:profiles!posts_author_id_fkey ( id, username, avatar_url )
-`)
+` )
 
   .eq("republic_id", republic.id)
   .order("created_at", { ascending: false });

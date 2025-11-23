@@ -13,13 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "SFERAT — Republika e Mendimeve të Lira",
-  description: "Diskuto, voto, shpërndaj ide në Republikat tematike. Postimet fshihen automatikisht pas 7 ditësh.",
+  title: "SPHERES — Republic of Free Thoughts",
+  description: "Discuss, vote, share ideas in thematic Republics. Posts are automatically deleted after 7 days.",
   openGraph: {
-    title: "SFERAT",
-    description: "Platformë diskutimesh me republika tematike.",
-    url: "https://sferat.app",
-    siteName: "SFERAT",
+    title: "SPHERES",
+    description: "Discussion platform with thematic republics.",
+    url: "https://spheres.app",
+    siteName: "SPHERES",
     locale: "sq_AL",
     type: "website",
   },

@@ -6,7 +6,7 @@ import PostToolbar from "./post/PostToolbar";
 import PostKebab from "./post/PostKebab";
 import PostEditModal from "@/components/PostEditModal";
 import Avatar from "./Avatar";
-
+import CommentItem from "@/components/comments/CommentItem";
 import { useEffect, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
 
@@ -50,6 +50,7 @@ const [comments, setComments] = useState<CommentRow[]>([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [commentCount, setCommentCount] = useState<number>(0);
 const [editing, setEditing] = useState(false);
+ const isMine = me === p.author_id;
 
   // Score dhe vota e përdoruesit në post
   const [localScore, setLocalScore] = useState<number>(p.score);
@@ -59,11 +60,14 @@ const [editing, setEditing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null); 
   const [saved, setSaved] = useState(false);
+  const [reportingPost, setReportingPost] = useState(false);
+const [postReportText, setPostReportText] = useState("");
+
 
   // Comments drawer
   const [showComments, setShowComments] = useState(false);
   const [commentsLoading, setCommentsLoading] = useState(false);
-
+  
   // Votes e komenteve: comment_id -> score dhe vota ime
   const [cScores, setCScores] = useState<Record<string, number>>({});
   const [cUserVotes, setCUserVotes] = useState<Record<string, -1 | 0 | 1>>({});
@@ -72,7 +76,7 @@ const [editing, setEditing] = useState(false);
   const [replyingId, setReplyingId] = useState<string | null>(null);
   const [replyValue, setReplyValue] = useState("");
   const [commentMenuFor, setCommentMenuFor] = useState<string|null>(null);
-
+  
 useEffect(() => {
   function onDoc(e: MouseEvent) {
     if (!menuRef.current) return;
@@ -294,6 +298,8 @@ if (error) throw error;
     setCommentsLoading(false);
   }
 
+ 
+ 
   async function voteComment(commentId: string, wanted: 1 | -1) {
     if (!me) return alert("You must be logged in.");
 
@@ -328,17 +334,6 @@ if (error) throw error;
       setCScores((m) => ({ ...m, [commentId]: (m[commentId] ?? 0) - delta }));
       alert(e.message);
     }
-  }
-
-  async function reportComment(commentId: string) {
-    if (!me) return alert("You must be logged in.");
-    const reason = prompt("Reason for report (spam, abuse, etc.)")?.trim();
-    if (!reason) return;
-    const { error } = await supa
-      .from("comment_reports")
-      .insert({ comment_id: commentId, reporter_id: me, reason });
-    if (error) return alert(error.message);
-    alert("Comment reported.");
   }
 
   // ========= Follow / Save / Report post =========
@@ -425,13 +420,19 @@ async function removePost() {
     }
   }
 
-  async function report() {
-    if (!me) return alert("You must be logged in.");
-    const reason = prompt("Why are you reporting this?")?.trim();
-    if (!reason) return;
-    await supa.from("reports").insert({ post_id: p.id, reporter_id: me, reason });
-    alert("Report submitted.");
-  }
+  async function reportComment(id: string, reason: string) {
+  const clean = reason.trim();
+  if (!clean) return;
+
+  const { error } = await supa.from("reports").insert({
+    type: "comment",
+    target_id: id,
+    reason: clean,
+  });
+
+  if (error) alert(error.message);
+}
+
   function copyShare() {
     const url = `${window.location.origin}/post/${p.id}`;
     navigator.clipboard.writeText(url);
@@ -452,31 +453,42 @@ async function removePost() {
   {menuOpen && (
     <div className="absolute right-0 mt-1 z-10">
       <PostKebab
-        inSavedList={p.inSavedList ?? false}
-        saved={saved}
-        onToggleSave={toggleSave}
-        onRemoveFromSaved={async () => {
-          await supa.from("bookmarks").delete().eq("user_id", me).eq("post_id", p.id);
-          p.onRemovedFromSaved?.(p.id);
-          p.onChanged?.();
-        }}
-        onDelete={async () => {
+  inSavedList={p.inSavedList ?? false}
+  saved={saved}
+  onToggleSave={toggleSave}
+  onRemoveFromSaved={async () => {
+    await supa.from("bookmarks").delete().eq("user_id", me).eq("post_id", p.id);
+    p.onRemovedFromSaved?.(p.id);
+    p.onChanged?.();
+  }}
+  onDelete={
+    isMine
+      ? async () => {
           if (!confirm("Delete this post?")) return;
           const { error } = await supa.from("posts").delete().eq("id", p.id);
           if (error) return alert(error.message);
           p.onChanged?.();
-        }}
-        onReport={report}
-      >
-        {me === p.author_id && (
-          <button
-            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
-            onClick={() => setEditing(true)}
-          >
-            ✎ Edit post
-          </button>
-        )}
-      </PostKebab>
+        }
+      : undefined
+  }
+     onReport={isMine ? undefined : async () => { 
+    setReportingPost(true); 
+}}
+
+ // 🔴 KËTU – report vetëm për jo-autorët
+  onShare={copyShare}
+>
+  {isMine && (
+    <button
+      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+      onClick={() => setEditing(true)}
+    >
+      ✎ Edit post
+    </button>
+  )}
+</PostKebab>
+
+
     </div>
   )}
 </div>
@@ -533,8 +545,58 @@ async function removePost() {
     setShowComments(next);
     if (next) await loadCommentsOnce();
   }}
-  onShare={copyShare}
 />
+{reportingPost && !isMine && (
+  <div className="mt-3 border rounded-lg p-3 bg-red-50/40">
+    <label className="block text-xs font-medium text-gray-700 mb-1">
+      Reason for report (spam, abuse, etc.)
+    </label>
+
+    <textarea
+      className="w-full border rounded-md px-2 py-1 text-sm min-h-[60px]"
+      value={postReportText}
+      onChange={(e) => setPostReportText(e.target.value)}
+    />
+
+    <div className="mt-2 flex gap-2">
+      <button
+        className="px-3 py-1 text-xs rounded bg-red-600 text-white"
+        onClick={async () => {
+          const clean = postReportText.trim();
+          if (!clean) return;
+
+          const { error } = await supa.from("reports").insert({
+            type: "post",
+            target_id: p.id,
+            reason: clean,
+          });
+
+          if (error) {
+            alert(error.message);
+            return;
+          }
+
+          // mbyll formën dhe pastro tekstin
+          setReportingPost(false);
+          setPostReportText("");
+        }}
+      >
+        Send report
+      </button>
+
+      <button
+        className="px-3 py-1 text-xs rounded border text-gray-600"
+        onClick={() => {
+          setReportingPost(false);
+          setPostReportText("");
+        }}
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+)}
+
 
 
       {/* comments drawer */}
@@ -562,105 +624,38 @@ async function removePost() {
             <p className="text-sm text-gray-500">No comments yet.</p>
           ) : (
             <ul className="space-y-2">
-              {comments.map((c) => {
-                const my = cUserVotes[c.id] ?? 0;
-                const sc = cScores[c.id] ?? 0;
-                return (
-                  <li key={c.id} className="bg-gray-50 border rounded-md p-2">
-  <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-  <Avatar src={c.profiles?.avatar_url ?? null} size={20} />
-  <span>{c.profiles?.username ?? "user"}</span>
-  <span>· {new Date(c.created_at).toLocaleString()}</span>
-</div>
-{commentMenuFor === c.id && me === c.author_id && (
-  <div className="absolute right-2 mt-1 bg-white border rounded shadow p-2 text-sm z-10">
-    <button
-      className="px-2 py-1 hover:bg-gray-50 w-full text-left"
-      onClick={async () => {
-        const { error } = await supa.from("comments").delete().eq("id", c.id);
+  {comments.map((c) => (
+    <CommentItem
+      key={c.id}
+      c={c}
+      me={me}
+      myVote={cUserVotes[c.id] ?? 0}
+      score={cScores[c.id] ?? 0}
+      onVote={voteComment}
+      onReport={(reason) => reportComment(c.id, reason)}
+
+      onDelete={async (id) => {
+        const { error } = await supa.from("comments").delete().eq("id", id);
         if (error) return alert(error.message);
-        setComments(prev => (prev ?? []).filter(x => x.id !== c.id));
-        setCommentCount(n => Math.max(0, (n ?? 1) - 1));
-        setCommentMenuFor(null);
+        setComments((prev) => (prev ?? []).filter((x) => x.id !== id));
+        setCommentCount((n) => Math.max(0, (n ?? 1) - 1));
       }}
-    >
-      Delete
-    </button>
-  </div>
-)}
+      onUpdate={async (id, newBody) => {
+        const { error } = await supa
+          .from("comments")
+          .update({ body: newBody })
+          .eq("id", id);
+        if (error) return alert(error.message);
+        setComments((prev) =>
+          (prev ?? []).map((x) => (x.id === id ? { ...x, body: newBody } : x))
+        );
+      }}
+      menuFor={commentMenuFor}
+      setMenuFor={setCommentMenuFor}
+    />
+  ))}
+</ul>
 
-
-
-
-  <div className="text-sm whitespace-pre-wrap">{c.body}</div>
-
-                    {/* toolbar i komentit */}
-                    <div className="mt-2 flex items-center gap-2 text-[11px]">
-                      <button
-                        className={`h-7 px-2 rounded-full border bg-white hover:bg-gray-50 ${my === 1 ? "border-black" : ""}`}
-                        onClick={() => voteComment(c.id, 1)}
-                        aria-pressed={my === 1}
-                      >
-                        ▲ Upvote
-                      </button>
-                      <button
-                        className={`h-7 px-2 rounded-full border bg-white hover:bg-gray-50 ${my === -1 ? "border-black" : ""}`}
-                        onClick={() => voteComment(c.id, -1)}
-                        aria-pressed={my === -1}
-                      >
-                        ▼ Downvote
-                      </button>
-                      <span className="text-gray-500">Score: {sc}</span>
-
-                      <span className="mx-2 text-gray-300">·</span>
-
-                      {/* Reply inline */}
-                      {replyingId === c.id ? (
-                        <>
-                          <input
-                            className="border rounded h-7 px-2 text-[11px] w-64"
-                            value={replyValue}
-                            onChange={(e) => setReplyValue(e.target.value)}
-                            placeholder="Reply… (Enter)"
-                            onKeyDown={async (e) => {
-                              if (e.key !== "Enter") return;
-                              const text = replyValue.trim();
-                              if (!text) return;
-                              await addCommentRaw(`@${c.profiles?.username ?? "user"} ${text}`);
-                              setReplyingId(null);
-                              setReplyValue("");
-                            }}
-                          />
-                          <button
-                            className="text-[11px] underline"
-                            onClick={() => {
-                              setReplyingId(null);
-                              setReplyValue("");
-                            }}
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <button
-                          className="h-7 px-2 rounded-full border bg-white hover:bg-gray-50"
-                          onClick={() => setReplyingId(c.id)}
-                        >
-                          ↩ Reply
-                        </button>
-                      )}
-
-                      <button
-                        className="h-7 px-2 rounded-full border bg-white hover:bg-gray-50"
-                        onClick={() => reportComment(c.id)}
-                      >
-                        🚩 Report
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
           )}
         </div>
       )}
