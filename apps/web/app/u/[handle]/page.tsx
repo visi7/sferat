@@ -12,7 +12,9 @@ type Profile = {
   avatar_url: string | null;
 };
 
-export default function UserProfilePage({ params }: { params: { handle: string } }) {
+ export default function UserProfilePage({ params }: any) {
+  const { handle } = params;
+
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState<string | null>(null);
 
