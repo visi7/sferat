@@ -3,28 +3,30 @@
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import ProfileHeader from "@/components/ProfileHeader";
+import { useParams } from "next/navigation";
 
 type Profile = {
   id: string;
-  username: string;              // string (jo | null), që t’i pëlqejë ProfileHeader
-  display_name: string | null;   // KJO kërkohet nga ProfileHeader
+  username: string;
+  display_name: string | null;
   bio: string | null;
   avatar_url: string | null;
 };
 
- export default function UserProfilePage({ params }: any) {
-  const { handle } = params;
+export default function UserProfilePage() {
+  const { handle } = useParams<{ handle: string }>();
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!handle) return;
+
     (async () => {
       const { data, error } = await supa
         .from("profiles")
-        // merr edhe display_name; nëse s’e ke në DB, kemi fallback poshtë nga full_name
         .select("id, username, display_name, full_name, bio, avatar_url")
-        .eq("username", params.handle)      // nëse përdor 'handle' si kolonë, ktheje në .eq("handle", params.handle)
+        .eq("username", handle)  // këtu përdorim handle direkt
         .single();
 
       if (error || !data) {
@@ -32,21 +34,22 @@ type Profile = {
         return;
       }
 
-      // normalizim për të kënaqur tipat që pret ProfileHeader
       const normalized: Profile = {
         id: data.id,
-        username: data.username ?? "",                               // s’lejojmë null
-        display_name: data.display_name ?? data.full_name ?? null,   // fallback nga full_name nëse s’ke display_name
+        username: data.username ?? "",
+        display_name: data.display_name ?? data.full_name ?? null,
         bio: data.bio ?? null,
         avatar_url: data.avatar_url ?? null,
       };
 
       setProfile(normalized);
     })();
-  }, [params.handle]);
+  }, [handle]);
 
-  if (error) return <main className="mx-auto max-w-3xl p-6">Profile not found.</main>;
-  if (!profile) return <main className="mx-auto max-w-3xl p-6">Loading…</main>;
+  if (error)
+    return <main className="mx-auto max-w-3xl p-6">Profile not found.</main>;
+  if (!profile)
+    return <main className="mx-auto max-w-3xl p-6">Loading…</main>;
 
   return (
     <main className="mx-auto max-w-3xl p-6">
