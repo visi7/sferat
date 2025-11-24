@@ -350,6 +350,13 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
             >
               {authLoading ? "..." : "Sign in"}
             </button>
+            <p className="mt-2 text-sm">
+             Nuk ke llogari?{" "}
+             <a href="/sign-up" className="text-blue-600 underline">
+              Krijo një llogari
+                </a>
+               </p>
+
           </div>
         ) : (
           <div className="flex flex-col gap-3">
