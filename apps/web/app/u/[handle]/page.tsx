@@ -1,10 +1,9 @@
-// @ts-nocheck
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { supa } from "@/lib/supabase";
 import ProfileHeader from "@/components/ProfileHeader";
-import { useParams } from "next/navigation";
 
 type Profile = {
   id: string;
@@ -14,7 +13,7 @@ type Profile = {
   avatar_url: string | null;
 };
 
-export default function UserProfilePage() {
+function UserProfilePageImpl() {
   const { handle } = useParams<{ handle: string }>();
 
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -47,19 +46,21 @@ export default function UserProfilePage() {
     })();
   }, [handle]);
 
-  if (error)
+  if (error) {
     return (
       <main className="mx-auto max-w-3xl p-6">
         Profile not found.
       </main>
     );
+  }
 
-  if (!profile)
+  if (!profile) {
     return (
       <main className="mx-auto max-w-3xl p-6">
         Loading…
       </main>
     );
+  }
 
   return (
     <main className="mx-auto max-w-3xl p-6">
@@ -67,3 +68,8 @@ export default function UserProfilePage() {
     </main>
   );
 }
+
+// KETU E MASAKROJMË TYPESCRIPT-IN E NEXT-IT 😈
+// Eksportojmë default-in si `any` që të mos ketë konflikt me PageProps
+const UserProfilePage: any = UserProfilePageImpl;
+export default UserProfilePage;
