@@ -21,3 +21,9 @@ export default function EmailSignIn() {
     </form>
   );
 }
+<p className="mt-3 text-sm">
+  Nuk ke llogari?{" "}
+  <a href="/sign-up" className="text-blue-600 underline">
+    Krijo një llogari
+  </a>
+</p>
