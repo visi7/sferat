@@ -11,69 +11,53 @@ export default function SignUpPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    try {
+      const { error } = await supa.auth.signUp({
+        email,
+        password: pw,
+        // nëse do redirect pas konfirmimit:
+        // options: { emailRedirectTo: `${window.location.origin}` },
+      });
 
-    const { data, error } = await supa.auth.signUp({
-      email,
-      password: pw,
-      // nëse do të përdorësh verifikim me email/callback:
-      // options: {
-      //   emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
-      // },
-    });
+      if (error) {
+        alert(error.message);
+        return;
+      }
 
-    setLoading(false);
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    // Nëse verifikimi me email është OFF, shpesh kemi session direkt:
-    if (data?.session) {
-      window.location.href = "/";
-    } else {
-      // Nëse ke verifikim me email ON
       alert("Llogaria u krijua. Kontrollo email-in për konfirmim.");
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
-    <main className="mx-auto max-w-md p-6">
-      <h1 className="text-xl font-bold mb-4">Sign up</h1>
-
-      <form onSubmit={submit} className="flex flex-col gap-2">
+    <main className="mx-auto max-w-sm p-6">
+      <h1 className="text-xl font-semibold mb-4">Create account</h1>
+      <form onSubmit={submit} className="flex flex-col gap-3">
         <input
           type="email"
+          placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="email"
+          className="border rounded px-3 py-2"
           required
-          className="border px-3 py-2 rounded"
         />
         <input
           type="password"
+          placeholder="Password"
           value={pw}
           onChange={(e) => setPw(e.target.value)}
-          placeholder="password"
+          className="border rounded px-3 py-2"
           required
-          className="border px-3 py-2 rounded"
         />
-
         <button
           type="submit"
           disabled={loading}
-          className="border px-3 py-2 rounded bg-black text-white disabled:opacity-60"
+          className="mt-2 bg-black text-white rounded px-4 py-2"
         >
-          {loading ? "Duke krijuar..." : "Create account"}
+          {loading ? "Creating..." : "Create account"}
         </button>
       </form>
-
-      <p className="mt-3 text-sm">
-        Ke llogari?{" "}
-        <a href="/sign-in" className="text-blue-600 underline">
-          Sign in
-        </a>
-      </p>
     </main>
   );
 }
