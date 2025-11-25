@@ -329,35 +329,39 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
       {/* Composer */}
      <section className="bg-white border rounded-xl p-4 mb-4 w-full mt-3">
   {!session ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <input
-              className="border p-2 rounded w-52"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <input
-              type="password"
-              className="border p-2 rounded w-44"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <button
-              disabled={authLoading}
-              onClick={signIn}
-              className="px-3 py-2 rounded bg-black text-white"
-            >
-              {authLoading ? "..." : "Sign in"}
-            </button>
-            <p className="mt-2 text-sm">
-             Nuk ke llogari?{" "}
-             <a href="/sign-up" className="text-blue-600 underline">
-              Krijo një llogari
-                </a>
-               </p>
+          <div className="flex flex-col gap-1">
+  <div className="flex items-center gap-2">
+    <input
+      type="email"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+      placeholder="Email"
+      className="border p-2 rounded w-44"
+    />
+    <input
+      type="password"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      placeholder="Password"
+      className="border p-2 rounded w-44"
+    />
+    <button
+      disabled={authLoading}
+      onClick={signIn}
+      className="px-3 py-2 rounded bg-black text-white"
+    >
+      {authLoading ? "..." : "Sign in"}
+    </button>
+  </div>
 
-          </div>
+  <p className="text-xs text-gray-600">
+    Nuk ke llogari?{" "}
+    <a href="/sign-up" className="underline text-blue-600">
+      Krijo një llogari
+    </a>
+  </p>
+</div>
+
         ) : (
           <div className="flex flex-col gap-3">
       {/* Republika */}
