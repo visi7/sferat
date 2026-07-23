@@ -112,6 +112,7 @@ analyze public.posts;
 analyze public.votes;
 analyze public.comments;
 -- === FUNKSIONI I MUNGUAR: compute_hot_score =====================
+drop function if exists public.compute_hot_score(int, timestamptz);
 create or replace function public.compute_hot_score(vote_sum int, created timestamptz)
 returns double precision
 language plpgsql
