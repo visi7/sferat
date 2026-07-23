@@ -55,7 +55,7 @@ language sql
 as $$
   update public.posts p
   set hot_score = public.compute_hot_score(
-    coalesce( (select sum(value) from public.votes v where v.post_id = p.id), 0 ),
+    coalesce( (select sum(value) from public.votes v where v.post_id = p.id), 0 )::int,
     p.created_at
   )
   where p.id = p_post_id;
