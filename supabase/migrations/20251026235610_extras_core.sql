@@ -9,11 +9,19 @@ alter table public.posts
   add column if not exists url text,
   add column if not exists image_url text;
 -- unikime
-alter table public.bookmarks
-  add constraint if not exists bookmarks_unique unique (user_id, post_id);
+do $$
+begin
+  alter table public.bookmarks
+    add constraint bookmarks_unique unique (user_id, post_id);
+exception when duplicate_object then null;
+end $$;
 
-alter table public.follows_users
-  add constraint if not exists follows_users_unique unique (follower_id, followed_user_id);
+do $$
+begin
+  alter table public.follows_users
+    add constraint follows_users_unique unique (follower_id, followed_user_id);
+exception when duplicate_object then null;
+end $$;
 
 -- RLS (owner-only)
 alter table public.bookmarks enable row level security;
