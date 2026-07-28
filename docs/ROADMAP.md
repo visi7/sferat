@@ -16,6 +16,7 @@ Referencë vizioni: `docs/VISION.md`
 - Skedulim i `expire_posts()` çdo orë (pg_cron) — postimet skadojnë realisht pas 7 ditësh
 - Rindërtim i moderimit (`mod/panel`, `mod/reports`) të përputhet me skemën reale (`post_id`/`comment_id`, `status='removed'`), me grupim raportesh në kod (prag min. 3)
 - Follow/Unfollow për Republika (buton në faqen e Republikës)
+- `/search` u rishkrua nga zero si kërkim real (postime, republika, përdorues) — më parë ishte kopje e padobishme e feed-it kryesor, tani u shtua edhe link në menynë e sipërme
 
 ## 🔜 Shtyrë me qëllim — mos harro
 
@@ -42,7 +43,7 @@ values ('<user-id>', 'moderator', '<republic-id>');
 
 ## 📋 P1 — mbetur
 
-- Testim i plotë i faqes `/search`
+_(asgjë e mbetur nga P1 aktuale — të gjitha pikat u mbyllën)_
 
 ## 📋 P2 — rritje/diferencim (afatgjatë)
 
