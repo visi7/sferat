@@ -93,16 +93,8 @@ export default function NotificationBell() {
             <ul className="max-h-80 overflow-auto">
               {list.map((n) => (
                 <li key={n.id} className="px-2 py-2 hover:bg-gray-50 rounded">
-                  <div className="text-sm">
-                    <span className="font-medium">{n.type ?? "event"}</span>
-                    <span className="text-gray-500"> · {new Date(n.created_at).toLocaleString()}</span>
-                  </div>
-                  {n.payload?.msg && (
-                    <div className="text-sm text-gray-700 truncate">{bellText(n)}</div>
-
-
-
-                  )}
+                  <div className="text-sm text-gray-800">{bellText(n)}</div>
+                  <div className="text-xs text-gray-500">{new Date(n.created_at).toLocaleString()}</div>
                 </li>
               ))}
             </ul>

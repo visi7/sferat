@@ -24,6 +24,7 @@ export default function NotificationsPage() {
       const { data, error } = await supa
         .from("notifications")
         .select("id,type,payload,created_at,read_at")
+        .eq("user_id", sess.user.id)
         .order("created_at", { ascending: false })
         .limit(100);
 
