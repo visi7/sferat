@@ -17,8 +17,16 @@ Referencë vizioni: `docs/VISION.md`
 - Rindërtim i moderimit (`mod/panel`, `mod/reports`) të përputhet me skemën reale (`post_id`/`comment_id`, `status='removed'`), me grupim raportesh në kod (prag min. 3)
 - Follow/Unfollow për Republika (buton në faqen e Republikës)
 - `/search` u rishkrua nga zero si kërkim real (postime, republika, përdorues) — më parë ishte kopje e padobishme e feed-it kryesor, tani u shtua edhe link në menynë e sipërme
+- Profili: kartë "Contributions" me statistika reale (Posts/Comments/Karma, llogaritur nga databaza, jo të deklaruara) + rregullim i query-t të thyer të tab-it "Comments"
 
 ## 🔜 Shtyrë me qëllim — mos harro
+
+### Strategjia Cold-Start (P2.2)
+**Ideja:** përpara se platforma të hapet gjerësisht, kuro 50–200 "kontribues themelues" (profesorë, gazetarë, ekspertë fushash) të ftuar në Republika specifike — kështu standardi i cilësisë vendoset që në ditën e parë, jo pas. Pa këtë, mekanizmi "cilësi mbi sasi" i vizionit s'ka konkurrencë të mjaftueshme për të funksionuar realisht në fillim (problemi klasik i "cold start").
+
+**Kur ta rimarrim:** kur platforma të jetë gati teknikisht për përdorues të vërtetë (bug-e kryesore të mbyllura, UX e qëndrueshme) dhe të fillojmë të mendojmë për lançimin. Do ta sjell vetë këtë temë sërish kur të arrijmë atë pikë — nuk duhet ta kesh në mendje ndërkohë.
+
+### Moderatorë për-Republikë (P1.2)
 
 ### Moderatorë për-Republikë (P1.2)
 **Status:** Skema e mbështet (`user_roles.republic_id`, null = global), por s'ka asnjë UI për caktim rolesh — as global, as per-Republikë.
@@ -47,5 +55,4 @@ _(asgjë e mbetur nga P1 aktuale — të gjitha pikat u mbyllën)_
 
 ## 📋 P2 — rritje/diferencim (afatgjatë)
 
-- Profili si "kartë identiteti intelektuale" e verifikueshme (kontribute reale, jo vetëm bio)
-- Strategji cold-start: kurim i 50–200 kontribuesve fillestarë përpara lançimit publik të gjerë, që standardi i cilësisë të vendoset që në fillim
+_(shiko "Shtyrë me qëllim" sipër për Strategjinë Cold-Start — P2.2)_
