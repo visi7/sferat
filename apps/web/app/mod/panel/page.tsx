@@ -3,16 +3,18 @@
 import { useEffect, useState } from 'react';
 import { supa } from '@/lib/supabase';
 
-type ReportRow = {
-  id: string;                 // ID sintetike për React
-  target_id: string;
+type ReportGroup = {
+  id: string;                 // ID sintetike për React: "post:<id>" | "comment:<id>"
+  targetId: string;
   type: 'post' | 'comment';
-  created_at: string;
-  report_count: number;
+  firstReportedAt: string;
+  reportCount: number;
 };
 
+const MIN_REPORTS = 3;
+
 export default function ModPanel() {
-  const [reports, setReports] = useState<ReportRow[]>([]);
+  const [reports, setReports] = useState<ReportGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [postsMap, setPostsMap] = useState<Record<string, any>>({});
@@ -24,37 +26,45 @@ export default function ModPanel() {
         setLoading(true);
         setErr(null);
 
-        const MIN_REPORTS = 3;
-
-        // Lexojmë nga VIEW mod_reports
         const { data, error } = await supa
-          .from('mod_reports')
-          .select('target_id, type, report_count, first_reported_at')
-          .gte('report_count', MIN_REPORTS)
-          .order('first_reported_at', { ascending: false });
+          .from('reports')
+          .select('post_id, comment_id, created_at')
+          .eq('status', 'pending')
+          .order('created_at', { ascending: true });
 
         if (error) throw error;
 
-        const reportsData: ReportRow[] = (data ?? []).map((r: any) => ({
-          id: `${r.type}:${r.target_id}`,
-          target_id: r.target_id,
-          type: r.type,
-          created_at: r.first_reported_at,
-          report_count: r.report_count,
-        }));
+        // Grupojmë në kod: një grup për post_id, një për comment_id
+        const groups = new Map<string, ReportGroup>();
+        for (const r of data ?? []) {
+          const type: 'post' | 'comment' = r.post_id ? 'post' : 'comment';
+          const targetId = r.post_id ?? r.comment_id;
+          if (!targetId) continue;
+
+          const key = `${type}:${targetId}`;
+          const existing = groups.get(key);
+          if (existing) {
+            existing.reportCount += 1;
+          } else {
+            groups.set(key, {
+              id: key,
+              targetId,
+              type,
+              firstReportedAt: r.created_at,
+              reportCount: 1,
+            });
+          }
+        }
+
+        const reportsData = Array.from(groups.values())
+          .filter((g) => g.reportCount >= MIN_REPORTS)
+          .sort((a, b) => b.reportCount - a.reportCount);
 
         setReports(reportsData);
 
-        // Mbledhim id-të për të lexuar postet/komentet
-        const postIds = reportsData
-          .filter((r) => r.type === 'post')
-          .map((r) => r.target_id);
+        const postIds = reportsData.filter((r) => r.type === 'post').map((r) => r.targetId);
+        const commentIds = reportsData.filter((r) => r.type === 'comment').map((r) => r.targetId);
 
-        const commentIds = reportsData
-          .filter((r) => r.type === 'comment')
-          .map((r) => r.target_id);
-
-        // Postet
         if (postIds.length > 0) {
           const { data: postsData, error: postsError } = await supa
             .from('posts')
@@ -64,13 +74,10 @@ export default function ModPanel() {
           if (postsError) throw postsError;
 
           const map: Record<string, any> = {};
-          for (const p of postsData ?? []) {
-            map[p.id] = p;
-          }
+          for (const p of postsData ?? []) map[p.id] = p;
           setPostsMap(map);
         }
 
-        // Komentet
         if (commentIds.length > 0) {
           const { data: commentsData, error: commentsError } = await supa
             .from('comments')
@@ -80,9 +87,7 @@ export default function ModPanel() {
           if (commentsError) throw commentsError;
 
           const map: Record<string, any> = {};
-          for (const c of commentsData ?? []) {
-            map[c.id] = c;
-          }
+          for (const c of commentsData ?? []) map[c.id] = c;
           setCommentsMap(map);
         }
       } catch (e: any) {
@@ -94,33 +99,22 @@ export default function ModPanel() {
     })();
   }, []);
 
-  // ACCEPT: fsheh target-in dhe shënon të gjitha raportet si accepted
-  const handleAccept = async (report: ReportRow) => {
+  // ACCEPT: heq target-in (status = 'removed') dhe mbyll të gjitha raportet si accepted
+  const handleAccept = async (report: ReportGroup) => {
     try {
-      if (report.type === 'post') {
-        const { error: postErr } = await supa
-          .from('posts')
-          .update({ hidden: true })
-          .eq('id', report.target_id);
+      const table = report.type === 'post' ? 'posts' : 'comments';
+      const { error: targetErr } = await supa
+        .from(table)
+        .update({ status: 'removed' })
+        .eq('id', report.targetId);
 
-        if (postErr) throw postErr;
-      } else {
-        const { error: commentErr } = await supa
-          .from('comments')
-          .update({ hidden: true })
-          .eq('id', report.target_id);
+      if (targetErr) throw targetErr;
 
-        if (commentErr) throw commentErr;
-      }
-
+      const column = report.type === 'post' ? 'post_id' : 'comment_id';
       const { error: repErr } = await supa
         .from('reports')
-        .update({
-          status: 'accepted',
-          resolved_at: new Date().toISOString(),
-        })
-        .eq('target_id', report.target_id)
-        .eq('type', report.type)
+        .update({ status: 'accepted', resolved_at: new Date().toISOString() })
+        .eq(column, report.targetId)
         .eq('status', 'pending');
 
       if (repErr) throw repErr;
@@ -133,16 +127,13 @@ export default function ModPanel() {
   };
 
   // REJECT: lë target-in, mbyll raportet si rejected
-  const handleReject = async (report: ReportRow) => {
+  const handleReject = async (report: ReportGroup) => {
     try {
+      const column = report.type === 'post' ? 'post_id' : 'comment_id';
       const { error: repErr } = await supa
         .from('reports')
-        .update({
-          status: 'rejected',
-          resolved_at: new Date().toISOString(),
-        })
-        .eq('target_id', report.target_id)
-        .eq('type', report.type)
+        .update({ status: 'rejected', resolved_at: new Date().toISOString() })
+        .eq(column, report.targetId)
         .eq('status', 'pending');
 
       if (repErr) throw repErr;
@@ -154,7 +145,6 @@ export default function ModPanel() {
     }
   };
 
-  // UI
   if (loading) {
     return (
       <div className="p-4">
@@ -198,17 +188,13 @@ export default function ModPanel() {
 
       <div className="space-y-3">
         {reports.map((r) => (
-          <div
-            key={r.id}
-            className="border rounded p-3 flex flex-col gap-1 bg-white"
-          >
+          <div key={r.id} className="border rounded p-3 flex flex-col gap-1 bg-white">
             <div className="text-xs text-gray-500">
-              {new Date(r.created_at).toLocaleString()}
+              {new Date(r.firstReportedAt).toLocaleString()}
             </div>
 
             <div>
-              <span className="font-semibold">Reports:</span>{' '}
-              {r.report_count}
+              <span className="font-semibold">Reports:</span> {r.reportCount}
             </div>
 
             <div>
@@ -218,42 +204,30 @@ export default function ModPanel() {
             {r.type === 'post' && (
               <div>
                 <span className="font-semibold">Post:</span>{' '}
-                {postsMap[r.target_id]
-                  ? postsMap[r.target_id].title ||
-                    postsMap[r.target_id].body?.slice(0, 80)
-                  : r.target_id}
+                {postsMap[r.targetId]
+                  ? postsMap[r.targetId].title || postsMap[r.targetId].body?.slice(0, 80)
+                  : r.targetId}
               </div>
             )}
 
             {r.type === 'comment' && (
               <div>
                 <span className="font-semibold">Comment:</span>{' '}
-                {commentsMap[r.target_id]
-                  ? commentsMap[r.target_id].body?.slice(0, 80)
-                  : r.target_id}
+                {commentsMap[r.targetId] ? commentsMap[r.targetId].body?.slice(0, 80) : r.targetId}
               </div>
             )}
 
             <div className="mt-2 flex gap-2">
-              <button
-                onClick={() => handleAccept(r)}
-                className="px-3 py-1 border rounded"
-              >
+              <button onClick={() => handleAccept(r)} className="px-3 py-1 border rounded">
                 ✓ Accept
               </button>
 
-              <button
-                onClick={() => handleReject(r)}
-                className="px-3 py-1 border rounded"
-              >
+              <button onClick={() => handleReject(r)} className="px-3 py-1 border rounded">
                 ✕ Reject
               </button>
 
               {r.type === 'post' && (
-                <a
-                  href={`/post/${r.target_id}`}
-                  className="px-3 py-1 border rounded"
-                >
+                <a href={`/post/${r.targetId}`} className="px-3 py-1 border rounded">
                   Open post
                 </a>
               )}

@@ -4,10 +4,10 @@ import { supa } from '@/lib/supabase';
 
 export default async function ModeratorPage() {
   
-  // MARRIM RAPORTET - VËRE: NUK KA post_id KËTU
+  // MARRIM RAPORTET
   const { data: reports, error } = await supa
     .from('reports')
-    .select('id, target_id, type, reason, status, created_at, reporter_id')
+    .select('id, post_id, comment_id, reason, status, created_at, reporter_id')
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -40,11 +40,11 @@ export default async function ModeratorPage() {
           >
             <div>
               <span className="font-semibold">Type:</span>{' '}
-              {r.type}
+              {r.post_id ? 'post' : 'comment'}
             </div>
             <div>
               <span className="font-semibold">Target ID:</span>{' '}
-              {r.target_id}
+              {r.post_id ?? r.comment_id}
             </div>
             <div>
               <span className="font-semibold">Status:</span>{' '}
