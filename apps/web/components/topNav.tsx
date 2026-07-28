@@ -9,16 +9,20 @@ const NotificationBell = dynamic(() => import("@/components/NotificationBell"), 
 export default function TopNav() {
   const [isMod, setIsMod] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
+  const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
     (async () => {
       const s = (await supa.auth.getSession()).data.session;
       const uid = s?.user?.id;
       if (!uid) {
+        setLoggedIn(false);
         setIsMod(false);
         setUsername(null);
         return;
       }
+
+      setLoggedIn(true);
 
       const { data, error } = await supa
         .from("user_roles")
@@ -43,15 +47,27 @@ export default function TopNav() {
     <nav className="flex items-center gap-4">
       <a href="/">Home</a>
       <a href="/search">Search</a>
-      <a href="/saved">Saved</a>
-      <a href="/notifications">Notifications</a>
-      <a href={username ? `/profile/${username}` : "/sign-in"}>Profile</a>
-      {isMod && <a href="/mod/panel">Mod</a>}
+
+      {loggedIn ? (
+        <>
+          <a href="/saved">Saved</a>
+          <a href="/notifications">Notifications</a>
+          <a href={username ? `/profile/${username}` : "/sign-in"}>Profile</a>
+          {isMod && <a href="/mod/panel">Mod</a>}
+        </>
+      ) : (
+        <>
+          <a href="/sign-in">Sign in</a>
+          <a href="/sign-up">Create account</a>
+        </>
+      )}
 
       {/* vendose zilen në skajin e djathtë */}
-      <div className="ml-auto">
-        <NotificationBell />
-      </div>
+      {loggedIn && (
+        <div className="ml-auto">
+          <NotificationBell />
+        </div>
+      )}
     </nav>
   );
 }
