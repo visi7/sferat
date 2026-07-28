@@ -25,7 +25,7 @@ function UserProfilePageImpl() {
     (async () => {
       const { data, error } = await supa
         .from("profiles")
-        .select("id, username, display_name, full_name, bio, avatar_url")
+        .select("id, username, display_name, bio, avatar_url")
         .eq("username", handle)
         .single();
 
@@ -37,7 +37,7 @@ function UserProfilePageImpl() {
       const normalized: Profile = {
         id: data.id,
         username: data.username ?? "",
-        display_name: data.display_name ?? data.full_name ?? null,
+        display_name: data.display_name ?? null,
         bio: data.bio ?? null,
         avatar_url: data.avatar_url ?? null,
       };
