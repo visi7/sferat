@@ -7,7 +7,9 @@ type Noti = {
   type: string | null;
   created_at: string;
   payload: any | null;
+  read_at?: string | null;
 };
+
 function bellText(n: { type: string | null; payload: any | null }) {
   const p = n.payload ?? {};
   const actor = p.actor_username || p.actor_name || p.actor_handle || "Someone";
@@ -23,11 +25,11 @@ function bellText(n: { type: string | null; payload: any | null }) {
   }
 }
 
-
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
   const [list, setList] = useState<Noti[]>([]);
   const [loading, setLoading] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const boxRef = useRef<HTMLDivElement | null>(null);
 
   // mbyll kur klikon jashtë
@@ -40,7 +42,23 @@ export default function NotificationBell() {
     return () => document.removeEventListener("mousedown", onDoc);
   }, [open]);
 
-  // ngarko njoftimet kur hapet dropdown
+  // numri i njoftimeve të palexuara, kur ngarkohet komponenti
+  useEffect(() => {
+    (async () => {
+      const s = (await supa.auth.getSession()).data.session;
+      const uid = s?.user?.id;
+      if (!uid) return;
+
+      const { count } = await supa
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", uid)
+        .is("read_at", null);
+
+      setUnreadCount(count ?? 0);
+    })();
+  }, []);
+
   async function loadIfNeeded() {
     if (list.length > 0 || loading) return;
     setLoading(true);
@@ -51,12 +69,22 @@ export default function NotificationBell() {
 
       const { data, error } = await supa
         .from("notifications")
-        .select("id,type,created_at,payload")
+        .select("id,type,created_at,payload,read_at")
         .eq("user_id", uid)
         .order("created_at", { ascending: false })
         .limit(10);
 
       if (!error && data) setList(data as any);
+
+      // shëno si të lexuara, meqë sapo i pa
+      if (unreadCount > 0) {
+        setUnreadCount(0);
+        await supa
+          .from("notifications")
+          .update({ read_at: new Date().toISOString() })
+          .eq("user_id", uid)
+          .is("read_at", null);
+      }
     } finally {
       setLoading(false);
     }
@@ -65,7 +93,7 @@ export default function NotificationBell() {
   return (
     <div className="relative" ref={boxRef}>
       <button
-        className="h-8 px-3 rounded-md border hover:bg-gray-50"
+        className="relative h-8 px-3 rounded-md border hover:bg-gray-50"
         onClick={async () => {
           const next = !open;
           setOpen(next);
@@ -76,6 +104,11 @@ export default function NotificationBell() {
         title="Notifications"
       >
         🔔
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-600 text-white text-[10px] leading-4 text-center">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
       </button>
 
       {open && (

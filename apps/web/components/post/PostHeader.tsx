@@ -18,14 +18,16 @@ export default function PostHeader({
 }: Props) {
   return (
     <>
-      {/* avatar + username (nga profiles e SELECT-it) */}
+      {/* avatar + username (gjithmonë nga fetch-i i vet-mjaftueshëm `author`) */}
       <div className="flex items-center gap-2">
         <img
-          src={p.profiles?.avatar_url || "/default-avatar.png"}
+          src={author?.avatar_url || p.profiles?.avatar_url || "/default-avatar.png"}
           className="w-8 h-8 rounded-full object-cover"
           alt=""
         />
-        <div className="text-sm text-gray-600">@{p.profiles?.username}</div>
+        <div className="text-sm text-gray-600">
+          @{author?.username ?? p.profiles?.username ?? author?.id?.slice(0, 8) ?? "user"}
+        </div>
       </div>
 
       {/* Republic · Author · Follow */}
