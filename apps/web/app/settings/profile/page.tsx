@@ -9,6 +9,7 @@ export default function EditProfilePage() {
   const router = useRouter();
 
   const [meId, setMeId] = useState<string | null>(null);
+  const [checkedAuth, setCheckedAuth] = useState(false);
   const [username, setUsername] = useState<string>("");
   const [displayName, setDisplayName] = useState<string>("");
   const [bio, setBio] = useState<string>("");
@@ -23,7 +24,11 @@ export default function EditProfilePage() {
       const sess = (await supa.auth.getSession()).data.session;
       const uid = sess?.user.id ?? null;
       setMeId(uid);
-      if (!uid) return;
+      setCheckedAuth(true);
+      if (!uid) {
+        router.push("/sign-in");
+        return;
+      }
 
       const { data } = await supa
         .from("profiles")
@@ -91,6 +96,14 @@ export default function EditProfilePage() {
   async function onSignOut() {
     await supa.auth.signOut();
     router.push("/");
+  }
+
+  if (!checkedAuth) {
+    return <div className="max-w-3xl mx-auto p-5 text-sm text-gray-500">Loading…</div>;
+  }
+
+  if (!meId) {
+    return <div className="max-w-3xl mx-auto p-5 text-sm text-gray-500">Redirecting to sign in…</div>;
   }
 
   return (

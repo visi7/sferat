@@ -67,14 +67,21 @@ useEffect(() => {
     <nav className="flex items-center gap-4 text-sm ml-auto">
       <a className="hover:underline" href="/">🏠︎</a>
 
-      {/* ZILJA — dropdown me njoftime */}
-      <NotificationBell />
-      <a className="hover:underline" href={profileHref}>Profile</a>
-      {isMod && <a className="hover:underline" href="/mod/panel">Mod</a>}
-      {logged && (
-        <button onClick={doSignOut} className="hover:underline">
-          Sign out
-        </button>
+      {logged ? (
+        <>
+          {/* ZILJA — dropdown me njoftime */}
+          <NotificationBell />
+          <a className="hover:underline" href={profileHref}>Profile</a>
+          {isMod && <a className="hover:underline" href="/mod/panel">Mod</a>}
+          <button onClick={doSignOut} className="hover:underline">
+            Sign out
+          </button>
+        </>
+      ) : (
+        <>
+          <a className="hover:underline" href="/sign-in">Sign in</a>
+          <a className="hover:underline" href="/sign-up">Create account</a>
+        </>
       )}
     </nav>
   </div>
