@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { supa } from "@/lib/supabase";
 import PostCard from "@/components/postCard";
+import { followRepublic, unfollowRepublic } from "@/app/actions";
 type Section = { slug: string; label: string; position: number };
 
 export default function RepublicPage() {
@@ -19,6 +20,8 @@ export default function RepublicPage() {
   const [activeTab, setActiveTab] = useState<string>("feed");
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followBusy, setFollowBusy] = useState(false);
 
   // 1) Load republic + sections
   useEffect(() => {
@@ -99,6 +102,43 @@ setPosts(data ?? []);
 }, [republic?.id, activeTab]);
 
 
+  // 3) Check follow status for the logged-in user
+  useEffect(() => {
+    (async () => {
+      if (!republic?.id) return;
+      const session = (await supa.auth.getSession()).data.session;
+      if (!session) {
+        setIsFollowing(false);
+        return;
+      }
+      const { data } = await supa
+        .from("follows_republics")
+        .select("republic_id")
+        .eq("follower_id", session.user.id)
+        .eq("republic_id", republic.id)
+        .maybeSingle();
+      setIsFollowing(!!data);
+    })();
+  }, [republic?.id]);
+
+  async function toggleFollow() {
+    if (!republic?.id || followBusy) return;
+    setFollowBusy(true);
+    try {
+      if (isFollowing) {
+        await unfollowRepublic(republic.id);
+        setIsFollowing(false);
+      } else {
+        await followRepublic(republic.id);
+        setIsFollowing(true);
+      }
+    } catch (e: any) {
+      alert(e.message ?? "Something went wrong");
+    } finally {
+      setFollowBusy(false);
+    }
+  }
+
   function goTab(slug: string) {
     setActiveTab(slug);
     router.push(`?tab=${slug}`);
@@ -112,7 +152,18 @@ setPosts(data ?? []);
       {/* header + Home link */}
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-2xl font-semibold">{republic.title}</h1>
-        <a href="/" className="h-9 px-3 rounded border hover:bg-gray-50">Home</a>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleFollow}
+            disabled={followBusy}
+            className={`h-9 px-3 rounded border text-sm disabled:opacity-60 ${
+              isFollowing ? "bg-gray-900 text-white" : "hover:bg-gray-50"
+            }`}
+          >
+            {isFollowing ? "Following" : "Follow"}
+          </button>
+          <a href="/" className="h-9 px-3 rounded border hover:bg-gray-50 flex items-center">Home</a>
+        </div>
       </div>
       <p className="text-gray-500 mb-4">{republic.description}</p>
 
