@@ -42,6 +42,7 @@ export default function TopNav() {
   return (
     <nav className="flex items-center gap-4">
       <a href="/">Home</a>
+      <a href="/search">Search</a>
       <a href="/saved">Saved</a>
       <a href="/notifications">Notifications</a>
       <a href={username ? `/profile/${username}` : "/sign-in"}>Profile</a>
