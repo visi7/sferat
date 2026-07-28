@@ -11,9 +11,8 @@ import ProfileRight, { type ProfileInfo } from "@/components/ProfileRight";
 
 type Profile = { id:string; username:string; display_name:string|null; bio:string|null; avatar_url:string|null };
 type Post = { id:string; title:string; body:string; created_at:string; score:number; republic_id:string; author_id:string };
-type Comment = {
-  author: any; id:string; body:string; created_at:string; posts?: { id:string; title:string } 
-};
+type Comment = { id:string; post_id:string; body:string; created_at:string; score:number; postTitle:string };
+type Stats = { postsCount:number; commentsCount:number; karma:number };
 
 export default function ProfilePage() {
   const params = useParams<{ username: string }>();
@@ -24,6 +23,7 @@ export default function ProfilePage() {
   const [tab, setTab] = useState<"profile"|"posts"|"comments"|"activity">("profile");
   const [posts, setPosts] = useState<Post[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [stats, setStats] = useState<Stats | undefined>(undefined);
 
   useEffect(() => {
     if (!username) return;
@@ -50,19 +50,41 @@ export default function ProfilePage() {
 
       const cs = await supa
         .from("comments")
-        .select(`
-  id, title, body, created_at, author_id, republic_id, score, image_url, post_type,
-  profiles:profiles!posts_author_id_fkey ( id, username, avatar_url ),
-  republics:republics!posts_republic_id_fkey ( id, title )
-`)
-
-
+        .select("id, post_id, body, created_at, score")
         .eq("author_id", (p as any).id)
         .order("created_at", { ascending: false })
         .limit(20);
-      setComments((cs.data as any) ?? []);
+
+      const commentRows = cs.data ?? [];
+      const postIds = Array.from(new Set(commentRows.map((c) => c.post_id)));
+      let postTitleMap: Record<string, string> = {};
+      if (postIds.length) {
+        const { data: relatedPosts } = await supa
+          .from("posts")
+          .select("id,title")
+          .in("id", postIds);
+        for (const rp of relatedPosts ?? []) postTitleMap[rp.id] = rp.title;
+      }
+      setComments(
+        commentRows.map((c) => ({
+          ...c,
+          postTitle: postTitleMap[c.post_id] ?? "a post",
+        }))
+      );
+
+      // Contribution stats: llogaritur nga të dhëna reale, jo të deklaruara
+      const [allPosts, allComments] = await Promise.all([
+        supa.from("posts").select("score").eq("author_id", (p as any).id).neq("status", "removed"),
+        supa.from("comments").select("score").eq("author_id", (p as any).id).neq("status", "removed"),
+      ]);
+      const postsCount = allPosts.data?.length ?? 0;
+      const commentsCount = allComments.data?.length ?? 0;
+      const karma =
+        (allPosts.data ?? []).reduce((s, r) => s + (r.score ?? 0), 0) +
+        (allComments.data ?? []).reduce((s, r) => s + (r.score ?? 0), 0);
+      setStats({ postsCount, commentsCount, karma });
     })();
-  }, [username]); 
+  }, [username]);
 
   function doSignOut(): void {
     throw new Error("Function not implemented.");
@@ -108,7 +130,7 @@ const isMe = me === profile?.id;
 return (
     <Shell
       left={<LeftNav />}
-      right={profile ? <ProfileRight profile={profile} isMe={me === profile.id} /> : null}
+      right={profile ? <ProfileRight profile={profile} isMe={me === profile.id} stats={stats} /> : null}
     >
     <div className="space-y-4">
       {!profile ? (
@@ -155,15 +177,15 @@ return (
                   {comments.map(c => (
                     <article key={c.id} className="bg-white border rounded-xl p-4">
                       <img
-                        src={c.author?.avatar_url || "/default-avatar.png"}
+                        src={profile.avatar_url || "/default-avatar.png"}
                          className="w-6 h-6 rounded-full object-cover mr-2"
                           alt=""
                             />
-                          <span className="text-xs text-gray-600">@{c.author?.username}</span>
+                          <span className="text-xs text-gray-600">@{profile.username}</span>
 
                       <div className="text-xs text-gray-500">
                         {new Date(c.created_at).toLocaleString()} — on{" "}
-                        <a className="underline" href={`/post/${c.posts?.id}`}>{c.posts?.title}</a>
+                        <a className="underline" href={`/post/${c.post_id}`}>{c.postTitle}</a>
                       </div>
                       <div className="mt-1 whitespace-pre-wrap">{c.body}</div>
                     </article>

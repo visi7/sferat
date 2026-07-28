@@ -4,6 +4,7 @@ import { useState } from "react";
 import { supa } from "@/lib/supabase";
 import ProfileCredentialsCard from "./profile/ProfileCredentialsCard";
 import ProfileTopicsCard from "./profile/ProfileTopicsCard";
+import ProfileStatsCard from "./profile/ProfileStatsCard";
 
 // *** TIPI I RI ***
 export type ProfileInfo = {
@@ -19,11 +20,14 @@ export type ProfileInfo = {
   topics?: string[] | null;
 };
 
+type Stats = { postsCount: number; commentsCount: number; karma: number };
+
 type Props = {
   profile: ProfileInfo;
   isMe: boolean;
+  stats?: Stats;
 };
-export default function ProfileRight({ profile, isMe }: { profile: any; isMe: boolean }) {
+export default function ProfileRight({ profile, isMe, stats }: Props) {
 
 
 
@@ -104,6 +108,13 @@ export default function ProfileRight({ profile, isMe }: { profile: any; isMe: bo
 
   return (
   <div className="space-y-4">
+    {stats && (
+      <ProfileStatsCard
+        postsCount={stats.postsCount}
+        commentsCount={stats.commentsCount}
+        karma={stats.karma}
+      />
+    )}
     <ProfileCredentialsCard
       profile={profile}
       isMe={isMe}
