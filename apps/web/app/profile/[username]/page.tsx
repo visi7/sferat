@@ -123,9 +123,23 @@ async function uploadAvatar(file: File) {
     .eq("id", me);
   if (dbErr) throw dbErr;
 
-  // opsionale: rifresko state-in lokal nëse e mban profilin në state
-  // setProfile(p => p ? { ...p, avatar_url: publicUrl } : p);
+  setProfile((p) => (p ? { ...p, avatar_url: publicUrl } : p));
 }
+
+async function updateDisplayName(name: string) {
+  const sess = (await supa.auth.getSession()).data.session;
+  const uid = sess?.user.id;
+  if (!uid) throw new Error("Not signed in");
+
+  const { error } = await supa
+    .from("profiles")
+    .update({ display_name: name })
+    .eq("id", uid);
+  if (error) throw error;
+
+  setProfile((p) => (p ? { ...p, display_name: name } : p));
+}
+
 const isMe = me === profile?.id;
 return (
     <Shell
@@ -141,6 +155,7 @@ return (
             profile={profile}
             isMe={me === profile.id}
             onUploadAvatar={uploadAvatar}
+            onUpdateDisplayName={updateDisplayName}
             onSignOut={doSignOut}
           />
 
