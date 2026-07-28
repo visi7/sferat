@@ -24,6 +24,9 @@ export default function ProfilePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [stats, setStats] = useState<Stats | undefined>(undefined);
+  const [editingBio, setEditingBio] = useState(false);
+  const [bioValue, setBioValue] = useState("");
+  const [savingBio, setSavingBio] = useState(false);
 
   useEffect(() => {
     if (!username) return;
@@ -39,6 +42,7 @@ export default function ProfilePage() {
 
       if (!p) { setProfile(null); return; }
       setProfile(p as any);
+      setBioValue((p as any).bio ?? "");
 
       const ps = await supa
         .from("posts")
@@ -140,6 +144,25 @@ async function updateDisplayName(name: string) {
   setProfile((p) => (p ? { ...p, display_name: name } : p));
 }
 
+async function saveBio() {
+  const sess = (await supa.auth.getSession()).data.session;
+  const uid = sess?.user.id;
+  if (!uid) return;
+
+  setSavingBio(true);
+  try {
+    const clean = bioValue.trim();
+    const { error } = await supa.from("profiles").update({ bio: clean || null }).eq("id", uid);
+    if (error) throw error;
+    setProfile((p) => (p ? { ...p, bio: clean || null } : p));
+    setEditingBio(false);
+  } catch (err: any) {
+    alert(err.message ?? "Saving failed");
+  } finally {
+    setSavingBio(false);
+  }
+}
+
 const isMe = me === profile?.id;
 return (
     <Shell
@@ -170,12 +193,51 @@ return (
 
             <div className="p-4">
               {tab === "profile" && (
-                // S’ka më "Write a description..." dhe link "Edit profile" këtu.
-                // Nëse do form për emër/bio, mund ta mbash si më parë ose ta heqësh fare.
-                profile.bio ? (
-                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{profile.bio}</p>
+                editingBio ? (
+                  <div className="space-y-2">
+                    <textarea
+                      autoFocus
+                      className="w-full border rounded-md px-3 py-2 text-sm min-h-[100px]"
+                      placeholder="Write something about yourself…"
+                      value={bioValue}
+                      onChange={(e) => setBioValue(e.target.value)}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        className="px-3 py-1.5 text-xs rounded-md bg-black text-white disabled:opacity-60"
+                        onClick={saveBio}
+                        disabled={savingBio}
+                      >
+                        {savingBio ? "Saving…" : "Save"}
+                      </button>
+                      <button
+                        className="px-3 py-1.5 text-xs rounded-md border text-gray-600"
+                        onClick={() => {
+                          setBioValue(profile.bio ?? "");
+                          setEditingBio(false);
+                        }}
+                        disabled={savingBio}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
                 ) : (
-                  <p className="text-sm text-gray-500">No bio yet.</p>
+                  <div>
+                    {profile.bio ? (
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{profile.bio}</p>
+                    ) : (
+                      <p className="text-sm text-gray-500">No bio yet.</p>
+                    )}
+                    {isMe && (
+                      <button
+                        className="mt-2 text-xs px-3 py-1.5 rounded-md border hover:bg-gray-50"
+                        onClick={() => setEditingBio(true)}
+                      >
+                        {profile.bio ? "Edit bio" : "Add bio"}
+                      </button>
+                    )}
+                  </div>
                 )
               )}
 

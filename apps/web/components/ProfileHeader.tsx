@@ -1,6 +1,5 @@
 "use client";
 import { useRef, useState } from "react";
-import Link from "next/link";
 
 type Props = {
   profile: {
@@ -148,18 +147,6 @@ export default function ProfileHeader({
           <div className="text-gray-500 text-sm">@{profile.username}</div>
         </div>
       </div>
-
-      {/* Right: Edit i vogël, i pastër (vetëm për veten) */}
-      {isMe && (
-        <div className="flex items-center gap-3">
-          <Link
-            href="/settings/profile"
-            className="px-3 py-1.5 text-sm border rounded hover:bg-gray-50"
-          >
-            Edit profile
-          </Link>
-        </div>
-      )}
     </header>
   );
 }
