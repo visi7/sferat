@@ -17,8 +17,6 @@ type Republic = { id: string; title: string };
 export default function ModRolesPage() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
-  const [authDebugError, setAuthDebugError] = useState<string | null>(null);
-  const [authDebugUid, setAuthDebugUid] = useState<string | null>(null);
 
   const [roles, setRoles] = useState<Role[]>([]);
   const [republics, setRepublics] = useState<Republic[]>([]);
@@ -39,9 +37,8 @@ export default function ModRolesPage() {
         setCheckingAuth(false);
         return;
       }
-      setAuthDebugUid(uid);
 
-      const { data, error } = await supa
+      const { data } = await supa
         .from("user_roles")
         .select("id")
         .eq("user_id", uid)
@@ -49,7 +46,6 @@ export default function ModRolesPage() {
         .is("republic_id", null)
         .maybeSingle();
 
-      if (error) setAuthDebugError(`${error.code ?? ""} ${error.message}`.trim());
       setIsGlobalAdmin(!!data);
       setCheckingAuth(false);
     })();
@@ -152,10 +148,6 @@ export default function ModRolesPage() {
       <div className="p-6">
         <h1 className="text-xl font-bold mb-2">Moderator Roles</h1>
         <p className="text-gray-600 text-sm">You must be a global admin to view this page.</p>
-        <p className="text-[10px] text-red-600 break-all mt-2">DEBUG uid: {authDebugUid ?? "(none)"}</p>
-        {authDebugError && (
-          <p className="text-[10px] text-red-600 break-all">DEBUG error: {authDebugError}</p>
-        )}
       </div>
     );
   }
