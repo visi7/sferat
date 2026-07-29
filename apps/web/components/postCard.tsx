@@ -102,22 +102,6 @@ useEffect(() => {
     setSaved(!!data && !error);
   })();
 }, [p.id]);
-async function loadComments() {
-  const { data, error } = await supa
-    .from("comments")
-    .select(`
-      id, body, created_at, author_id,
-      profiles:profiles!comments_author_id_fkey ( username, avatar_url )
-    `)
-    .eq("post_id", p.id)
-    .order("created_at", { ascending: false });
-if (error) { console.error("[comments]", error); return; }
-  setComments((data as any) ?? []);
-  setCommentCount((data?.length ?? 0));
-}
-useEffect(() => { loadComments(); }, [p.id]);
-
-
   // ========= Boot: session, author, follow, counts, userVote (post) =========
   useEffect(() => {
     (async () => {
@@ -144,17 +128,12 @@ useEffect(() => { loadComments(); }, [p.id]);
         setIsFollowing((data ?? []).length > 0);
       }
 
-      // Comment count
-      const { data: cs } = await supa
-  .from("comments")
-  .select(`
-    id, body, created_at, author_id,
-    posts!inner ( id, title ),
-    author:profiles!comments_author_id_fkey ( id, username, avatar_url )
-  `)
-  .eq("post_id", p.id)
-  .order("created_at", { ascending: true });
-setComments((cs as any) ?? []);
+      // Comment count (vetëm numri; përmbajtja e plotë ngarkohet nga loadCommentsOnce te hapja e drawer-it)
+      const { count } = await supa
+        .from("comments")
+        .select("id", { count: "exact", head: true })
+        .eq("post_id", p.id);
+      setCommentCount(count ?? 0);
 
 
       // User vote në post
@@ -220,22 +199,35 @@ setComments((cs as any) ?? []);
     const { data, error } = await supa
   .from("comments")
   .insert({ post_id: p.id, author_id: me, body })
-  .select(`
-    id, body, created_at, author_id,
-    profiles:profiles!comments_author_id_fkey ( username, avatar_url )
-  `)
+  .select("id, body, created_at, author_id")
   .single();
 if (error) throw error;
 
+   // profili im (komentuesi) e kemi tashmë të disponueshëm nga "author" vetëm
+   // nëse jam edhe autori i postit; përndryshe e marrim veçmas, të sigurt
+   let myProfile = author && author.id === me ? author : null;
+   if (!myProfile) {
+     const { data: prof } = await supa
+       .from("profiles")
+       .select("id,username,display_name,avatar_url")
+       .eq("id", me)
+       .maybeSingle();
+     myProfile = (prof as any) ?? null;
+   }
 
    setCommentCount(n => (n ?? 0) + 1);
 
   setComments(prev => {
   const arr = prev ?? [];
   const id = (data as any).id;
-  return arr.some(c => c.id === id) ? arr : [data as any, ...arr];
+  if (arr.some(c => c.id === id)) return arr;
+  const newRow = {
+    ...(data as any),
+    profiles: myProfile ? { username: myProfile.username, avatar_url: myProfile.avatar_url } : { username: null, avatar_url: null },
+  };
+  return [...arr, newRow];
 });
-    
+
       p.onChanged?.();
     } catch (e: any) {
       alert(e.message);
@@ -434,11 +426,11 @@ async function removePost() {
 
   async function reportComment(id: string, reason: string) {
   const clean = reason.trim();
-  if (!clean) return;
+  if (!clean || !me) return;
 
   const { error } = await supa.from("reports").insert({
-    type: "comment",
-    target_id: id,
+    comment_id: id,
+    reporter_id: me,
     reason: clean,
   });
 
@@ -577,9 +569,10 @@ async function removePost() {
           const clean = postReportText.trim();
           if (!clean) return;
 
+          if (!me) return;
           const { error } = await supa.from("reports").insert({
-            type: "post",
-            target_id: p.id,
+            post_id: p.id,
+            reporter_id: me,
             reason: clean,
           });
 
