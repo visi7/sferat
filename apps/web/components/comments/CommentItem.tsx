@@ -138,8 +138,8 @@ export default function CommentItem({
       {/* Toolbar i komentit */}
       <div className="mt-2 flex items-center gap-2 text-[11px]">
         <button
-          className={`h-7 px-2 rounded-full border bg-white hover:bg-gray-50 ${
-            myVote === 1 ? "border-black" : ""
+          className={`inline-flex items-center justify-center gap-1 whitespace-nowrap leading-none h-7 px-2.5 rounded-full border bg-white hover:bg-gray-50 ${
+            myVote === 1 ? "border-green-600 border-2 bg-green-50 text-green-700" : ""
           }`}
           onClick={() => onVote(c.id, 1)}
           aria-pressed={myVote === 1}
@@ -147,8 +147,8 @@ export default function CommentItem({
           ▲ Upvote
         </button>
         <button
-          className={`h-7 px-2 rounded-full border bg-white hover:bg-gray-50 ${
-            myVote === -1 ? "border-black" : ""
+          className={`inline-flex items-center justify-center gap-1 whitespace-nowrap leading-none h-7 px-2.5 rounded-full border bg-white hover:bg-gray-50 ${
+            myVote === -1 ? "border-red-600 border-2 bg-red-50 text-red-700" : ""
           }`}
           onClick={() => onVote(c.id, -1)}
           aria-pressed={myVote === -1}
@@ -161,7 +161,7 @@ export default function CommentItem({
 
         {/* Report – hap kutinë poshtë */}
         <button
-          className="h-7 px-2 rounded-full border bg-white hover:bg-gray-50"
+          className="inline-flex items-center justify-center gap-1 whitespace-nowrap leading-none h-7 px-2.5 rounded-full border bg-white hover:bg-gray-50"
           onClick={() => setShowReport((v) => !v)}
         >
           🚩 Report

@@ -25,8 +25,8 @@ export default function PostToolbar({
   return (
     <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
       <button
-        className={`h-8 px-3 rounded-full border bg-white hover:bg-gray-50 ${
-          userVote === 1 ? "border-black" : ""
+        className={`inline-flex items-center justify-center gap-1 whitespace-nowrap leading-none h-8 px-3 rounded-full border bg-white hover:bg-gray-50 ${
+          userVote === 1 ? "border-green-600 border-2 bg-green-50 text-green-700" : ""
         }`}
         onClick={onUpvote}
         aria-pressed={userVote === 1}
@@ -35,8 +35,8 @@ export default function PostToolbar({
       </button>
 
       <button
-        className={`h-8 px-3 rounded-full border bg-white hover:bg-gray-50 ${
-          userVote === -1 ? "border-black" : ""
+        className={`inline-flex items-center justify-center gap-1 whitespace-nowrap leading-none h-8 px-3 rounded-full border bg-white hover:bg-gray-50 ${
+          userVote === -1 ? "border-red-600 border-2 bg-red-50 text-red-700" : ""
         }`}
         onClick={onDownvote}
         aria-pressed={userVote === -1}
@@ -49,7 +49,7 @@ export default function PostToolbar({
       <span className="mx-2 text-gray-300">·</span>
 
       <button
-        className={`h-8 px-3 rounded-full border bg-white hover:bg-gray-50 inline-flex items-center ${
+        className={`inline-flex items-center justify-center gap-1 whitespace-nowrap leading-none h-8 px-3 rounded-full border bg-white hover:bg-gray-50 ${
           commentsOpen ? "border-black" : ""
         }`}
         onClick={onToggleComments}
