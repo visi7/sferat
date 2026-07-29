@@ -9,6 +9,7 @@ type ReportGroup = {
   type: 'post' | 'comment';
   firstReportedAt: string;
   reportCount: number;
+  republicId: string | null;
 };
 
 const MIN_REPORTS = 3;
@@ -19,6 +20,7 @@ export default function ModPanel() {
   const [err, setErr] = useState<string | null>(null);
   const [postsMap, setPostsMap] = useState<Record<string, any>>({});
   const [commentsMap, setCommentsMap] = useState<Record<string, any>>({});
+  const [republicsMap, setRepublicsMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
     (async () => {
@@ -52,36 +54,36 @@ export default function ModPanel() {
               type,
               firstReportedAt: r.created_at,
               reportCount: 1,
+              republicId: null,
             });
           }
         }
 
-        const reportsData = Array.from(groups.values())
+        let reportsData = Array.from(groups.values())
           .filter((g) => g.reportCount >= MIN_REPORTS)
           .sort((a, b) => b.reportCount - a.reportCount);
-
-        setReports(reportsData);
 
         const postIds = reportsData.filter((r) => r.type === 'post').map((r) => r.targetId);
         const commentIds = reportsData.filter((r) => r.type === 'comment').map((r) => r.targetId);
 
+        const postsById: Record<string, any> = {};
+
         if (postIds.length > 0) {
           const { data: postsData, error: postsError } = await supa
             .from('posts')
-            .select('id, title, body')
+            .select('id, title, body, republic_id')
             .in('id', postIds);
 
           if (postsError) throw postsError;
 
-          const map: Record<string, any> = {};
-          for (const p of postsData ?? []) map[p.id] = p;
-          setPostsMap(map);
+          for (const p of postsData ?? []) postsById[p.id] = p;
+          setPostsMap(postsById);
         }
 
         if (commentIds.length > 0) {
           const { data: commentsData, error: commentsError } = await supa
             .from('comments')
-            .select('id, body')
+            .select('id, body, post_id')
             .in('id', commentIds);
 
           if (commentsError) throw commentsError;
@@ -89,6 +91,44 @@ export default function ModPanel() {
           const map: Record<string, any> = {};
           for (const c of commentsData ?? []) map[c.id] = c;
           setCommentsMap(map);
+
+          const commentPostIds = Array.from(new Set((commentsData ?? []).map((c) => c.post_id)));
+          if (commentPostIds.length > 0) {
+            const { data: commentPostsData, error: commentPostsError } = await supa
+              .from('posts')
+              .select('id, republic_id')
+              .in('id', commentPostIds);
+
+            if (commentPostsError) throw commentPostsError;
+
+            for (const p of commentPostsData ?? []) postsById[p.id] = p;
+          }
+
+          reportsData = reportsData.map((g) =>
+            g.type === 'comment'
+              ? { ...g, republicId: postsById[map[g.targetId]?.post_id]?.republic_id ?? null }
+              : g
+          );
+        }
+
+        reportsData = reportsData.map((g) =>
+          g.type === 'post' ? { ...g, republicId: postsById[g.targetId]?.republic_id ?? null } : g
+        );
+
+        setReports(reportsData);
+
+        const republicIds = Array.from(new Set(reportsData.map((g) => g.republicId).filter(Boolean))) as string[];
+        if (republicIds.length > 0) {
+          const { data: repsData, error: repsError } = await supa
+            .from('republics')
+            .select('id, title')
+            .in('id', republicIds);
+
+          if (repsError) throw repsError;
+
+          const repMap: Record<string, string> = {};
+          for (const r of repsData ?? []) repMap[r.id] = r.title;
+          setRepublicsMap(repMap);
         }
       } catch (e: any) {
         console.error(e);
@@ -199,6 +239,11 @@ export default function ModPanel() {
 
             <div>
               <span className="font-semibold">Type:</span> {r.type}
+            </div>
+
+            <div>
+              <span className="font-semibold">Republic:</span>{' '}
+              {r.republicId ? republicsMap[r.republicId] ?? r.republicId.slice(0, 8) : 'Unknown'}
             </div>
 
             {r.type === 'post' && (
