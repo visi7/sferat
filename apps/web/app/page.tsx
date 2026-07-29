@@ -330,20 +330,20 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
      <section className="bg-white border rounded-xl p-4 mb-4 w-full mt-3">
   {!session ? (
           <div className="flex flex-col gap-1">
-  <div className="flex items-center gap-2">
+  <div className="flex flex-wrap items-center gap-2">
     <input
       type="email"
       value={email}
       onChange={(e) => setEmail(e.target.value)}
       placeholder="Email"
-      className="border p-2 rounded w-44"
+      className="border p-2 rounded flex-1 min-w-[140px]"
     />
     <input
       type="password"
       value={password}
       onChange={(e) => setPassword(e.target.value)}
       placeholder="Password"
-      className="border p-2 rounded w-44"
+      className="border p-2 rounded flex-1 min-w-[140px]"
     />
     <button
       disabled={authLoading}
