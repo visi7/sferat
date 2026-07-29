@@ -4,7 +4,12 @@
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 
-export function useIsModerator() {
+/**
+ * A global admin/moderator (republic_id = null) counts everywhere.
+ * A per-Republic moderator only counts for that specific Republic.
+ * Pass no argument to check for a global role only.
+ */
+export function useIsModerator(republicId?: string) {
   const [isMod, setIsMod] = useState<boolean | null>(null); // null = duke verifikuar
 
   useEffect(() => {
@@ -16,22 +21,28 @@ export function useIsModerator() {
         if (alive) setIsMod(false);
         return;
       }
-      const { data, error } = await supa
+
+      let query = supa
         .from("user_roles")
-        .select("role")
+        .select("role, republic_id")
         .eq("user_id", uid)
-        .is("republic_id", null) // moderator global
-        .maybeSingle();
+        .in("role", ["admin", "moderator"]);
+
+      query = republicId
+        ? query.or(`republic_id.is.null,republic_id.eq.${republicId}`)
+        : query.is("republic_id", null);
+
+      const { data, error } = await query.limit(1);
 
       if (!alive) return;
       if (error) {
         setIsMod(false);
         return;
       }
-      setIsMod(data?.role === "moderator");
+      setIsMod((data?.length ?? 0) > 0);
     })();
     return () => { alive = false; };
-  }, []);
+  }, [republicId]);
 
   return isMod; // null | true | false
 }
