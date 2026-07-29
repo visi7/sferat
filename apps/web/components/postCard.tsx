@@ -250,16 +250,28 @@ if (error) throw error;
 
     const c = await supa
       .from("comments")
-      .select(`
-  id, body, created_at, author_id,
-  profiles:profiles!comments_author_id_fkey ( username, avatar_url )
-`)
-
+      .select("id, body, created_at, author_id")
       .eq("post_id", p.id)
       .order("created_at", { ascending: true })
       .limit(200);
 
-    const list = (c.data as any as CommentRow[]) ?? [];
+    const rawList = (c.data as any[]) ?? [];
+
+    // marrim profilet veçmas (më e besueshme se embed-i, sidomos me RLS)
+    const authorIds = Array.from(new Set(rawList.map((x) => x.author_id).filter(Boolean)));
+    let profileMap: Record<string, { username: string | null; avatar_url: string | null }> = {};
+    if (authorIds.length) {
+      const { data: profs } = await supa
+        .from("profiles")
+        .select("id,username,avatar_url")
+        .in("id", authorIds);
+      for (const pr of profs ?? []) profileMap[pr.id] = pr;
+    }
+
+    const list: CommentRow[] = rawList.map((x) => ({
+      ...x,
+      profiles: profileMap[x.author_id] ?? { username: null, avatar_url: null },
+    }));
     setComments(list);
 
     // Scores e komenteve

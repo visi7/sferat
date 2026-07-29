@@ -57,12 +57,25 @@ export default function CommentItem({
         className="flex items-center gap-2 text-xs text-gray-500 mb-1 relative"
         ref={menuRef}
       >
-        <img
-          src={c.profiles?.avatar_url || "/default-avatar.png"}
-          className="w-5 h-5 rounded-full object-cover"
-          alt=""
-        />
-        <span>{c.profiles?.username ?? "user"}</span>
+        {c.profiles?.username ? (
+          <a href={`/profile/${c.profiles.username}`} className="flex items-center gap-2 hover:underline">
+            <img
+              src={c.profiles?.avatar_url || "/default-avatar.png"}
+              className="w-5 h-5 rounded-full object-cover"
+              alt=""
+            />
+            <span>@{c.profiles.username}</span>
+          </a>
+        ) : (
+          <>
+            <img
+              src={c.profiles?.avatar_url || "/default-avatar.png"}
+              className="w-5 h-5 rounded-full object-cover"
+              alt=""
+            />
+            <span>user</span>
+          </>
+        )}
         <span>· {new Date(c.created_at).toLocaleString()}</span>
 
         {/* Kebab – vetëm për autorin e komentit */}

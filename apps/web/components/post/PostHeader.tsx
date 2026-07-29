@@ -19,7 +19,10 @@ export default function PostHeader({
   return (
     <>
       {/* avatar + username (gjithmonë nga fetch-i i vet-mjaftueshëm `author`) */}
-      <div className="flex items-center gap-2">
+      <a
+        href={author?.username ? `/profile/${author.username}` : "#"}
+        className="flex items-center gap-2 hover:underline"
+      >
         <img
           src={author?.avatar_url || p.profiles?.avatar_url || "/default-avatar.png"}
           className="w-8 h-8 rounded-full object-cover"
@@ -28,7 +31,7 @@ export default function PostHeader({
         <div className="text-sm text-gray-600">
           @{author?.username ?? p.profiles?.username ?? author?.id?.slice(0, 8) ?? "user"}
         </div>
-      </div>
+      </a>
 
       {/* Republic · Author · Follow */}
       <div className="text-xs text-gray-500 flex items-center gap-2 flex-wrap mt-1">
