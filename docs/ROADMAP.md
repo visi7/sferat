@@ -40,11 +40,6 @@ Referencë vizioni: `docs/VISION.md`
 
 **Kur ta rimarrim:** kur platforma të jetë gati teknikisht për përdorues të vërtetë (bug-e kryesore të mbyllura, UX e qëndrueshme) dhe të fillojmë të mendojmë për lançimin. Do ta sjell vetë këtë temë sërish kur të arrijmë atë pikë — nuk duhet ta kesh në mendje ndërkohë.
 
-### `mod/panel` filtrim sipas Republikës (vazhdim i P1.2)
-**Status:** `/mod/roles` tani lejon caktimin e moderatorëve per-Republikë, por `mod/panel` ende u shfaq **të gjitha** raportet çdo moderatori, pa filtruar sipas Republikave që mbulon (vetëm admin global duhet t'i shohë të gjitha).
-
-**Kur ta rimarrim:** kur të ketë moderatorë realë per-Republikë (jo vetëm global) që kanë nevojë praktike për këtë ndarje.
-
 ## 📋 P1 — mbetur
 
 _(asgjë e mbetur nga P1 aktuale — të gjitha pikat u mbyllën)_
