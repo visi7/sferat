@@ -271,7 +271,51 @@ return (
                 </div>
               )}
 
-              {tab === "activity" && <p>Activity feed coming soon.</p>}
+              {tab === "activity" && (
+                (() => {
+                  const activity = [
+                    ...posts.map((p) => ({ kind: "post" as const, at: p.created_at, post: p })),
+                    ...comments.map((c) => ({ kind: "comment" as const, at: c.created_at, comment: c })),
+                  ].sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
+
+                  if (activity.length === 0) return <p>No activity yet.</p>;
+
+                  return (
+                    <div className="space-y-3">
+                      {activity.map((item) =>
+                        item.kind === "post" ? (
+                          <div key={`p-${item.post.id}`} className="flex items-start gap-2 text-sm">
+                            <span className="text-gray-400">📝</span>
+                            <div>
+                              <span className="text-gray-600">Posted</span>{" "}
+                              <a className="underline" href={`/post/${item.post.id}`}>
+                                {item.post.title || item.post.body.slice(0, 60)}
+                              </a>
+                              <div className="text-xs text-gray-500">
+                                {new Date(item.at).toLocaleString()}
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div key={`c-${item.comment.id}`} className="flex items-start gap-2 text-sm">
+                            <span className="text-gray-400">💬</span>
+                            <div>
+                              <span className="text-gray-600">Commented on</span>{" "}
+                              <a className="underline" href={`/post/${item.comment.post_id}`}>
+                                {item.comment.postTitle}
+                              </a>
+                              <div className="text-gray-700">{item.comment.body}</div>
+                              <div className="text-xs text-gray-500">
+                                {new Date(item.at).toLocaleString()}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  );
+                })()
+              )}
             </div>
           </div>
         </>
