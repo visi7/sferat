@@ -23,6 +23,7 @@ Referencë vizioni: `docs/VISION.md`
 - Kolona e djathtë (Trending/Who to follow/Announcements) shkon te drawer-i ☰ në telefon; profili mban gjithmonë Republic Card/Contributions/Credentials/Topics të dukshme direkt; footer i ri; tab "Activity" tani real (jo "coming soon")
 - **Moderatorë për-Republikë (P1.2) — u mbyll**: tabela `user_roles` (mungonte fare — çdo kontroll "a je moderator" dështonte në heshtje) + faqja admin `/mod/roles` për të caktuar rol global ose për-Republikë + `useIsModerator` mbështet tani `republicId` opsional. "test" u bë admin global.
 - **Bug: `/mod/roles` s'e njihte admin-in global edhe pse rreshti në `user_roles` ishte i saktë** — shkaku ishte rekursion i pafund në RLS (`42P17`): policy-ja `user_roles_admin_write` kontrollonte "a je admin" duke pyetur vetë `user_roles`, gjë që rideklanshonte RLS-në mbi të njëjtën tabelë pambarimisht, duke bërë që **çdo** pyetje ndaj `user_roles` (madje edhe SELECT të thjeshtë) të dështonte në heshtje. Rregulluar duke e zhvendosur kontrollin te një funksion `SECURITY DEFINER` (`public.is_global_admin`), i cili anashkalon RLS-në kur pyet `user_roles` nga brenda.
+- **P1.2 e verifikuar plotësisht në produksion**: "test" (admin global) cakton nga `/mod/roles` rolin "moderator" për "test2" te Republika "Capitalism" → "test2" hyn dhe e sheh "Moderator panel" në meny, `/mod/panel` hapet pa gabim. Testuar edhe rasti admin global, edhe rasti moderator per-Republikë.
 
 ## 🔜 Shtyrë me qëllim — mos harro
 
