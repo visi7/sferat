@@ -7,6 +7,20 @@
   color-scheme: light;
 }
 
+/* Heq "highlight" e prekjes në telefon (Android/Chrome) që nuk përputhej me
+   butonat e rrumbullakosur (rounded-full) dhe dukej si "ngecur i klikuar". */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  outline: none;
+}
+button:focus-visible {
+  outline: 2px solid rgba(0, 0, 0, 0.4);
+  outline-offset: 2px;
+}
+
 body {
   @apply bg-gray-50 text-gray-900;
 }
