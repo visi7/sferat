@@ -167,7 +167,7 @@ const isMe = me === profile?.id;
 return (
     <Shell
       left={<LeftNav />}
-      right={profile ? <ProfileRight profile={profile} isMe={me === profile.id} stats={stats} /> : null}
+      right={profile ? <ProfileRight profile={profile} isMe={me === profile.id} stats={stats} viewerLoggedIn={!!me} /> : null}
     >
     <div className="space-y-4">
       {!profile ? (
