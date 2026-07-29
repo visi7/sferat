@@ -45,11 +45,11 @@ export default function Shell({ left, children, right }: { left: ReactNode; chil
         </div>
       )}
 
-      {/* 3-columns */}
+      {/* 3-columns (telefon: 1 kolonë, right pas main; tablet+: 2-3 kolona) */}
       <div className="mx-auto max-w-6xl px-3 sm:px-4 grid grid-cols-1 md:grid-cols-[260px_minmax(0,1fr)_300px] gap-4 mt-4">
         <aside className="hidden md:block">{left}</aside>
         <main className="min-w-0">{children}</main>
-        <aside className="hidden lg:block">{right}</aside>
+        <aside className="order-last">{right}</aside>
       </div>
     </div>
   );
