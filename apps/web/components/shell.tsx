@@ -25,7 +25,7 @@ export default function Shell({ left, children, right }: { left: ReactNode; chil
         </div>
       </header>
 
-      {/* Mobile drawer (Republics, Home tabs, account) */}
+      {/* Mobile drawer (Republics, Home tabs, account, + përmbajtja e kolonës së djathtë) */}
       {drawerOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setDrawerOpen(false)} />
@@ -40,17 +40,27 @@ export default function Shell({ left, children, right }: { left: ReactNode; chil
                 ✕
               </button>
             </div>
-            {left}
+            <div className="space-y-4">
+              {left}
+              {right}
+            </div>
           </div>
         </div>
       )}
 
-      {/* 3-columns (telefon: 1 kolonë, right pas main; tablet+: 2-3 kolona) */}
+      {/* 3-columns (telefon: vetëm main, sidebar-et janë te drawer-i ☰; tablet+: 2-3 kolona) */}
       <div className="mx-auto max-w-6xl px-3 sm:px-4 grid grid-cols-1 md:grid-cols-[260px_minmax(0,1fr)_300px] gap-4 mt-4">
         <aside className="hidden md:block">{left}</aside>
         <main className="min-w-0">{children}</main>
-        <aside className="order-last">{right}</aside>
+        <aside className="hidden md:block">{right}</aside>
       </div>
+
+      <footer className="mt-10 border-t bg-white/50">
+        <div className="mx-auto max-w-6xl px-3 sm:px-4 py-6 text-center text-xs text-gray-500 space-y-1">
+          <p className="italic">"Ideas deserve a Republic."</p>
+          <p>© {new Date().getFullYear()} SFERAT — Republika e Mendimeve të Lira</p>
+        </div>
+      </footer>
     </div>
   );
 }
