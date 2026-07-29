@@ -25,6 +25,10 @@ Referencë vizioni: `docs/VISION.md`
 - **Bug: `/mod/roles` s'e njihte admin-in global edhe pse rreshti në `user_roles` ishte i saktë** — shkaku ishte rekursion i pafund në RLS (`42P17`): policy-ja `user_roles_admin_write` kontrollonte "a je admin" duke pyetur vetë `user_roles`, gjë që rideklanshonte RLS-në mbi të njëjtën tabelë pambarimisht, duke bërë që **çdo** pyetje ndaj `user_roles` (madje edhe SELECT të thjeshtë) të dështonte në heshtje. Rregulluar duke e zhvendosur kontrollin te një funksion `SECURITY DEFINER` (`public.is_global_admin`), i cili anashkalon RLS-në kur pyet `user_roles` nga brenda.
 - **P1.2 e verifikuar plotësisht në produksion**: "test" (admin global) cakton nga `/mod/roles` rolin "moderator" për "test2" te Republika "Capitalism" → "test2" hyn dhe e sheh "Moderator panel" në meny, `/mod/panel` hapet pa gabim. Testuar edhe rasti admin global, edhe rasti moderator per-Republikë.
 - **`mod/panel` filtrim sipas Republikës — u mbyll**: gjatë zbatimit u zbulua se `reports_select_self_or_mod`/`reports_update_mod` (RLS), dhe `posts`/`comments` (mungonte fare rregull UPDATE për moderatorë), përdornin ende kolonën e braktisur `profiles.is_moderator` (gjithmonë `false`) — domethënë asnjë moderator, as edhe admin global, s'kishte parë realisht raporte të të tjerëve dhe "Accept" s'kishte hequr kurrë përmbajtje. Rregulluar me funksione `SECURITY DEFINER` (`is_global_mod`, `is_mod_of_republic`, `is_any_mod`) të bazuara te `user_roles`, duke përfshirë edhe `audit_log` (trigger-i `trg_report_audit` bllokohej po nga e njëjta kolonë e vjetër). Filtrimi per-Republikë tani zbatohet vetë nga RLS-ja (jo vetëm në kod klienti) — testuar në produksion: "test2" (moderator vetëm te Capitalism) sheh dhe pranon (Accept) raporte vetëm te Republika e vet.
+- **Auditim i dytë (pas P1.2)** — kalim sistematik nëpër të gjitha trigger-at, funksionet dhe politikat RLS, plus kryqëzim me kodin e app-it për kod të vdekur:
+  - `republics_write_mod` përdorte po të njëjtën kolonë të braktisur `profiles.is_moderator` (pa pasoja sot, sepse s'ka ende UI për editim Republikash, por do të kishte dështuar në heshtje sapo të krijohej një). Rregulluar njësoj si pjesa tjetër, me `is_global_mod`.
+  - Hequr kod i vdekur: `apps/web/app/mod/reports/page.tsx` (kopje e vjetër/jetime e `/mod/panel`, pa asnjë link drejt saj), dhe funksionet e papërdorura `vote/comment/followUser/unfollowUser/savePost/unsavePost/reportPost` te `apps/web/app/actions.ts` (të gjitha të zëvendësuara nga logjika brenda `postCard.tsx`; mbetën vetëm `followRepublic`/`unfollowRepublic`, të vetmet realisht të importuara).
+  - Tabela `comment_reports` u gjet krejtësisht e papërdorur (app-i i fut të gjitha raportet te tabela e përbashkët `reports`) — u la e paprekur (s'shkakton dëm, dhe fshirja e një tabele është veprim më i vështirë për t'u kthyer mbrapsht).
 
 ## 🔜 Shtyrë me qëllim — mos harro
 
@@ -39,6 +43,11 @@ Referencë vizioni: `docs/VISION.md`
 **Ideja:** përpara se platforma të hapet gjerësisht, kuro 50–200 "kontribues themelues" (profesorë, gazetarë, ekspertë fushash) të ftuar në Republika specifike — kështu standardi i cilësisë vendoset që në ditën e parë, jo pas. Pa këtë, mekanizmi "cilësi mbi sasi" i vizionit s'ka konkurrencë të mjaftueshme për të funksionuar realisht në fillim (problemi klasik i "cold start").
 
 **Kur ta rimarrim:** kur platforma të jetë gati teknikisht për përdorues të vërtetë (bug-e kryesore të mbyllura, UX e qëndrueshme) dhe të fillojmë të mendojmë për lançimin. Do ta sjell vetë këtë temë sërish kur të arrijmë atë pikë — nuk duhet ta kesh në mendje ndërkohë.
+
+### Trigger i dyfishtë mbi `votes` (pastrim delikat, jo urgjent)
+**Status:** ekzistojnë DY trigger-a mbi `votes` (INSERT/UPDATE/DELETE) që bëjnë pjesërisht të njëjtën punë: `trg_votes_recalc` (i saktë, `SECURITY DEFINER`, e rregulluam këtë sesion) dhe një i dytë më i vjetër, `votes_after_upsert` → `recompute_post_score()`, që **nuk** është `SECURITY DEFINER`. Sot është i padëmshëm (dështon në heshtje për vota mbi postime të të tjerëve, por trigger-i tjetër tashmë e ka bërë punën saktë para tij) — por është rrezik i fshehur nëse dikush në të ardhmen fshin/prek trigger-in e parë pa e ditur për të dytin.
+
+**Kur ta rimarrim:** si pastrim i qetë, i veçantë, kur të mos jetë nën presion kohe (kërkon verifikim me kujdes të radhës së ekzekutimit të trigger-ave para se të hiqet ndonjëri).
 
 ## 📋 P1 — mbetur
 
