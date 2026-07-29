@@ -39,6 +39,13 @@ Referencë vizioni: `docs/VISION.md`
 
 **Kur ta rimarrim:** kur të kesh vendosur si duhet ta peshosh kohën krahasuar me kontributin real (që të mos favorizohet dikush që thjesht lë tab-in hapur).
 
+### Share i Republic Card në rrjete sociale
+**Ideja:** buton "Share" te `RepublicCard` që lejon ndarjen e kartës jashtë platformës. Dy shkallë:
+1. **Share i thjeshtë** (Web Share API — hap menynë native të pajisjes, ndan linkun e profilit `/profile/username`; në desktop bie mbrapa te "kopjo linkun"). ~30 min punë, mbulon shumicën e rasteve pasi karta shfaqet e gjallë kur hapet linku.
+2. **Share si imazh** (si "Spotify Wrapped") — gjeneron një PNG real të kartës për t'u shkarkuar/ndarë direkt si imazh (më mbresëlënëse për Instagram/X, por kërkon më shumë punë — ~2-3 orë, ose librari client-side "screenshot", ose route i posaçëm server-side për gjenerim imazhi).
+
+**Kur ta rimarrim:** kur të duam të shtojmë "growth loop" real (karta që qarkullon vetë jashtë platformës) — natyrshëm afër kohës së Strategjisë Cold-Start (P2.2) më poshtë, meqë të dyja synojnë të tërheqin përdorues të rinj.
+
 ### Strategjia Cold-Start (P2.2)
 **Ideja:** përpara se platforma të hapet gjerësisht, kuro 50–200 "kontribues themelues" (profesorë, gazetarë, ekspertë fushash) të ftuar në Republika specifike — kështu standardi i cilësisë vendoset që në ditën e parë, jo pas. Pa këtë, mekanizmi "cilësi mbi sasi" i vizionit s'ka konkurrencë të mjaftueshme për të funksionuar realisht në fillim (problemi klasik i "cold start").
 
