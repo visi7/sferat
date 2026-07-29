@@ -6,6 +6,7 @@ export default function LeftNav() {
   const [reps, setReps] = useState<{ id: string; slug: string; title: string }[]>([]);
   const [logged, setLogged] = useState(false);
   const [isMod, setIsMod] = useState(false);
+  const [modDebugError, setModDebugError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -23,12 +24,13 @@ export default function LeftNav() {
       setLogged(!!uid);
       if (!uid) return;
 
-      const { data } = await supa
+      const { data, error } = await supa
         .from("user_roles")
         .select("role")
         .eq("user_id", uid)
         .in("role", ["admin", "moderator"])
         .limit(1);
+      if (error) setModDebugError(`${error.code ?? ""} ${error.message}`.trim());
       setIsMod((data?.length ?? 0) > 0);
     })();
   }, []);
@@ -68,6 +70,9 @@ export default function LeftNav() {
           {logged ? (
             <>
               {isMod && <a href="/mod/panel">Moderator panel</a>}
+              {modDebugError && (
+                <p className="text-[10px] text-red-600 break-all">DEBUG: {modDebugError}</p>
+              )}
               <button onClick={signOut} className="text-left">Sign out</button>
             </>
           ) : (
