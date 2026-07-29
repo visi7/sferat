@@ -20,6 +20,8 @@ Referencë vizioni: `docs/VISION.md`
 - Profili: kartë "Contributions" me statistika reale (Posts/Comments/Karma, llogaritur nga databaza, jo të deklaruara) + rregullim i query-t të thyer të tab-it "Comments"
 - Përshtatje mobile: viewport meta (mungonte fare — kjo ishte shkaku kryesor pse app-i dukej si desktop i ngjeshur në telefon), navigim me hamburger/drawer (Republikat tani të arritshme në telefon), header kompakt me ikona, rregullim i "tap highlight"/fokusit që bënte butonat të duken "ngecur"
 - **Republic Card** — kartë virtuale profili (si kartë krediti), me "flip" 3D, 5 nivele (Citizen → Contributor → Voice → Senator → Founder) bazuar te pikët (karma + postime×5 + komente×2), e dukshme vetëm për vizitorë të kyçur
+- Kolona e djathtë (Trending/Who to follow/Announcements) shkon te drawer-i ☰ në telefon; profili mban gjithmonë Republic Card/Contributions/Credentials/Topics të dukshme direkt; footer i ri; tab "Activity" tani real (jo "coming soon")
+- **Moderatorë për-Republikë (P1.2) — u mbyll**: tabela `user_roles` (mungonte fare — çdo kontroll "a je moderator" dështonte në heshtje) + faqja admin `/mod/roles` për të caktuar rol global ose për-Republikë + `useIsModerator` mbështet tani `republicId` opsional. "test" u bë admin global.
 
 ## 🔜 Shtyrë me qëllim — mos harro
 
@@ -35,26 +37,10 @@ Referencë vizioni: `docs/VISION.md`
 
 **Kur ta rimarrim:** kur platforma të jetë gati teknikisht për përdorues të vërtetë (bug-e kryesore të mbyllura, UX e qëndrueshme) dhe të fillojmë të mendojmë për lançimin. Do ta sjell vetë këtë temë sërish kur të arrijmë atë pikë — nuk duhet ta kesh në mendje ndërkohë.
 
-### Moderatorë për-Republikë (P1.2)
-**Status:** Skema e mbështet (`user_roles.republic_id`, null = global), por s'ka asnjë UI për caktim rolesh — as global, as per-Republikë.
+### `mod/panel` filtrim sipas Republikës (vazhdim i P1.2)
+**Status:** `/mod/roles` tani lejon caktimin e moderatorëve per-Republikë, por `mod/panel` ende u shfaq **të gjitha** raportet çdo moderatori, pa filtruar sipas Republikave që mbulon (vetëm admin global duhet t'i shohë të gjitha).
 
-**Zgjidhje e përkohshme (deri sa të ndërtohet UI):** cakto moderator manualisht me SQL:
-```sql
--- Global moderator
-insert into public.user_roles (user_id, role, republic_id)
-values ('<user-id>', 'moderator', null);
-
--- Moderator vetëm për një Republikë specifike
-insert into public.user_roles (user_id, role, republic_id)
-values ('<user-id>', 'moderator', '<republic-id>');
-```
-
-**Kur të ndërtohet UI-ja (opsioni "B" i diskutuar):**
-- Faqe e re admin (p.sh. `/mod/roles`) — admin global kërkon përdorues, cakton rol + Republikë
-- `useIsModerator` (`components/hooks/useIsModerator.ts`) të pranojë parametër `republicId` opsional, në vend që të kontrollojë vetëm rolin global
-- `mod/panel` të filtrojë raportet sipas Republikave ku përdoruesi është moderator (nëse s'është admin global)
-
-**Kur ta rimarrim:** kur të ketë komunitet real / Republika aktive që kërkojnë moderim të dedikuar.
+**Kur ta rimarrim:** kur të ketë moderatorë realë per-Republikë (jo vetëm global) që kanë nevojë praktike për këtë ndarje.
 
 ## 📋 P1 — mbetur
 
