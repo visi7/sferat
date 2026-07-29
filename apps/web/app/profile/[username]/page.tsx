@@ -168,6 +168,7 @@ return (
     <Shell
       left={<LeftNav />}
       right={profile ? <ProfileRight profile={profile} isMe={me === profile.id} stats={stats} viewerLoggedIn={!!me} /> : null}
+      rightInDrawerOnMobile={false}
     >
     <div className="space-y-4">
       {!profile ? (

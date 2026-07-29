@@ -4,7 +4,15 @@ import NotificationBell from "@/components/NotificationBell";
 import { ReactNode, useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 
-export default function Shell({ left, children, right }: { left: ReactNode; children: ReactNode; right: ReactNode }) {
+type ShellProps = {
+  left: ReactNode;
+  children: ReactNode;
+  right: ReactNode;
+  /** Kur true (default), kolona e djathtë shkon te drawer-i ☰ në telefon (Trending/Who to follow/Announcements — bëhet e vështirë ta arrish nëse feed-i zgjatet). Vendos false kur kolona e djathtë duhet të mbetet gjithmonë e dukshme (p.sh. Republic Card te profili). */
+  rightInDrawerOnMobile?: boolean;
+};
+
+export default function Shell({ left, children, right, rightInDrawerOnMobile = true }: ShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
@@ -42,17 +50,17 @@ export default function Shell({ left, children, right }: { left: ReactNode; chil
             </div>
             <div className="space-y-4">
               {left}
-              {right}
+              {rightInDrawerOnMobile && right}
             </div>
           </div>
         </div>
       )}
 
-      {/* 3-columns (telefon: vetëm main, sidebar-et janë te drawer-i ☰; tablet+: 2-3 kolona) */}
+      {/* 3-columns (telefon: main + right nëse s'shkon te drawer-i; tablet+: 2-3 kolona) */}
       <div className="mx-auto max-w-6xl px-3 sm:px-4 grid grid-cols-1 md:grid-cols-[260px_minmax(0,1fr)_300px] gap-4 mt-4">
         <aside className="hidden md:block">{left}</aside>
         <main className="min-w-0">{children}</main>
-        <aside className="hidden md:block">{right}</aside>
+        <aside className={rightInDrawerOnMobile ? "hidden md:block" : "order-last"}>{right}</aside>
       </div>
 
       <footer className="mt-10 border-t bg-white/50">
