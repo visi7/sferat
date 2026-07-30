@@ -355,13 +355,13 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
   </div>
 
   <p className="text-xs text-gray-600">
-    Nuk ke llogari?{" "}
+    Don't have an account?{" "}
     <a href="/sign-up" className="underline text-blue-600">
-      Krijo një llogari
+      Create one
     </a>
     {" · "}
     <a href="/forgot-password" className="underline text-blue-600">
-      Ke harruar fjalëkalimin?
+      Forgot password?
     </a>
   </p>
 </div>
