@@ -69,8 +69,8 @@ const [imageFile, setImageFile] = useState<File | null>(null);
 const [linkUrl, setLinkUrl] = useState("");
 const [showLink, setShowLink] = useState(false);
 const [uploadingImage, setUploadingImage] = useState(false);
-// ---- Sections per republic (Home composer) ----
-const [sections, setSections] = useState<{slug:string; label:string}[]>([]);
+// ---- Section per republic (Home composer) — no UI picker; every
+// Republic has exactly one section ("feed") today, so we just use it.
 const [section, setSection] = useState<string>("feed");
 
   // Quick map for republic title
@@ -129,23 +129,20 @@ useEffect(() => {
   })();
 }, []);
 
-// ---- Sections per republic (kur ndryshon repId) ----
+// ---- Section per republic (kur ndryshon repId) ----
 useEffect(() => {
   (async () => {
     if (!repId) {
-      setSections([]);
       setSection("feed");
       return;
     }
     const { data, error } = await supa
       .from("republic_sections")
-      .select("slug,label")
+      .select("slug")
       .eq("republic_id", repId)
-      .order("position");
-    if (!error && data) {
-      setSections(data);
-      setSection(data[0]?.slug ?? "feed");
-    }
+      .order("position")
+      .limit(1);
+    if (!error && data && data[0]) setSection(data[0].slug);
   })();
 }, [repId]);
 
@@ -380,22 +377,6 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
           ))}
         </select>
       </div>
-      {repId && (
-  <select
-    className="border rounded-md px-3 py-2 text-sm"
-    value={section}
-    onChange={(e) => setSection(e.target.value)}
-    aria-label="Select section"
-  >
-    {sections.map((s) => (
-      <option key={s.slug} value={s.slug}>
-        {s.label}
-      </option>
-    ))}
-  </select>
-)}
-
-
       {/* KUTIA E TEKSTIT – titulli u hoq */}
       <div className="border rounded-xl">
         <textarea

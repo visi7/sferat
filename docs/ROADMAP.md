@@ -34,8 +34,14 @@ Referencë vizioni: `docs/VISION.md`
 - **Settings i llogarisë (i ri)**: faqe `/settings` (ndryshim fjalëkalimi + hapësirë gati për opsione të tjera), plus rikuperim llogarie i plotë — `/forgot-password` (dërgon email me link) dhe `/reset-password` (cakton fjalëkalim të ri nga linku). Përdor drejtpërdrejt Supabase Auth, s'prek databazën fare. Link "Settings" te menyja ☰, link "Forgot password?" te `/sign-in`. **Kërkon konfigurim një-herësh nga ti**: shto `https://<domain>/reset-password` te Supabase Dashboard → Authentication → URL Configuration → Redirect URLs, përndryshe linku i email-it s'do të funksionojë në produksion.
 - **Gjithë teksti i dukshëm i UI-t u kthye në anglisht** (gjuha parësore e platformës, meqë synohet audiencë globale) — `/sign-in`, `/search`, footer-i, formulari inline i kyçjes te ballina. Komentet e kodit mbetën shqip (janë për ne, jo për përdoruesit).
 - **Menaxhimi i njoftimeve u plotësua**: fshirje individuale (🗑) dhe "Clear all" te `/notifications` + dropdown-i 🔔, "Mark all read" te faqja e plotë (më parë ndodhte vetëm automatikisht te dropdown-i), filtër "All/Unread", dhe **njoftimet tani janë të klikueshme** (çonin gjëkundi më parë, edhe pse e dhëna e post/koment-it ekzistonte tashmë te `payload`) — çojnë te postimi/komenti përkatës, ose profili i personit për "follow". "Arkivim" si gjendje e veçantë u la qëllimisht jashtë (do të ishte kryesisht dublikatë i "fshi").
+- **Dropdown-i "Feed" i kompozuesit (ballina) u hoq**: ishte një zgjedhje me **1 opsion të vetëm** ("Feed") për çdo Republikë — pra s'ofronte zgjedhje reale, thjesht zhurmë vizuale. Postimet vazhdojnë të shkojnë te "feed" automatikisht, pa asnjë ndryshim funksional. (Tabela `republic_sections` mbetet e paprekur — vetëm UI-ja e kotë u hoq, jo infrastruktura.)
 
 ## 🔜 Shtyrë me qëllim — mos harro
+
+### Seksioni "Announcements" per-Republikë (vazhdim i heqjes së dropdown-it "Feed")
+**Ideja:** ta bëjmë tabelën `republic_sections` realisht të dobishme duke shtuar një seksion të dytë, "Announcements" — postime zyrtare të dukshme veçmas nga diskutimi i lirë, të postueshme vetëm nga Moderator/Manager/Admin i asaj Republike (lidhet natyrshëm me hierarkinë e roleve që ekziston tashmë). Prek edhe tab-et te faqja e Republikës (`republic/[slug]/page.tsx`), sot me 1 tab të vetëm ("Feed"), gjithashtu pak të kotë aktualisht.
+
+**Kur ta rimarrim:** kur të ketë nevojë reale për dallim "diskutim i lirë" vs "njoftim zyrtar" brenda një Republike — jo e ndërtuar paraprakisht pa kërkesë praktike.
 
 ### Preferenca njoftimesh (vazhdim i menaxhimit të njoftimeve)
 **Ideja:** të zgjedhësh çfarë lloj njoftimesh do të marrësh (p.sh. "jo për upvote, po për replies dhe follows"). Kërkon kolonë/tabelë e re preferencash + kontroll në secilin trigger `notify_*` para se të fusë rresht të ri.
