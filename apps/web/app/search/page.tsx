@@ -106,23 +106,23 @@ export default function SearchPage() {
         <input
           autoFocus
           className="w-full border rounded-xl px-4 py-3 text-sm"
-          placeholder="Kërko postime, republika, ose përdorues…"
+          placeholder="Search posts, Republics, or users…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
       </div>
 
-      {loading && <p className="text-gray-500 text-sm">Duke kërkuar…</p>}
+      {loading && <p className="text-gray-500 text-sm">Searching…</p>}
 
       {!loading && !searched && (
-        <p className="text-gray-400 text-sm">Shkruaj të paktën 2 karaktere për të filluar kërkimin.</p>
+        <p className="text-gray-400 text-sm">Type at least 2 characters to start searching.</p>
       )}
 
-      {nothingFound && <p className="text-gray-600 text-sm">Asnjë rezultat për "{query}".</p>}
+      {nothingFound && <p className="text-gray-600 text-sm">No results for "{query}".</p>}
 
       {republics.length > 0 && (
         <section className="mb-4">
-          <h2 className="text-xs uppercase tracking-wide text-gray-500 mb-2">Republika</h2>
+          <h2 className="text-xs uppercase tracking-wide text-gray-500 mb-2">Republics</h2>
           <div className="flex flex-wrap gap-2">
             {republics.map((r) => (
               <a
@@ -139,7 +139,7 @@ export default function SearchPage() {
 
       {people.length > 0 && (
         <section className="mb-4">
-          <h2 className="text-xs uppercase tracking-wide text-gray-500 mb-2">Përdorues</h2>
+          <h2 className="text-xs uppercase tracking-wide text-gray-500 mb-2">Users</h2>
           <div className="flex flex-col gap-1">
             {people.map((p) => (
               <a
@@ -156,7 +156,7 @@ export default function SearchPage() {
 
       {posts.length > 0 && (
         <section>
-          <h2 className="text-xs uppercase tracking-wide text-gray-500 mb-2">Postime</h2>
+          <h2 className="text-xs uppercase tracking-wide text-gray-500 mb-2">Posts</h2>
           <div className="space-y-3">
             {posts.map((p) => (
               <PostCard key={p.id} {...p} republicTitle={repMap[p.republic_id]} />

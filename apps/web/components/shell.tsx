@@ -66,7 +66,7 @@ export default function Shell({ left, children, right, rightInDrawerOnMobile = t
       <footer className="mt-10 border-t bg-white/50">
         <div className="mx-auto max-w-6xl px-3 sm:px-4 py-6 text-center text-xs text-gray-500 space-y-1">
           <p className="italic">"Ideas deserve a Republic."</p>
-          <p>© {new Date().getFullYear()} SFERAT — Republika e Mendimeve të Lira</p>
+          <p>© {new Date().getFullYear()} SFERAT — The Republic of Free Thoughts</p>
         </div>
       </footer>
     </div>

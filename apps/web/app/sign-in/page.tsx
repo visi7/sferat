@@ -16,9 +16,9 @@ export default function EmailSignIn() {
   return (
     <form onSubmit={submit} className="flex flex-col gap-2 max-w-md">
       <p className="mt-3 text-sm">
-  Nuk ke llogari?{" "}
+  Don't have an account?{" "}
   <a href="/sign-up" className="text-blue-600 underline">
-    Krijo një llogari
+    Create one
   </a>
 </p>
       <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="email" required />
