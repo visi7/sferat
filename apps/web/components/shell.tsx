@@ -67,6 +67,11 @@ export default function Shell({ left, children, right, rightInDrawerOnMobile = t
         <div className="mx-auto max-w-6xl px-3 sm:px-4 py-6 text-center text-xs text-gray-500 space-y-1">
           <p className="italic">"Ideas deserve a Republic."</p>
           <p>© {new Date().getFullYear()} SFERAT — The Republic of Free Thoughts</p>
+          <p>
+            <a href="/privacy" className="hover:underline">Privacy Policy</a>
+            {" · "}
+            <a href="/terms" className="hover:underline">Terms of Use</a>
+          </p>
         </div>
       </footer>
     </div>

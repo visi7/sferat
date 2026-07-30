@@ -6,10 +6,12 @@ import { supa } from "@/lib/supabase";
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
+  const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!agreed) return;
     setLoading(true);
     try {
       const { error } = await supa.auth.signUp({
@@ -50,10 +52,22 @@ export default function SignUpPage() {
           className="border rounded px-3 py-2"
           required
         />
+        <label className="flex items-start gap-2 text-xs text-gray-600 cursor-pointer">
+          <input
+            type="checkbox"
+            className="mt-0.5"
+            checked={agreed}
+            onChange={(e) => setAgreed(e.target.checked)}
+          />
+          <span>
+            I agree to the <a href="/terms" target="_blank" className="text-blue-600 underline">Terms of Use</a>{" "}
+            and <a href="/privacy" target="_blank" className="text-blue-600 underline">Privacy Policy</a>.
+          </span>
+        </label>
         <button
           type="submit"
-          disabled={loading}
-          className="mt-2 bg-black text-white rounded px-4 py-2"
+          disabled={loading || !agreed}
+          className="mt-2 bg-black text-white rounded px-4 py-2 disabled:opacity-50"
         >
           {loading ? "Creating..." : "Create account"}
         </button>
