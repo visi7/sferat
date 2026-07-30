@@ -7,6 +7,7 @@ import PostKebab from "./post/PostKebab";
 import PostEditModal from "@/components/PostEditModal";
 import Avatar from "./Avatar";
 import CommentItem from "@/components/comments/CommentItem";
+import SignInPrompt from "@/components/SignInPrompt";
 import { useEffect, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
 
@@ -42,6 +43,7 @@ function timeLeft(createdAt: string | Date) {
 export default function PostCard(p: PostCardProps) {
   const [busy, setBusy] = useState(false);
   const [me, setMe] = useState<string | null>(null);
+  const [signInMsg, setSignInMsg] = useState<string | null>(null);
 const [imgOpen, setImgOpen] = useState(false);
 
 const [comments, setComments] = useState<CommentRow[]>([]);
@@ -164,7 +166,7 @@ useEffect(() => {
   // ========= Votim i postit me RPC toggle_vote =========
   async function doVote(wanted: 1 | -1) {
     const s = (await supa.auth.getSession()).data.session;
-    if (!s?.user?.id) return alert("You must be logged in.");
+    if (!s?.user?.id) return setSignInMsg("Sign in to vote on posts.");
 
     // Optimistic: shëno vizualisht menjëherë
     setUserVote((prev) => (prev === wanted ? 0 : wanted));
@@ -191,7 +193,7 @@ useEffect(() => {
 
   // ========= Komente =========
   async function addCommentRaw(text: string) {
-    if (!me) return alert("You must be logged in.");
+    if (!me) return setSignInMsg("Sign in to join the discussion.");
     const body = text.trim();
     if (!body) return;
     setBusy(true);
@@ -305,7 +307,7 @@ if (error) throw error;
  
  
   async function voteComment(commentId: string, wanted: 1 | -1) {
-    if (!me) return alert("You must be logged in.");
+    if (!me) return setSignInMsg("Sign in to vote on comments.");
 
     const prev = cUserVotes[commentId] ?? 0;
     const newVote: -1 | 0 | 1 = prev === wanted ? 0 : wanted;
@@ -342,7 +344,8 @@ if (error) throw error;
 
   // ========= Follow / Save / Report post =========
   async function follow() {
-    if (!me || me === p.author_id) return;
+    if (me === p.author_id) return;
+    if (!me) return setSignInMsg("Sign in to follow people.");
     setBusy(true);
     try {
       const { error } = await supa
@@ -397,7 +400,7 @@ async function removePost() {
   }, [p.id, me]);
 
   async function toggleSave() {
-    if (!me) return alert("You must be logged in.");
+    if (!me) return setSignInMsg("Sign in to save posts for later.");
     const wasSaved = saved;
     setSaved(!wasSaved); // UI update menjëherë
 
@@ -681,6 +684,8 @@ async function removePost() {
     p.onChanged?.();
   }}
 />
+
+<SignInPrompt open={!!signInMsg} message={signInMsg ?? undefined} onClose={() => setSignInMsg(null)} />
 
     </article>
   );

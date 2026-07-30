@@ -51,6 +51,11 @@ Referencë vizioni: `docs/VISION.md`
 
 **Lista e 7 pikave për Settings (nga diskutimi i vizionit) u mbyll plotësisht**: ndryshim email, fshirje llogarie (anonimizim), bllokim përdoruesish, heshtje Republikash, dukshmëri profili, dilje nga pajisje të tjera, eksport të dhënash.
 - **"Agora" (Fazë 0 — vetëm struktura)**: seksion i ri "AGORA" te menyja ☰ + faqe `/agora` me "Coming soon". Emri "Agora" u zgjodh qëllimisht (sheshi publik i Greqisë së lashtë ku bëhej njëkohësisht tregti DHE debat) — përputhet me temën qytetare ekzistuese (Republic, Citizen, Senator, Founder). Vizioni i plotë (reklama + video + AI + debat komuniteti) i shënuar te "Vizion monetizimi" më poshtë, jo i zbatuar ende.
+- **Kufizime për vizitorë të pakyçur — vendim i vetëdijshëm, jo mangësi**: u diskutua nëse duhet kufizuar shikimi i përmbajtjes për vizitorë të pakyçur (siç bëjnë X/Twitter, Quora, LinkedIn). Vendimi: **jo tani** — shikimi i hapur i plotë (postime, Republika, kërkim) mbetet qëllimisht, sepse për një platformë të re është avantazh (besim + zbulim, si Reddit/Hacker News herët), jo mangësi; platformat që e kufizojnë e bëjnë kur kanë tashmë emër të fituar. Në vend të kësaj, u përmirësua **cilësia e kërkesës për t'u kyçur**:
+  - Komponent i ri `SignInPrompt.tsx` — dritare e stilizuar ("Join the conversation" + "Create account"/"Sign in", plus "Not now" për të mos e detyruar), zëvendëson `alert()` e shfletuesit të papërpunuar.
+  - Lidhur te 6 veprime që kërkojnë kyçje: vota postimi, votë komenti, koment i ri, ruajtje (bookmark), ndjekje autori, ndjekje Republike — secili me mesazh të përshtatur sipas veprimit (jo gjenerik).
+  - **Bug i gjetur gjatë kësaj pune**: butoni "Follow" i autorit (te `postCard.tsx`) shfaqej edhe për vizitorë të pakyçur, por klikimi **s'bënte fare asgjë, pa asnjë mesazh** (`if (!me || ...) return;` pa reagim). Tani të paktën shfaq dritaren e kyçjes në vend të një dështimi krejt të heshtur.
+  - Rregulluar edhe një mbetje shqip e harruar (`"Jo i loguar"` te `app/actions.ts`) → anglisht, konsistente me pjesën tjetër të UI-t.
 
 ## 🔜 Shtyrë me qëllim — mos harro
 

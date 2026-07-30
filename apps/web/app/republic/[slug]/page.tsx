@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { supa } from "@/lib/supabase";
 import PostCard from "@/components/postCard";
+import SignInPrompt from "@/components/SignInPrompt";
 import { followRepublic, unfollowRepublic } from "@/app/actions";
 type Section = { slug: string; label: string; position: number };
 
@@ -24,6 +25,7 @@ export default function RepublicPage() {
   const [followBusy, setFollowBusy] = useState(false);
   const [myId, setMyId] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [signInMsg, setSignInMsg] = useState<string | null>(null);
   const [muteBusy, setMuteBusy] = useState(false);
 
   // 1) Load republic + sections
@@ -137,6 +139,7 @@ setPosts(data ?? []);
 
   async function toggleFollow() {
     if (!republic?.id || followBusy) return;
+    if (!myId) return setSignInMsg(`Sign in to follow ${republic.title}.`);
     setFollowBusy(true);
     try {
       if (isFollowing) {
@@ -242,6 +245,8 @@ setPosts(data ?? []);
           <p className="text-gray-400">No posts in this section yet.</p>
         )}
       </div>
+
+      <SignInPrompt open={!!signInMsg} message={signInMsg ?? undefined} onClose={() => setSignInMsg(null)} />
     </div>
   );
 }
