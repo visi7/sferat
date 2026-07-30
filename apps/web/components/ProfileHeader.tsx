@@ -32,6 +32,7 @@ export default function ProfileHeader({
   const [myId, setMyId] = useState<string | null>(null);
   const [blocked, setBlocked] = useState(false);
   const [blockBusy, setBlockBusy] = useState(false);
+  const [showBlockConfirm, setShowBlockConfirm] = useState(false);
 
   useEffect(() => {
     if (isMe) return;
@@ -51,11 +52,18 @@ export default function ProfileHeader({
     })();
   }, [isMe, profile.id]);
 
-  async function toggleBlock() {
+  function onBlockClick() {
     if (!myId) return alert("You must be logged in.");
-    if (!blocked && !confirm(`Block @${profile.username}? You won't see their posts or comments anymore.`)) {
-      return;
+    if (blocked) {
+      toggleBlock();
+    } else {
+      setShowBlockConfirm(true);
     }
+  }
+
+  async function toggleBlock() {
+    if (!myId) return;
+    setShowBlockConfirm(false);
     setBlockBusy(true);
     try {
       if (blocked) {
@@ -203,7 +211,7 @@ export default function ProfileHeader({
       {!isMe && myId && (
         <button
           type="button"
-          onClick={toggleBlock}
+          onClick={onBlockClick}
           disabled={blockBusy}
           className={`h-9 px-3 rounded border text-sm disabled:opacity-60 ${
             blocked ? "bg-gray-900 text-white" : "hover:bg-gray-50"
@@ -211,6 +219,39 @@ export default function ProfileHeader({
         >
           {blockBusy ? "…" : blocked ? "Blocked · Unblock" : "Block"}
         </button>
+      )}
+
+      {showBlockConfirm && (
+        <div
+          className="fixed inset-0 z-[9998] bg-black/50 flex items-center justify-center p-4"
+          onClick={() => setShowBlockConfirm(false)}
+        >
+          <div
+            className="w-full max-w-sm bg-white rounded-xl border shadow p-5 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-base font-semibold">Block @{profile.username}?</h3>
+            <p className="text-sm text-gray-600">
+              You won't see their posts or comments anymore. They won't be notified, and they can still see
+              and interact with your content as before — blocking only affects what you see.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                className="h-9 px-4 rounded border text-sm"
+                onClick={() => setShowBlockConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="h-9 px-4 rounded bg-gray-900 text-white text-sm disabled:opacity-60"
+                onClick={toggleBlock}
+                disabled={blockBusy}
+              >
+                {blockBusy ? "Blocking…" : "Block"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </header>
   );
