@@ -73,6 +73,7 @@ const [uploadingImage, setUploadingImage] = useState(false);
 // ---- Section per republic (Home composer) — no UI picker; every
 // Republic has exactly one section ("feed") today, so we just use it.
 const [section, setSection] = useState<string>("feed");
+const [mutedRepublicIds, setMutedRepublicIds] = useState<string[]>([]);
 
   // Quick map for republic title
   const repMap = useMemo(() => {
@@ -126,7 +127,17 @@ useEffect(() => {
 
     setRepFilter(initialRep);
 
-    await refreshFeed(initialTab, initialRep, true);
+    let initialMuted: string[] = [];
+    if (res.data.session) {
+      const { data: mutes } = await supa
+        .from("muted_republics")
+        .select("republic_id")
+        .eq("user_id", res.data.session.user.id);
+      initialMuted = (mutes ?? []).map((m) => m.republic_id);
+      setMutedRepublicIds(initialMuted);
+    }
+
+    await refreshFeed(initialTab, initialRep, true, initialMuted);
 
     const onHash = () => {
       const rep = new URL(window.location.href).hash.replace("#rep=", "") || null;
@@ -164,7 +175,8 @@ useEffect(() => {
   async function refreshFeed(
     which: "top" | "new" = tab,
     rep: string | null = repFilter,
-    reset = false
+    reset = false,
+    muted: string[] = mutedRepublicIds
   ) {
     if (reset) setLoadingFeed(true);
     setFeedError(null);
@@ -195,7 +207,12 @@ useEffect(() => {
   .eq("status", "active"); // nëse s'ke fushë "status", hiqe këtë rresht
 
 // filtro sipas republike nëse ke një të zgjedhur (opsionale)
-if (repIdToUse) q = q.eq("republic_id", repIdToUse);
+if (repIdToUse) {
+  q = q.eq("republic_id", repIdToUse);
+} else if (muted.length > 0) {
+  // "All Republics" — hiq postimet e Republikave të heshtuara nga ky përdorues
+  q = q.not("republic_id", "in", `(${muted.join(",")})`);
+}
 
 // renditja sipas tab-it
 if (which === "top") {

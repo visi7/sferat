@@ -44,6 +44,7 @@ Referencë vizioni: `docs/VISION.md`
 - **Bllokim përdoruesish** (#3 nga lista "opsione për Settings/kontroll përvoje"): tabelë e re `blocked_users` (`blocker_id`, `blocked_id`), buton "Block"/"Unblock" te `ProfileHeader` (dukshëm vetëm kur shikon profilin e dikujt tjetër, i kyçur). Zbatuar **në RLS**, jo vetëm në kod klienti — `posts_read_all`/`comments_read_all` tani fshehin rreshtat e autorëve që i ke bllokuar, kudo në app (feed, faqja e Republikës, kërkim, postim i hapur direkt) pa pasur nevojë të ndryshohet asnjë query individuale. Njëdrejtimësh: bllokimi yt s'e ndalon tjetrin të të shohë/ndërveprojë me ty.
 
 **Kufizim i njohur:** nëse një moderator/admin ka bllokuar dikë që raportohet, RLS-ja do t'ia fshehë edhe atij vetë postimin/komentin e raportuar te `/mod/panel` (rast i rrallë praktik — moderatorët zakonisht s'bllokojnë njerëz që po moderojnë vetë — por e shënoj për transparencë).
+- **Heshtje Republikash** (#4): tabelë e re `muted_republics` (`user_id`, `republic_id`), buton "Mute"/"Unmute" te faqja e Republikës, krah "Follow" — të pavarur nga njëri-tjetri (mund të ndjekësh dhe heshtësh njëkohësisht, ose asnjërën). Ndryshe nga bllokimi i përdoruesve, **kjo s'zbatohet në RLS** por vetëm në pyetjen e feed-it "All Republics" të përzier te ballina — sepse hapja e drejtpërdrejtë e faqes së vetë Republikës duhet ende t'i shfaqë të gjitha postimet normalisht.
 
 ## 🔜 Shtyrë me qëllim — mos harro
 

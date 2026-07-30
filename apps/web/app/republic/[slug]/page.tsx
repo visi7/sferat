@@ -22,6 +22,9 @@ export default function RepublicPage() {
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followBusy, setFollowBusy] = useState(false);
+  const [myId, setMyId] = useState<string | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
+  const [muteBusy, setMuteBusy] = useState(false);
 
   // 1) Load republic + sections
   useEffect(() => {
@@ -102,15 +105,18 @@ setPosts(data ?? []);
 }, [republic?.id, activeTab]);
 
 
-  // 3) Check follow status for the logged-in user
+  // 3) Check follow + mute status for the logged-in user
   useEffect(() => {
     (async () => {
       if (!republic?.id) return;
       const session = (await supa.auth.getSession()).data.session;
       if (!session) {
         setIsFollowing(false);
+        setMyId(null);
         return;
       }
+      setMyId(session.user.id);
+
       const { data } = await supa
         .from("follows_republics")
         .select("republic_id")
@@ -118,6 +124,14 @@ setPosts(data ?? []);
         .eq("republic_id", republic.id)
         .maybeSingle();
       setIsFollowing(!!data);
+
+      const { data: mute } = await supa
+        .from("muted_republics")
+        .select("id")
+        .eq("user_id", session.user.id)
+        .eq("republic_id", republic.id)
+        .maybeSingle();
+      setIsMuted(!!mute);
     })();
   }, [republic?.id]);
 
@@ -136,6 +150,32 @@ setPosts(data ?? []);
       alert(e.message ?? "Something went wrong");
     } finally {
       setFollowBusy(false);
+    }
+  }
+
+  async function toggleMute() {
+    if (!republic?.id || !myId || muteBusy) return;
+    setMuteBusy(true);
+    try {
+      if (isMuted) {
+        const { error } = await supa
+          .from("muted_republics")
+          .delete()
+          .eq("user_id", myId)
+          .eq("republic_id", republic.id);
+        if (error) throw error;
+        setIsMuted(false);
+      } else {
+        const { error } = await supa
+          .from("muted_republics")
+          .insert({ user_id: myId, republic_id: republic.id });
+        if (error) throw error;
+        setIsMuted(true);
+      }
+    } catch (e: any) {
+      alert(e.message ?? "Something went wrong");
+    } finally {
+      setMuteBusy(false);
     }
   }
 
@@ -162,6 +202,18 @@ setPosts(data ?? []);
           >
             {isFollowing ? "Following" : "Follow"}
           </button>
+          {myId && (
+            <button
+              onClick={toggleMute}
+              disabled={muteBusy}
+              title="Mute hides this Republic's posts from your All Republics feed, without unfollowing"
+              className={`h-9 px-3 rounded border text-sm disabled:opacity-60 ${
+                isMuted ? "bg-gray-900 text-white" : "hover:bg-gray-50"
+              }`}
+            >
+              {isMuted ? "Muted · Unmute" : "Mute"}
+            </button>
+          )}
           <a href="/" className="h-9 px-3 rounded border hover:bg-gray-50 flex items-center">Home</a>
         </div>
       </div>
