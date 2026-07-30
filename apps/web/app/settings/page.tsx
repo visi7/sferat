@@ -39,6 +39,9 @@ export default function SettingsPage() {
   const [signingOutEverywhere, setSigningOutEverywhere] = useState(false);
   const [signOutMsg, setSignOutMsg] = useState<string | null>(null);
 
+  const [exporting, setExporting] = useState(false);
+  const [exportErr, setExportErr] = useState<string | null>(null);
+
   useEffect(() => {
     (async () => {
       const sess = (await supa.auth.getSession()).data.session;
@@ -64,6 +67,53 @@ export default function SettingsPage() {
       setChecking(false);
     })();
   }, [router]);
+
+  async function exportMyData() {
+    if (!uid) return;
+    setExporting(true);
+    setExportErr(null);
+    try {
+      const [{ data: profile }, { data: posts }, { data: comments }] = await Promise.all([
+        supa
+          .from("profiles")
+          .select("username,display_name,bio,employment,education,location,topics,created_at")
+          .eq("id", uid)
+          .maybeSingle(),
+        supa
+          .from("posts")
+          .select("id,title,body,url,image_url,republic_id,section,score,created_at,status")
+          .eq("author_id", uid)
+          .order("created_at", { ascending: false }),
+        supa
+          .from("comments")
+          .select("id,post_id,body,score,created_at,status")
+          .eq("author_id", uid)
+          .order("created_at", { ascending: false }),
+      ]);
+
+      const payload = {
+        exported_at: new Date().toISOString(),
+        account_email: email,
+        profile,
+        posts: posts ?? [],
+        comments: comments ?? [],
+      };
+
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `sferat-export-${username ?? uid}-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      setExportErr(e.message ?? "Something went wrong");
+    } finally {
+      setExporting(false);
+    }
+  }
 
   async function signOutEverywhereElse() {
     setSigningOutEverywhere(true);
@@ -302,6 +352,21 @@ export default function SettingsPage() {
           {signingOutEverywhere ? "Signing out…" : "Sign out of all other devices"}
         </button>
         {signOutMsg && <p className="text-xs text-gray-600">{signOutMsg}</p>}
+      </section>
+
+      <section className="bg-white border rounded-xl p-4 space-y-2">
+        <h2 className="text-sm font-semibold">Your data</h2>
+        <p className="text-xs text-gray-500">
+          Download a copy of your profile, posts, and comments as a JSON file.
+        </p>
+        <button
+          onClick={exportMyData}
+          disabled={exporting}
+          className="px-4 py-2 border rounded-md text-sm hover:bg-gray-50 disabled:opacity-60"
+        >
+          {exporting ? "Preparing…" : "Export my data"}
+        </button>
+        {exportErr && <p className="text-red-600 text-xs">{exportErr}</p>}
       </section>
 
       <section className="bg-white border rounded-xl p-4 space-y-3">
