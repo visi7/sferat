@@ -36,6 +36,9 @@ export default function SettingsPage() {
   const [savingPrivacy, setSavingPrivacy] = useState(false);
   const [privacyMsg, setPrivacyMsg] = useState<string | null>(null);
 
+  const [signingOutEverywhere, setSigningOutEverywhere] = useState(false);
+  const [signOutMsg, setSignOutMsg] = useState<string | null>(null);
+
   useEffect(() => {
     (async () => {
       const sess = (await supa.auth.getSession()).data.session;
@@ -61,6 +64,20 @@ export default function SettingsPage() {
       setChecking(false);
     })();
   }, [router]);
+
+  async function signOutEverywhereElse() {
+    setSigningOutEverywhere(true);
+    setSignOutMsg(null);
+    try {
+      const { error } = await supa.auth.signOut({ scope: "others" });
+      if (error) throw error;
+      setSignOutMsg("Done — every other session has been signed out. This device stays signed in.");
+    } catch (e: any) {
+      setSignOutMsg(e.message ?? "Something went wrong");
+    } finally {
+      setSigningOutEverywhere(false);
+    }
+  }
 
   async function toggleCredentialsPrivate() {
     if (!uid) return;
@@ -269,6 +286,22 @@ export default function SettingsPage() {
             {saving ? "Saving…" : "Update password"}
           </button>
         </form>
+      </section>
+
+      <section className="bg-white border rounded-xl p-4 space-y-2">
+        <h2 className="text-sm font-semibold">Security</h2>
+        <p className="text-xs text-gray-500">
+          If you think someone else might have access to your account, sign out every other device — this one
+          stays signed in.
+        </p>
+        <button
+          onClick={signOutEverywhereElse}
+          disabled={signingOutEverywhere}
+          className="px-4 py-2 border rounded-md text-sm hover:bg-gray-50 disabled:opacity-60"
+        >
+          {signingOutEverywhere ? "Signing out…" : "Sign out of all other devices"}
+        </button>
+        {signOutMsg && <p className="text-xs text-gray-600">{signOutMsg}</p>}
       </section>
 
       <section className="bg-white border rounded-xl p-4 space-y-3">
