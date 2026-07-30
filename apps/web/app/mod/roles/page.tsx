@@ -3,13 +3,22 @@
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 
+type RoleName = "admin" | "manager" | "moderator" | "assistant";
+
 type Role = {
   id: string;
   user_id: string;
-  role: "admin" | "moderator";
+  role: RoleName;
   republic_id: string | null;
   username?: string;
   republic_title?: string | null;
+};
+
+const ROLE_LABELS: Record<RoleName, string> = {
+  assistant: "Assistant (view-only)",
+  moderator: "Moderator",
+  manager: "Manager",
+  admin: "Admin",
 };
 
 type Republic = { id: string; title: string };
@@ -24,7 +33,7 @@ export default function ModRolesPage() {
 
   // form
   const [username, setUsername] = useState("");
-  const [role, setRole] = useState<"moderator" | "admin">("moderator");
+  const [role, setRole] = useState<RoleName>("moderator");
   const [republicId, setRepublicId] = useState<string>(""); // "" = global
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -178,10 +187,12 @@ export default function ModRolesPage() {
             <select
               className="w-full border rounded-md px-3 py-2 text-sm"
               value={role}
-              onChange={(e) => setRole(e.target.value as "moderator" | "admin")}
+              onChange={(e) => setRole(e.target.value as RoleName)}
             >
-              <option value="moderator">Moderator</option>
-              <option value="admin">Admin</option>
+              <option value="assistant">{ROLE_LABELS.assistant}</option>
+              <option value="moderator">{ROLE_LABELS.moderator}</option>
+              <option value="manager">{ROLE_LABELS.manager}</option>
+              <option value="admin">{ROLE_LABELS.admin}</option>
             </select>
           </div>
           <div className="flex-1">
@@ -223,7 +234,7 @@ export default function ModRolesPage() {
                 <div>
                   <span className="font-medium">@{r.username}</span>{" "}
                   <span className="text-gray-500">
-                    — {r.role} {r.republic_title ? `· ${r.republic_title}` : "· Global"}
+                    — {ROLE_LABELS[r.role] ?? r.role} {r.republic_title ? `· ${r.republic_title}` : "· Global"}
                   </span>
                 </div>
                 <button

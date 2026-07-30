@@ -29,6 +29,8 @@ Referencë vizioni: `docs/VISION.md`
   - `republics_write_mod` përdorte po të njëjtën kolonë të braktisur `profiles.is_moderator` (pa pasoja sot, sepse s'ka ende UI për editim Republikash, por do të kishte dështuar në heshtje sapo të krijohej një). Rregulluar njësoj si pjesa tjetër, me `is_global_mod`.
   - Hequr kod i vdekur: `apps/web/app/mod/reports/page.tsx` (kopje e vjetër/jetime e `/mod/panel`, pa asnjë link drejt saj), dhe funksionet e papërdorura `vote/comment/followUser/unfollowUser/savePost/unsavePost/reportPost` te `apps/web/app/actions.ts` (të gjitha të zëvendësuara nga logjika brenda `postCard.tsx`; mbetën vetëm `followRepublic`/`unfollowRepublic`, të vetmet realisht të importuara).
   - Tabela `comment_reports` u gjet krejtësisht e papërdorur (app-i i fut të gjitha raportet te tabela e përbashkët `reports`) — u la e paprekur (s'shkakton dëm, dhe fshirja e një tabele është veprim më i vështirë për t'u kthyer mbrapsht).
+- Link "Manage roles" te menyja ☰ (ACCOUNT) — `/mod/roles` ishte i arritshëm vetëm duke shkruar URL-në manualisht, tani ka link, dukshëm vetëm për admin global.
+- **Hierarkia e roleve u zgjerua nga 2 (admin/moderator) në 4 nivele**: `assistant` (vetëm-shqyrtues — sheh raportet, s'mund të vendosë Accept/Reject), `moderator` (i pandryshuar), `manager` (të njëjtat të drejta si moderator, mendohet për dikë që mbikëqyr një Republikë të tërë ose globalisht), `admin` (i pandryshuar). Zbatuar me funksione të reja RLS (`is_global_reviewer`/`is_reviewer_of_republic` për shikim, `is_global_mod`/`is_mod_of_republic`/`is_any_mod` u zgjeruan të përfshijnë `manager`) — kufizimi i "Assistant" (view-only) zbatohet vetë në RLS, jo vetëm duke fshehur butonat në UI. `/mod/roles` tani lejon caktimin e të katër niveleve; `/mod/panel` fsheh Accept/Reject dhe shfaq "View only" për kë s'ka të drejtë zgjidhjeje aty. **Shënim:** caktimi i roleve (kush mund të japë role të tjerëve) mbetet ende vetëm admin global — ideja "Manager mund të caktojë Asistentë vetë" u la si hap i mundshëm i ardhshëm, jo e zbatuar tani.
 
 ## 🔜 Shtyrë me qëllim — mos harro
 
@@ -43,6 +45,17 @@ Referencë vizioni: `docs/VISION.md`
 **Ideja:** buton "Share" te `RepublicCard` që lejon ndarjen e kartës jashtë platformës. Dy shkallë:
 1. **Share i thjeshtë** (Web Share API — hap menynë native të pajisjes, ndan linkun e profilit `/profile/username`; në desktop bie mbrapa te "kopjo linkun"). ~30 min punë, mbulon shumicën e rasteve pasi karta shfaqet e gjallë kur hapet linku.
 2. **Share si imazh** (si "Spotify Wrapped") — gjeneron një PNG real të kartës për t'u shkarkuar/ndarë direkt si imazh (më mbresëlënëse për Instagram/X, por kërkon më shumë punë — ~2-3 orë, ose librari client-side "screenshot", ose route i posaçëm server-side për gjenerim imazhi).
+
+### Promovim automatik në "Assistant" sipas pikëve (vazhdim i hierarkisë së roleve)
+**Status:** Hierarkia e 4 niveleve (assistant/moderator/manager/admin) tashmë ekziston, por sot **të gjitha rolet caktohen manualisht** nga admini te `/mod/roles`. Ideja e mbetur: kur pikët e dikujt **brenda një Republike specifike** kalojnë një prag, të bëhet automatikisht "Assistant" i asaj Republike (vetëm-shqyrtues), me buton/panel që i shfaqet vetë.
+
+**Formula e pragut (e rënë dakord, e papërdorur ende):** `Pragu(Republika) = MAX(20, 3 × Mediana e pikëve të kontribuesve aktivë të asaj Republike)` — vetërregullohet sipas aktivitetit të secilës Republikë, në vend të një numri fiks. "Aktiv" = ka postuar/komentuar të paktën 1 herë atje.
+
+**Kthyeshmëria (e rënë dakord):** nëse pikët bien nën prag më vonë, s'hiqet automatikisht — sistemi e shënon "për rishqyrtim" dhe admini vendos te `/mod/roles`.
+
+**Çfarë kërkon zbatimi:** (1) pyetje/funksion që llogarit pikët e dikujt BRENDA një Republike specifike (jo globalisht si sot te Republic Card — por e mundshme pa tabelë të re, thjesht duke filtruar postimet/komentet/votat sipas `republic_id`), (2) job periodik (ose trigger) që kontrollon pragun dhe krijon rreshtin `user_roles` me `role='assistant'`, (3) seksion te `/mod/roles` që shfaq "nën prag — për rishqyrtim" për Asistentët e promovuar automatikisht.
+
+**Kur ta rimarrim:** kur platforma të ketë përdorues realë e aktivitet të mjaftueshëm sa formula e medianës të ketë kuptim (me pak të dhëna, mediana s'është domethënëse).
 
 **Kur ta rimarrim:** kur të duam të shtojmë "growth loop" real (karta që qarkullon vetë jashtë platformës) — natyrshëm afër kohës së Strategjisë Cold-Start (P2.2) më poshtë, meqë të dyja synojnë të tërheqin përdorues të rinj.
 

@@ -21,12 +21,33 @@ export default function ModPanel() {
   const [postsMap, setPostsMap] = useState<Record<string, any>>({});
   const [commentsMap, setCommentsMap] = useState<Record<string, any>>({});
   const [republicsMap, setRepublicsMap] = useState<Record<string, string>>({});
+  const [myRoles, setMyRoles] = useState<{ role: string; republic_id: string | null }[]>([]);
+
+  // Assistant-ët shohin raportet, por s'mund t'i zgjidhin (Accept/Reject) —
+  // e njëjta rregull zbatohet edhe në RLS, kjo është vetëm për UI-në.
+  function canResolve(republicId: string | null) {
+    return myRoles.some(
+      (r) =>
+        ["admin", "manager", "moderator"].includes(r.role) &&
+        (r.republic_id === null || r.republic_id === republicId)
+    );
+  }
 
   useEffect(() => {
     (async () => {
       try {
         setLoading(true);
         setErr(null);
+
+        const sess = (await supa.auth.getSession()).data.session;
+        const uid = sess?.user?.id;
+        if (uid) {
+          const { data: rolesData } = await supa
+            .from("user_roles")
+            .select("role,republic_id")
+            .eq("user_id", uid);
+          setMyRoles(rolesData ?? []);
+        }
 
         const { data, error } = await supa
           .from('reports')
@@ -262,14 +283,22 @@ export default function ModPanel() {
               </div>
             )}
 
-            <div className="mt-2 flex gap-2">
-              <button onClick={() => handleAccept(r)} className="px-3 py-1 border rounded">
-                ✓ Accept
-              </button>
+            <div className="mt-2 flex gap-2 items-center">
+              {canResolve(r.republicId) ? (
+                <>
+                  <button onClick={() => handleAccept(r)} className="px-3 py-1 border rounded">
+                    ✓ Accept
+                  </button>
 
-              <button onClick={() => handleReject(r)} className="px-3 py-1 border rounded">
-                ✕ Reject
-              </button>
+                  <button onClick={() => handleReject(r)} className="px-3 py-1 border rounded">
+                    ✕ Reject
+                  </button>
+                </>
+              ) : (
+                <span className="text-xs text-gray-500 italic">
+                  View only — resolving needs a Moderator or higher here.
+                </span>
+              )}
 
               {r.type === 'post' && (
                 <a href={`/post/${r.targetId}`} className="px-3 py-1 border rounded">

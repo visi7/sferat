@@ -28,7 +28,7 @@ export default function LeftNav() {
         .from("user_roles")
         .select("role,republic_id")
         .eq("user_id", uid)
-        .in("role", ["admin", "moderator"]);
+        .in("role", ["admin", "manager", "moderator", "assistant"]);
       setIsMod((data?.length ?? 0) > 0);
       setIsGlobalAdmin((data ?? []).some((r) => r.role === "admin" && r.republic_id === null));
     })();
