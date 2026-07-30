@@ -70,6 +70,7 @@ export default function LeftNav() {
             <>
               {isMod && <a href="/mod/panel">Moderator panel</a>}
               {isGlobalAdmin && <a href="/mod/roles">Manage roles</a>}
+              <a href="/settings">Settings</a>
               <button onClick={signOut} className="text-left">Sign out</button>
             </>
           ) : (

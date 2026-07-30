@@ -24,6 +24,7 @@ export default function EmailSignIn() {
       <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="email" required />
       <input type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="password" required />
       <button type="submit">Sign in</button>
+      <a href="/forgot-password" className="text-blue-600 underline text-sm">Forgot password?</a>
     </form>
   );
 }
