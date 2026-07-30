@@ -153,6 +153,18 @@ useEffect(() => {
   })();
 }, []);
 
+// ---- Auth state sync (rikthen sesionin kur Supabase e vendos në background, p.sh. pas konfirmimit të email-it) ----
+useEffect(() => {
+  const { data: sub } = supa.auth.onAuthStateChange((_event, newSession) => {
+    setSession(newSession);
+    if (!newSession) {
+      setEmail("");
+      setPassword("");
+    }
+  });
+  return () => sub.subscription.unsubscribe();
+}, []);
+
 // ---- Section per republic (kur ndryshon repId) ----
 useEffect(() => {
   (async () => {
@@ -259,6 +271,8 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
   async function signOut() {
     await supa.auth.signOut();
     setSession(null);
+    setEmail("");
+    setPassword("");
   }
 
   // ---- Create post ----
