@@ -36,7 +36,7 @@ export default function ProfilePage() {
 
       const { data: p } = await supa
         .from("profiles")
-        .select("id, username, display_name, bio, avatar_url, created_at, employment, education, location, topics")
+        .select("id, username, display_name, bio, avatar_url, created_at, employment, education, location, topics, credentials_private")
         .eq("username", username)
         .single();
 

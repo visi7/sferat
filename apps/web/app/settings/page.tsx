@@ -32,6 +32,10 @@ export default function SettingsPage() {
   const [deleting, setDeleting] = useState(false);
   const [deleteErr, setDeleteErr] = useState<string | null>(null);
 
+  const [credentialsPrivate, setCredentialsPrivate] = useState(false);
+  const [savingPrivacy, setSavingPrivacy] = useState(false);
+  const [privacyMsg, setPrivacyMsg] = useState<string | null>(null);
+
   useEffect(() => {
     (async () => {
       const sess = (await supa.auth.getSession()).data.session;
@@ -44,10 +48,11 @@ export default function SettingsPage() {
 
       const { data } = await supa
         .from("profiles")
-        .select("username,default_republic_id")
+        .select("username,default_republic_id,credentials_private")
         .eq("id", sess.user.id)
         .maybeSingle();
       setUsername(data?.username ?? null);
+      setCredentialsPrivate(!!data?.credentials_private);
       setDefaultRepublicId(data?.default_republic_id ?? "");
 
       const { data: reps } = await supa.from("republics").select("id,title").eq("is_active", true).order("title");
@@ -56,6 +61,26 @@ export default function SettingsPage() {
       setChecking(false);
     })();
   }, [router]);
+
+  async function toggleCredentialsPrivate() {
+    if (!uid) return;
+    const next = !credentialsPrivate;
+    setSavingPrivacy(true);
+    setPrivacyMsg(null);
+    try {
+      const { error } = await supa
+        .from("profiles")
+        .update({ credentials_private: next })
+        .eq("id", uid);
+      if (error) throw error;
+      setCredentialsPrivate(next);
+      setPrivacyMsg("Saved.");
+    } catch (e: any) {
+      setPrivacyMsg(e.message ?? "Something went wrong");
+    } finally {
+      setSavingPrivacy(false);
+    }
+  }
 
   async function saveDefaultFeed(e: React.FormEvent) {
     e.preventDefault();
@@ -271,6 +296,26 @@ export default function SettingsPage() {
           </button>
         </form>
         {feedMsg && <p className="text-xs text-gray-600">{feedMsg}</p>}
+      </section>
+
+      <section className="bg-white border rounded-xl p-4 space-y-2">
+        <h2 className="text-sm font-semibold">Profile privacy</h2>
+        <label className="flex items-start gap-2 text-sm cursor-pointer">
+          <input
+            type="checkbox"
+            className="mt-1"
+            checked={credentialsPrivate}
+            disabled={savingPrivacy}
+            onChange={toggleCredentialsPrivate}
+          />
+          <span>
+            Keep my employment, education, and location private
+            <span className="block text-xs text-gray-500">
+              Only you will see these on your profile — other visitors will see "This information is private."
+            </span>
+          </span>
+        </label>
+        {privacyMsg && <p className="text-xs text-gray-600">{privacyMsg}</p>}
       </section>
 
       <section className="bg-white border border-red-200 rounded-xl p-4 space-y-3">

@@ -18,6 +18,7 @@ export type ProfileInfo = {
   education?: string | null;
   location?: string | null;
   topics?: string[] | null;
+  credentials_private?: boolean;
 };
 
 type Stats = { postsCount: number; commentsCount: number; karma: number };

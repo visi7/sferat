@@ -40,11 +40,15 @@ export default function ProfileCredentialsCard({ profile, isMe, onUpdate }: Prop
     setEditing(false);
   }
 
+  const hiddenFromViewer = !isMe && profile.credentials_private;
+
   return (
     <section className="bg-white border rounded-xl p-4 space-y-3">
       <h2 className="text-sm font-semibold">Credentials &amp; Highlights</h2>
 
-      {!editing || !isMe ? (
+      {hiddenFromViewer ? (
+        <p className="text-sm text-gray-400 italic">This information is private.</p>
+      ) : !editing || !isMe ? (
         <>
           {/* MODE SHIKO */}
           <div className="space-y-1.5 text-sm">
