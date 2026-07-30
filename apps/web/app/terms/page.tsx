@@ -57,7 +57,7 @@ export default function TermsPage() {
 
       <section className="space-y-2">
         <h2 className="text-base font-semibold text-gray-900">8. Contact</h2>
-        <p>Questions about these terms? Contact us at <strong>[CONTACT EMAIL — to be added]</strong>.</p>
+        <p>Questions about these terms? Contact us at <a href="mailto:sferatapp@gmail.com" className="text-blue-600 underline">sferatapp@gmail.com</a>.</p>
       </section>
     </main>
   );
