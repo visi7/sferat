@@ -103,7 +103,6 @@ useEffect(() => {
 
     if (!cancelled && !reps.error) {
       setRepublics(reps.data ?? []);
-      if (reps.data?.length) setRepId(reps.data[0].id);
     }
 
     // tabs & filter
@@ -314,7 +313,6 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
       const { data: pub } = supa.storage.from("images").getPublicUrl(fileName);
       payload.image_url = pub.publicUrl;
     }
-   payload.republic_id = repFilter ?? repId;  // lidh me republikën aktive
    payload.section = section || "feed";                 // dërgoje në seksionin “Feed”
   const { error } = await supa.from("posts").insert(payload);  // pastaj bëj insert
   if (error) throw error;
@@ -434,6 +432,7 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
           value={repId}
           onChange={(e) => setRepId(e.target.value)}
         >
+          <option value="" disabled>Select a Republic</option>
           {republics.map((r) => (
             <option key={r.id} value={r.id}>{r.title}</option>
           ))}
@@ -506,7 +505,7 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
 
           <button
             onClick={createPost}
-            disabled={uploadingImage}
+            disabled={uploadingImage || !repId}
             className="bg-black text-white rounded-md px-4 py-1.5 text-sm hover:bg-gray-800 disabled:opacity-60"
           >
             {uploadingImage ? "Uploading…" : "Post"}

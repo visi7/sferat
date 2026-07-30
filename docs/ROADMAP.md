@@ -86,12 +86,12 @@ Referencë vizioni: `docs/VISION.md`
 
 ## 🔜 Shtyrë me qëllim — mos harro
 
-### Bug UX: Republika e para-zgjedhur automatikisht te kompozuesi i ballinës
-**Problemi:** te `app/page.tsx`, dropdown-i i Republikës në kompozues e zgjedh vetë të parën alfabetikisht si parazgjedhje (`if (reps.data?.length) setRepId(reps.data[0].id)`). Nëse një përdorues s'e vëren/ndryshon dropdown-in para se të postojë, postimi i tij shkon **aksidentalisht** te Republika e gabuar.
+### Bug UX: Republika e para-zgjedhur automatikisht te kompozuesi i ballinës — U MBYLL
+**Problemi:** te `app/page.tsx`, dropdown-i i Republikës në kompozues zgjidhte vetë të parën alfabetikisht si parazgjedhje. Nëse një përdorues s'e vinte re/ndryshonte dropdown-in para se të postonte, postimi i tij shkonte aksidentalisht te Republika e gabuar.
 
-**Ide zgjidhjeje (për t'u vendosur më vonë):** ose (a) mos e para-zgjidh fare — dropdown-i fillon bosh/"Select a Republic" dhe butoni "Post" mbetet i çaktivizuar derisa të zgjidhet diçka me dorë, ose (b) një konfirmim i vogël para postimit që thotë qartë "Po poston te [Republika X] — vazhdo?".
+**Zgjidhja e zbatuar (opsioni i zgjedhur):** dropdown-i tani fillon bosh ("Select a Republic", opsion i çaktivizuar) — pa asnjë parazgjedhje automatike — dhe butoni "Post" mbetet i çaktivizuar derisa të zgjidhet diçka me dorë (`disabled={uploadingImage || !repId}`).
 
-**Kur ta rimarrim:** kur pronari të vendosë cilën nga këto (ose diçka tjetër) preferon — flagged tani, jo e zbatuar.
+**Bug i dytë, i lidhur, i gjetur gjatë kësaj pune:** vetë momenti i insert-it në `createPost()` **e anashkalonte** zgjedhjen e dropdown-it — `payload.republic_id = repFilter ?? repId;` përdorte Republikën e filtrit aktiv të feed-it (`repFilter`, p.sh. nga `#rep=` në URL) në vend të zgjedhjes reale të përdoruesit, sa herë që një filtër ishte aktiv. Pra dikush mund të zgjidhte "Technology" në dropdown, ndërsa duke shikuar feed-in e filtruar te "Capitalism", dhe postimi shkonte prapë te "Capitalism" — e njëjta rrezik, por i fshehur, i pavarur nga parazgjedhja automatike. Rregulluar duke hequr fare atë rresht mbishkrimi — `payload.republic_id` tani vjen gjithmonë nga `repId` (zgjedhja e dukshme e dropdown-it), i vetmi burim i vërtetë. Kjo rregulloi njëkohësisht edhe një mospërputhje të mundshme delikate `republic_id`/`section` (section-i llogaritej gjithmonë për `repId`, jo për `repFilter`).
 
 ### Vizion monetizimi (afatgjatë, kërkon planifikim serioz)
 **Konteksti:** platforma duhet të financohet nga diçka, por pa u bërë "e bezdisshme" si reklamat tipike (FB/IG). Ideja e plotë e propozuar (e ndarë sipas rrezikut/kompleksitetit):
