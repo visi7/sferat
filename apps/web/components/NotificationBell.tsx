@@ -25,11 +25,29 @@ function bellText(n: { type: string | null; payload: any | null }) {
   }
 }
 
+function notificationHref(n: Noti, commentPostMap: Record<string, string>): string | null {
+  const p = n.payload ?? {};
+  switch (n.type) {
+    case "comment_replied":
+    case "post_upvoted":
+      return p.post_id ? `/post/${p.post_id}` : null;
+    case "comment_upvoted": {
+      const postId = commentPostMap[p.comment_id];
+      return postId ? `/post/${postId}` : null;
+    }
+    case "follow":
+      return p.actor_username ? `/profile/${p.actor_username}` : null;
+    default:
+      return null;
+  }
+}
+
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
   const [list, setList] = useState<Noti[]>([]);
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [commentPostMap, setCommentPostMap] = useState<Record<string, string>>({});
   const boxRef = useRef<HTMLDivElement | null>(null);
 
   // mbyll kur klikon jashtë
@@ -74,7 +92,24 @@ export default function NotificationBell() {
         .order("created_at", { ascending: false })
         .limit(10);
 
-      if (!error && data) setList(data as any);
+      if (!error && data) {
+        setList(data as any);
+
+        const commentIds = Array.from(
+          new Set(
+            (data as Noti[])
+              .filter((n) => n.type === "comment_upvoted")
+              .map((n) => n.payload?.comment_id)
+              .filter(Boolean)
+          )
+        );
+        if (commentIds.length > 0) {
+          const { data: comments } = await supa.from("comments").select("id,post_id").in("id", commentIds);
+          const map: Record<string, string> = {};
+          for (const c of comments ?? []) map[c.id] = c.post_id;
+          setCommentPostMap(map);
+        }
+      }
 
       // shëno si të lexuara, meqë sapo i pa
       if (unreadCount > 0) {
@@ -88,6 +123,11 @@ export default function NotificationBell() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function deleteOne(id: string) {
+    setList((s) => s.filter((n) => n.id !== id));
+    await supa.from("notifications").delete().eq("id", id);
   }
 
   return (
@@ -124,12 +164,30 @@ export default function NotificationBell() {
             <div className="px-2 py-2 text-sm text-gray-500">No notifications.</div>
           ) : (
             <ul className="max-h-80 overflow-auto">
-              {list.map((n) => (
-                <li key={n.id} className="px-2 py-2 hover:bg-gray-50 rounded">
-                  <div className="text-sm text-gray-800">{bellText(n)}</div>
-                  <div className="text-xs text-gray-500">{new Date(n.created_at).toLocaleString()}</div>
-                </li>
-              ))}
+              {list.map((n) => {
+                const href = notificationHref(n, commentPostMap);
+                return (
+                  <li key={n.id} className="px-2 py-2 hover:bg-gray-50 rounded flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      {href ? (
+                        <a href={href} className="text-sm text-gray-800 hover:underline">
+                          {bellText(n)}
+                        </a>
+                      ) : (
+                        <div className="text-sm text-gray-800">{bellText(n)}</div>
+                      )}
+                      <div className="text-xs text-gray-500">{new Date(n.created_at).toLocaleString()}</div>
+                    </div>
+                    <button
+                      onClick={() => deleteOne(n.id)}
+                      className="shrink-0 text-xs text-red-600 hover:underline"
+                      aria-label="Delete notification"
+                    >
+                      Delete
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           )}
           <div className="h-px bg-gray-100 my-1" />

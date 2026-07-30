@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supa } from "@/lib/supabase";
 
 type Noti = {
@@ -14,6 +14,8 @@ type Noti = {
 export default function NotificationsPage() {
   const [rows, setRows] = useState<Noti[]>([]);
   const [me, setMe] = useState<string | null>(null);
+  const [commentPostMap, setCommentPostMap] = useState<Record<string, string>>({});
+  const [tab, setTab] = useState<"all" | "unread">("all");
 
   useEffect(() => {
     (async () => {
@@ -28,7 +30,20 @@ export default function NotificationsPage() {
         .order("created_at", { ascending: false })
         .limit(100);
 
-      if (!error) setRows((data as Noti[]) ?? []);
+      if (error) return;
+      const list = (data as Noti[]) ?? [];
+      setRows(list);
+
+      // comment_upvoted s'e ka post_id te payload — e marrim veçmas që linku të dijë ku të çojë
+      const commentIds = Array.from(
+        new Set(list.filter((n) => n.type === "comment_upvoted").map((n) => n.payload?.comment_id).filter(Boolean))
+      );
+      if (commentIds.length > 0) {
+        const { data: comments } = await supa.from("comments").select("id,post_id").in("id", commentIds);
+        const map: Record<string, string> = {};
+        for (const c of comments ?? []) map[c.id] = c.post_id;
+        setCommentPostMap(map);
+      }
     })();
   }, []);
 
@@ -38,8 +53,32 @@ export default function NotificationsPage() {
       .update({ read_at: new Date().toISOString() })
       .eq("id", id);
     if (!error) {
-      setRows(s => s.map(r => r.id === id ? { ...r, read_at: new Date().toISOString() } : r));
+      setRows((s) => s.map((r) => (r.id === id ? { ...r, read_at: new Date().toISOString() } : r)));
     }
+  }
+
+  async function markAllRead() {
+    if (!me) return;
+    const { error } = await supa
+      .from("notifications")
+      .update({ read_at: new Date().toISOString() })
+      .eq("user_id", me)
+      .is("read_at", null);
+    if (!error) {
+      setRows((s) => s.map((r) => (r.read_at ? r : { ...r, read_at: new Date().toISOString() })));
+    }
+  }
+
+  async function deleteOne(id: string) {
+    const { error } = await supa.from("notifications").delete().eq("id", id);
+    if (!error) setRows((s) => s.filter((r) => r.id !== id));
+  }
+
+  async function clearAll() {
+    if (!me) return;
+    if (!confirm("Delete all notifications? This can't be undone.")) return;
+    const { error } = await supa.from("notifications").delete().eq("user_id", me);
+    if (!error) setRows([]);
   }
 
   function formatNotification(n: Noti): string {
@@ -54,45 +93,114 @@ export default function NotificationsPage() {
     }
   }
 
+  function notificationHref(n: Noti): string | null {
+    switch (n.type) {
+      case "comment_replied":
+      case "post_upvoted":
+        return n.payload?.post_id ? `/post/${n.payload.post_id}` : null;
+      case "comment_upvoted": {
+        const postId = commentPostMap[n.payload?.comment_id];
+        return postId ? `/post/${postId}` : null;
+      }
+      case "follow":
+        return n.payload?.actor_username ? `/profile/${n.payload.actor_username}` : null;
+      default:
+        return null;
+    }
+  }
+
+  const visibleRows = useMemo(
+    () => (tab === "unread" ? rows.filter((r) => !r.read_at) : rows),
+    [rows, tab]
+  );
+
   return (
     <main className="p-6 max-w-2xl mx-auto space-y-4">
-      <div className="mb-4 flex items-center justify-between">
-  <h1 className="text-xl font-bold">Notifications</h1>
-  <Link
-    href="/"
-    className="inline-flex items-center gap-1 rounded border px-3 py-1.5 text-sm hover:bg-neutral-50"
-    aria-label="Go to home"
-  >
-    Home
-  </Link>
-</div>
+      <div className="mb-2 flex items-center justify-between">
+        <h1 className="text-xl font-bold">Notifications</h1>
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1 rounded border px-3 py-1.5 text-sm hover:bg-neutral-50"
+          aria-label="Go to home"
+        >
+          Home
+        </Link>
+      </div>
+
+      {me && rows.length > 0 && (
+        <div className="flex items-center justify-between">
+          <div className="flex gap-1 text-sm">
+            <button
+              onClick={() => setTab("all")}
+              className={`px-3 py-1 rounded-full border ${tab === "all" ? "bg-black text-white" : "hover:bg-gray-50"}`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setTab("unread")}
+              className={`px-3 py-1 rounded-full border ${tab === "unread" ? "bg-black text-white" : "hover:bg-gray-50"}`}
+            >
+              Unread
+            </button>
+          </div>
+          <div className="flex gap-2 text-sm">
+            <button onClick={markAllRead} className="text-blue-600 hover:underline">
+              Mark all read
+            </button>
+            <button onClick={clearAll} className="text-red-600 hover:underline">
+              Clear all
+            </button>
+          </div>
+        </div>
+      )}
 
       {!me ? (
         <p>Sign in to view your notifications.</p>
-      ) : rows.length === 0 ? (
-        <p>No notifications yet.</p>
+      ) : visibleRows.length === 0 ? (
+        <p>{tab === "unread" ? "No unread notifications." : "No notifications yet."}</p>
       ) : (
-        rows.map((n) => (
-          <article key={n.id} className="border p-4 rounded bg-white">
-            <p>{formatNotification(n)}</p>
-            <time
-              dateTime={n.created_at}
-              suppressHydrationWarning
-              className="mt-1 block text-xs text-neutral-500"
-            >
-              {new Date(n.created_at).toLocaleString()} — {n.type}
-            </time>
+        visibleRows.map((n) => {
+          const href = notificationHref(n);
+          const text = formatNotification(n);
+          return (
+            <article key={n.id} className="border p-4 rounded bg-white flex items-start justify-between gap-3">
+              <div>
+                {href ? (
+                  <Link href={href} onClick={() => !n.read_at && markRead(n.id)} className="hover:underline">
+                    {text}
+                  </Link>
+                ) : (
+                  <p>{text}</p>
+                )}
+                <time
+                  dateTime={n.created_at}
+                  suppressHydrationWarning
+                  className="mt-1 block text-xs text-neutral-500"
+                >
+                  {new Date(n.created_at).toLocaleString()}
+                </time>
+              </div>
 
-            {!n.read_at && (
-              <button
-                onClick={() => markRead(n.id)}
-                className="mt-2 h-8 rounded border px-3 text-sm hover:bg-neutral-50"
-              >
-                Mark read
-              </button>
-            )}
-          </article>
-        ))
+              <div className="flex flex-col items-end gap-1 shrink-0">
+                {!n.read_at && (
+                  <button
+                    onClick={() => markRead(n.id)}
+                    className="h-8 rounded border px-3 text-sm hover:bg-neutral-50"
+                  >
+                    Mark read
+                  </button>
+                )}
+                <button
+                  onClick={() => deleteOne(n.id)}
+                  className="h-8 rounded border px-3 text-sm text-red-600 hover:bg-red-50"
+                  aria-label="Delete notification"
+                >
+                  🗑
+                </button>
+              </div>
+            </article>
+          );
+        })
       )}
     </main>
   );
