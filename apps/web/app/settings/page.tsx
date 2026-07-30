@@ -22,6 +22,11 @@ export default function SettingsPage() {
   const [savingFeed, setSavingFeed] = useState(false);
   const [feedMsg, setFeedMsg] = useState<string | null>(null);
 
+  const [newEmail, setNewEmail] = useState("");
+  const [savingEmail, setSavingEmail] = useState(false);
+  const [emailMsg, setEmailMsg] = useState<string | null>(null);
+  const [emailErr, setEmailErr] = useState<string | null>(null);
+
   useEffect(() => {
     (async () => {
       const sess = (await supa.auth.getSession()).data.session;
@@ -63,6 +68,30 @@ export default function SettingsPage() {
       setFeedMsg(e.message ?? "Something went wrong");
     } finally {
       setSavingFeed(false);
+    }
+  }
+
+  async function changeEmail(e: React.FormEvent) {
+    e.preventDefault();
+    setEmailErr(null);
+    setEmailMsg(null);
+
+    const clean = newEmail.trim();
+    if (!clean || !clean.includes("@")) {
+      setEmailErr("Enter a valid email address.");
+      return;
+    }
+
+    setSavingEmail(true);
+    try {
+      const { error } = await supa.auth.updateUser({ email: clean });
+      if (error) throw error;
+      setEmailMsg(`Confirmation link sent to ${clean}. Your email won't change until you click it.`);
+      setNewEmail("");
+    } catch (e: any) {
+      setEmailErr(e.message ?? "Something went wrong");
+    } finally {
+      setSavingEmail(false);
     }
   }
 
@@ -113,6 +142,29 @@ export default function SettingsPage() {
             Profile: <a href={`/profile/${username}`} className="text-blue-600 underline">@{username}</a>
           </p>
         )}
+      </section>
+
+      <section className="bg-white border rounded-xl p-4 space-y-3">
+        <h2 className="text-sm font-semibold">Change email</h2>
+        <form onSubmit={changeEmail} className="space-y-3">
+          <input
+            type="email"
+            placeholder="New email address"
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            className="w-full border rounded-md px-3 py-2 text-sm"
+            required
+          />
+          {emailErr && <p className="text-red-600 text-xs">{emailErr}</p>}
+          {emailMsg && <p className="text-green-600 text-xs">{emailMsg}</p>}
+          <button
+            type="submit"
+            disabled={savingEmail}
+            className="px-4 py-2 bg-black text-white rounded-md text-sm disabled:opacity-60"
+          >
+            {savingEmail ? "Sending…" : "Update email"}
+          </button>
+        </form>
       </section>
 
       <section className="bg-white border rounded-xl p-4 space-y-3">
