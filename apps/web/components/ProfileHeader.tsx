@@ -53,6 +53,9 @@ export default function ProfileHeader({
 
   async function toggleBlock() {
     if (!myId) return alert("You must be logged in.");
+    if (!blocked && !confirm(`Block @${profile.username}? You won't see their posts or comments anymore.`)) {
+      return;
+    }
     setBlockBusy(true);
     try {
       if (blocked) {
