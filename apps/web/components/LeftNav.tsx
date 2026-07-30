@@ -64,6 +64,13 @@ export default function LeftNav() {
       </section>
 
       <section className="bg-white border rounded-xl p-3">
+        <h3 className="text-sm font-semibold text-gray-500 mb-2">AGORA</h3>
+        <nav className="flex flex-col gap-1 text-sm">
+          <a href="/agora" className="hover:underline">Sponsored</a>
+        </nav>
+      </section>
+
+      <section className="bg-white border rounded-xl p-3">
         <h3 className="text-sm font-semibold text-gray-500 mb-2">ACCOUNT</h3>
         <nav className="flex flex-col gap-1 text-sm">
           {logged ? (

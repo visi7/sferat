@@ -50,6 +50,7 @@ Referencë vizioni: `docs/VISION.md`
 - **Eksportim i të dhënave** (#7) — lista e "Settings" u mbyll: buton "Export my data" te `/settings` → gjeneron skedar `.json` (profili + të gjitha postimet + të gjithë komentet e tua) dhe e shkarkon direkt në browser (Blob + object URL, zero server-side/route i ri, zero ndryshim databaze — përdor pyetjet ekzistuese të lejuara nga RLS-ja aktuale).
 
 **Lista e 7 pikave për Settings (nga diskutimi i vizionit) u mbyll plotësisht**: ndryshim email, fshirje llogarie (anonimizim), bllokim përdoruesish, heshtje Republikash, dukshmëri profili, dilje nga pajisje të tjera, eksport të dhënash.
+- **"Agora" (Fazë 0 — vetëm struktura)**: seksion i ri "AGORA" te menyja ☰ + faqe `/agora` me "Coming soon". Emri "Agora" u zgjodh qëllimisht (sheshi publik i Greqisë së lashtë ku bëhej njëkohësisht tregti DHE debat) — përputhet me temën qytetare ekzistuese (Republic, Citizen, Senator, Founder). Vizioni i plotë (reklama + video + AI + debat komuniteti) i shënuar te "Vizion monetizimi" më poshtë, jo i zbatuar ende.
 
 ## 🔜 Shtyrë me qëllim — mos harro
 
@@ -64,10 +65,20 @@ Referencë vizioni: `docs/VISION.md`
 **Konteksti:** platforma duhet të financohet nga diçka, por pa u bërë "e bezdisshme" si reklamat tipike (FB/IG). Ideja e plotë e propozuar (e ndarë sipas rrezikut/kompleksitetit):
 
 - **"Sponsorizim" pagese për zgjatje postimi** (jo reklamë biznesi) — kërkon integrim procesori pagesash (Stripe), vendime çmimesh/nivelesh. Projekt më vete.
-- **Reklama të maskuara si postime nga një llogari "agjent" e Sferës** — teknikisht e thjeshtë, por **kërkon patjetër etiketim minimal ("Sponsored"/"Ad")** për arsye ligjore (rregulla reklamash FTC/BE kundër reklamës së maskuar pa dallim) — jo zero-disclosure siç u propozua fillimisht.
+- **"Agora" — seksion i veçantë për reklama** (zëvendëson idenë fillestare të "agjentit të fshehur" — shumë më mirë ligjërisht dhe si eksperiencë, sepse është i ndarë qartë, jo i maskuar si postim organik):
+  - Seksion krejt i vet në menynë ☰ (jo brenda Republikave), me rregulla postimi **strikte, të ndryshme** nga postimet normale — për postuesit/reklamuesit.
+  - Përmbajtje "nivel tjetër": tekst i gjeneruar me AI (si ese, kontekst i përshtatur me formatin/përmbajtjen e reklamës) + mbështetje video, jo vetëm imazh+tekst siç është sot.
+  - Për shikuesit: panel argëtues, mund të komentojnë dhe të ndajnë (video, tekst, ose të dyja).
+  - **Ide shtesë (nga Claude, për t'u konsideruar):**
+    - **"Debato reklamën"** — komente të hapura/kritike mbi reklamat (jo të fshehura/kufizuara si te FB/IG) — përputhet me identitetin e platformës.
+    - **"Shënime komuniteti"** mbi pretendime të ekzagjeruara (si Community Notes i X-it) — diferencues i fortë i mundshëm.
+    - **Cilësi edhe për reklamat** — angazhim i dobët = renditje më e ulët, jo "kush paguan më shumë del gjithmonë".
+    - **Shpërblim për angazhim të vlefshëm** — komentuesit më të mprehtë nën një reklamë mund të marrin njohje/pjesë të ardhurash (lidhet me idenë e administratorëve me përfitim monetar më poshtë).
+  - **Realiteti teknik:** video kërkon infrastrukturë tjetër nga imazhet (ruajtje/transmetim, kosto); teksti me AI kërkon integrim API modeli gjuhësor (kosto/gjenerim); postuesit kërkojnë ndoshta flukse aplikimi/miratimi.
+  - **U zbatua tani (Fazë 0 — thjesht struktura, "Coming soon"):** seksion i ri "AGORA" te menyja ☰ (zë "Sponsored") + faqe `/agora` me mesazh "Coming soon". Zero funksionalitet real ende — vetëm vendi është gati, që të mos rindërtohet navigimi më vonë.
 - **Administratorë Republike me përfitim monetar nga të ardhurat e brendshme** — lidhet me hierarkinë e roleve (Assistant/Moderator/Manager) dhe idenë e promovimit automatik sipas pikëve (shih më poshtë) — por "përfitim monetar" do të thotë payout real drejt njerëzve: verifikim identiteti, tatime, strukturë biznesi/ligjore pas saj. Pika më ambicioze e gjithë vizionit.
 
-**Kur ta rimarrim:** procesori i pagesave (Stripe) + etiketimi i reklamave si fazë e parë, kur të jesh gati të vendosësh çmime; payout-et te administratorët si fazë shumë më e largët, kur platforma të ketë të ardhura reale që e justifikojnë.
+**Kur ta rimarrim:** procesori i pagesave (Stripe) + "Agora" funksionale (postim real, video, AI) si fazë e parë, kur të jesh gati të vendosësh çmime/rregulla; payout-et te administratorët si fazë shumë më e largët, kur platforma të ketë të ardhura reale që e justifikojnë.
 
 ### Seksioni "Announcements" per-Republikë (vazhdim i heqjes së dropdown-it "Feed")
 **Ideja:** ta bëjmë tabelën `republic_sections` realisht të dobishme duke shtuar një seksion të dytë, "Announcements" — postime zyrtare të dukshme veçmas nga diskutimi i lirë, të postueshme vetëm nga Moderator/Manager/Admin i asaj Republike (lidhet natyrshëm me hierarkinë e roleve që ekziston tashmë). Prek edhe tab-et te faqja e Republikës (`republic/[slug]/page.tsx`), sot me 1 tab të vetëm ("Feed"), gjithashtu pak të kotë aktualisht.
