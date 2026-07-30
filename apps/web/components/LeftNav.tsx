@@ -6,6 +6,7 @@ export default function LeftNav() {
   const [reps, setReps] = useState<{ id: string; slug: string; title: string }[]>([]);
   const [logged, setLogged] = useState(false);
   const [isMod, setIsMod] = useState(false);
+  const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -25,11 +26,11 @@ export default function LeftNav() {
 
       const { data } = await supa
         .from("user_roles")
-        .select("role")
+        .select("role,republic_id")
         .eq("user_id", uid)
-        .in("role", ["admin", "moderator"])
-        .limit(1);
+        .in("role", ["admin", "moderator"]);
       setIsMod((data?.length ?? 0) > 0);
+      setIsGlobalAdmin((data ?? []).some((r) => r.role === "admin" && r.republic_id === null));
     })();
   }, []);
 
@@ -68,6 +69,7 @@ export default function LeftNav() {
           {logged ? (
             <>
               {isMod && <a href="/mod/panel">Moderator panel</a>}
+              {isGlobalAdmin && <a href="/mod/roles">Manage roles</a>}
               <button onClick={signOut} className="text-left">Sign out</button>
             </>
           ) : (
