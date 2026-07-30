@@ -9,12 +9,18 @@ export default function SettingsPage() {
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
+  const [uid, setUid] = useState<string | null>(null);
 
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+
+  const [republics, setRepublics] = useState<{ id: string; title: string }[]>([]);
+  const [defaultRepublicId, setDefaultRepublicId] = useState<string>("");
+  const [savingFeed, setSavingFeed] = useState(false);
+  const [feedMsg, setFeedMsg] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -24,17 +30,41 @@ export default function SettingsPage() {
         return;
       }
       setEmail(sess.user.email ?? null);
+      setUid(sess.user.id);
 
       const { data } = await supa
         .from("profiles")
-        .select("username")
+        .select("username,default_republic_id")
         .eq("id", sess.user.id)
         .maybeSingle();
       setUsername(data?.username ?? null);
+      setDefaultRepublicId(data?.default_republic_id ?? "");
+
+      const { data: reps } = await supa.from("republics").select("id,title").eq("is_active", true).order("title");
+      setRepublics(reps ?? []);
 
       setChecking(false);
     })();
   }, [router]);
+
+  async function saveDefaultFeed(e: React.FormEvent) {
+    e.preventDefault();
+    if (!uid) return;
+    setFeedMsg(null);
+    setSavingFeed(true);
+    try {
+      const { error } = await supa
+        .from("profiles")
+        .update({ default_republic_id: defaultRepublicId || null })
+        .eq("id", uid);
+      if (error) throw error;
+      setFeedMsg("Saved.");
+    } catch (e: any) {
+      setFeedMsg(e.message ?? "Something went wrong");
+    } finally {
+      setSavingFeed(false);
+    }
+  }
 
   async function changePassword(e: React.FormEvent) {
     e.preventDefault();
@@ -114,6 +144,33 @@ export default function SettingsPage() {
             {saving ? "Saving…" : "Update password"}
           </button>
         </form>
+      </section>
+
+      <section className="bg-white border rounded-xl p-4 space-y-3">
+        <h2 className="text-sm font-semibold">Default feed</h2>
+        <p className="text-xs text-gray-500">
+          Choose a Republic to see by default when you open SFERAT, instead of all Republics mixed together.
+        </p>
+        <form onSubmit={saveDefaultFeed} className="flex items-center gap-2">
+          <select
+            className="border rounded-md px-3 py-2 text-sm flex-1"
+            value={defaultRepublicId}
+            onChange={(e) => setDefaultRepublicId(e.target.value)}
+          >
+            <option value="">All Republics (mixed)</option>
+            {republics.map((r) => (
+              <option key={r.id} value={r.id}>{r.title}</option>
+            ))}
+          </select>
+          <button
+            type="submit"
+            disabled={savingFeed}
+            className="px-4 py-2 bg-black text-white rounded-md text-sm disabled:opacity-60"
+          >
+            {savingFeed ? "Saving…" : "Save"}
+          </button>
+        </form>
+        {feedMsg && <p className="text-xs text-gray-600">{feedMsg}</p>}
       </section>
 
       {/* Hapësirë për opsione të tjera në të ardhmen (njoftime, privatësi, etj.) */}

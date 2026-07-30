@@ -35,8 +35,20 @@ Referencë vizioni: `docs/VISION.md`
 - **Gjithë teksti i dukshëm i UI-t u kthye në anglisht** (gjuha parësore e platformës, meqë synohet audiencë globale) — `/sign-in`, `/search`, footer-i, formulari inline i kyçjes te ballina. Komentet e kodit mbetën shqip (janë për ne, jo për përdoruesit).
 - **Menaxhimi i njoftimeve u plotësua**: fshirje individuale (🗑) dhe "Clear all" te `/notifications` + dropdown-i 🔔, "Mark all read" te faqja e plotë (më parë ndodhte vetëm automatikisht te dropdown-i), filtër "All/Unread", dhe **njoftimet tani janë të klikueshme** (çonin gjëkundi më parë, edhe pse e dhëna e post/koment-it ekzistonte tashmë te `payload`) — çojnë te postimi/komenti përkatës, ose profili i personit për "follow". "Arkivim" si gjendje e veçantë u la qëllimisht jashtë (do të ishte kryesisht dublikatë i "fshi").
 - **Dropdown-i "Feed" i kompozuesit (ballina) u hoq**: ishte një zgjedhje me **1 opsion të vetëm** ("Feed") për çdo Republikë — pra s'ofronte zgjedhje reale, thjesht zhurmë vizuale. Postimet vazhdojnë të shkojnë te "feed" automatikisht, pa asnjë ndryshim funksional. (Tabela `republic_sections` mbetet e paprekur — vetëm UI-ja e kotë u hoq, jo infrastruktura.)
+- **Vizioni afatgjatë i platformës (pronësi, monetizim) u diskutua dhe u nda në faza** — shih "Vizion monetizimi" më poshtë te "Shtyrë me qëllim" për listën e plotë. Dy pikat pa rrezik financiar/ligjor u zbatuan menjëherë:
+  - **Feed i personalizuar sipas Republikës së zgjedhur**: `profiles.default_republic_id` (e re) + seksion i ri "Default feed" te `/settings` — kur hyn, sheh automatikisht Republikën e preferuar në vend të "All Republics" të përziera (nëse s'ke zgjedhur asnjë, sillet si sot). Mund ta ndryshosh gjithmonë me tab-et Top/New apo "Show all Republics".
+  - **Kohëzgjatje postimi e zgjedhshme (1/3/7 ditë)**: selektor i ri te kompozuesi; më parë ishte gjithmonë 7 ditë fikse për të gjithë. Databaza tashmë e mbështeste këtë (trigger-i `set_post_timeboxes` respekton `expires_at` nëse jepet nga klienti) — s'kërkoi migrim.
 
 ## 🔜 Shtyrë me qëllim — mos harro
+
+### Vizion monetizimi (afatgjatë, kërkon planifikim serioz)
+**Konteksti:** platforma duhet të financohet nga diçka, por pa u bërë "e bezdisshme" si reklamat tipike (FB/IG). Ideja e plotë e propozuar (e ndarë sipas rrezikut/kompleksitetit):
+
+- **"Sponsorizim" pagese për zgjatje postimi** (jo reklamë biznesi) — kërkon integrim procesori pagesash (Stripe), vendime çmimesh/nivelesh. Projekt më vete.
+- **Reklama të maskuara si postime nga një llogari "agjent" e Sferës** — teknikisht e thjeshtë, por **kërkon patjetër etiketim minimal ("Sponsored"/"Ad")** për arsye ligjore (rregulla reklamash FTC/BE kundër reklamës së maskuar pa dallim) — jo zero-disclosure siç u propozua fillimisht.
+- **Administratorë Republike me përfitim monetar nga të ardhurat e brendshme** — lidhet me hierarkinë e roleve (Assistant/Moderator/Manager) dhe idenë e promovimit automatik sipas pikëve (shih më poshtë) — por "përfitim monetar" do të thotë payout real drejt njerëzve: verifikim identiteti, tatime, strukturë biznesi/ligjore pas saj. Pika më ambicioze e gjithë vizionit.
+
+**Kur ta rimarrim:** procesori i pagesave (Stripe) + etiketimi i reklamave si fazë e parë, kur të jesh gati të vendosësh çmime; payout-et te administratorët si fazë shumë më e largët, kur platforma të ketë të ardhura reale që e justifikojnë.
 
 ### Seksioni "Announcements" per-Republikë (vazhdim i heqjes së dropdown-it "Feed")
 **Ideja:** ta bëjmë tabelën `republic_sections` realisht të dobishme duke shtuar një seksion të dytë, "Announcements" — postime zyrtare të dukshme veçmas nga diskutimi i lirë, të postueshme vetëm nga Moderator/Manager/Admin i asaj Republike (lidhet natyrshëm me hierarkinë e roleve që ekziston tashmë). Prek edhe tab-et te faqja e Republikës (`republic/[slug]/page.tsx`), sot me 1 tab të vetëm ("Feed"), gjithashtu pak të kotë aktualisht.

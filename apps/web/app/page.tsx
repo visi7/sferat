@@ -68,6 +68,7 @@ export default function Home() {
 const [imageFile, setImageFile] = useState<File | null>(null);
 const [linkUrl, setLinkUrl] = useState("");
 const [showLink, setShowLink] = useState(false);
+const [duration, setDuration] = useState<1 | 3 | 7>(7);
 const [uploadingImage, setUploadingImage] = useState(false);
 // ---- Section per republic (Home composer) — no UI picker; every
 // Republic has exactly one section ("feed") today, so we just use it.
@@ -110,7 +111,19 @@ useEffect(() => {
     setTab(initialTab);
 
     const rawHash = new URL(window.location.href).hash.replace("#rep=", "");
-    const initialRep = rawHash || null;
+    let initialRep: string | null = rawHash || null;
+
+    // Nëse s'ka #rep= eksplicit në URL, përdor Republikën e parazgjedhur
+    // të përdoruesit (nëse ka zgjedhur një te Settings) në vend të "All Republics".
+    if (!initialRep && res.data.session) {
+      const { data: prof } = await supa
+        .from("profiles")
+        .select("default_republic_id")
+        .eq("id", res.data.session.user.id)
+        .maybeSingle();
+      if (prof?.default_republic_id) initialRep = prof.default_republic_id;
+    }
+
     setRepFilter(initialRep);
 
     await refreshFeed(initialTab, initialRep, true);
@@ -255,6 +268,7 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
     author_id: userId,
     post_type: hasImage ? "image" : hasLink ? "link" : "text",
     section,
+    expires_at: new Date(Date.now() + duration * 24 * 3600 * 1000).toISOString(),
   };
 
   try {
@@ -281,6 +295,7 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
     setImageFile(null);
     setShowLink(false);
     setLinkUrl("");
+    setDuration(7);
     await refreshFeed(tab, repFilter, true);
   } catch (e: any) {
     alert(e.message);
@@ -315,7 +330,23 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
         </button>
 
         <div className="text-sm text-gray-500 ml-2">
-          {repFilter ? "Filtered by Republic" : "All Republics"}
+          {repFilter ? (
+            <>
+              {republics.find((r) => r.id === repFilter || r.slug === repFilter)?.title ?? "Filtered by Republic"}
+              {" · "}
+              <button
+                className="underline"
+                onClick={() => {
+                  setRepFilter(null);
+                  refreshFeed(tab, null, true);
+                }}
+              >
+                Show all Republics
+              </button>
+            </>
+          ) : (
+            "All Republics"
+          )}
         </div>
 
         <button className="ml-auto underline text-sm" onClick={() => refreshFeed(tab, repFilter, true)}>
@@ -427,6 +458,19 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
                 onChange={(e) => setLinkUrl(e.target.value)}
               />
             )}
+
+            {/* Post duration */}
+            <select
+              className="px-2 py-1 text-xs border rounded bg-white"
+              value={duration}
+              onChange={(e) => setDuration(Number(e.target.value) as 1 | 3 | 7)}
+              aria-label="Post duration"
+              title="How long this post stays up"
+            >
+              <option value={1}>1 day</option>
+              <option value={3}>3 days</option>
+              <option value={7}>7 days</option>
+            </select>
           </div>
 
           <button
