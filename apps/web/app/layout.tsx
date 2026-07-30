@@ -14,14 +14,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "SPHERES — Republic of Free Thoughts",
-  description: "Discuss, vote, share ideas in thematic Republics. Posts are automatically deleted after 7 days.",
+  title: "SFERAT — Republic of Free Thoughts",
+  description: "Discuss, vote, and share ideas in thematic Republics. Posts expire after 7 days.",
   openGraph: {
-    title: "SPHERES",
-    description: "Discussion platform with thematic republics.",
-    url: "https://spheres.app",
-    siteName: "SPHERES",
-    locale: "sq_AL",
+    title: "SFERAT",
+    description: "Discuss, vote, and share ideas in thematic Republics.",
+    url: "https://sferat.app",
+    siteName: "SFERAT",
+    locale: "en_US",
     type: "website",
   },
   robots: {

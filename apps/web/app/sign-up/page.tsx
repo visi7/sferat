@@ -24,7 +24,7 @@ export default function SignUpPage() {
         return;
       }
 
-      alert("Llogaria u krijua. Kontrollo email-in për konfirmim.");
+      alert("Account created. Check your email to confirm it.");
     } finally {
       setLoading(false);
     }
