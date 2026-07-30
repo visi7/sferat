@@ -1,5 +1,6 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { supa } from "@/lib/supabase";
 
 type Props = {
   profile: {
@@ -27,6 +28,54 @@ export default function ProfileHeader({
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(profile.display_name || profile.username);
   const [savingName, setSavingName] = useState(false);
+
+  const [myId, setMyId] = useState<string | null>(null);
+  const [blocked, setBlocked] = useState(false);
+  const [blockBusy, setBlockBusy] = useState(false);
+
+  useEffect(() => {
+    if (isMe) return;
+    (async () => {
+      const sess = (await supa.auth.getSession()).data.session;
+      const uid = sess?.user?.id ?? null;
+      setMyId(uid);
+      if (!uid) return;
+
+      const { data } = await supa
+        .from("blocked_users")
+        .select("id")
+        .eq("blocker_id", uid)
+        .eq("blocked_id", profile.id)
+        .maybeSingle();
+      setBlocked(!!data);
+    })();
+  }, [isMe, profile.id]);
+
+  async function toggleBlock() {
+    if (!myId) return alert("You must be logged in.");
+    setBlockBusy(true);
+    try {
+      if (blocked) {
+        const { error } = await supa
+          .from("blocked_users")
+          .delete()
+          .eq("blocker_id", myId)
+          .eq("blocked_id", profile.id);
+        if (error) throw error;
+        setBlocked(false);
+      } else {
+        const { error } = await supa
+          .from("blocked_users")
+          .insert({ blocker_id: myId, blocked_id: profile.id });
+        if (error) throw error;
+        setBlocked(true);
+      }
+    } catch (e: any) {
+      alert(e.message ?? "Something went wrong");
+    } finally {
+      setBlockBusy(false);
+    }
+  }
 
   async function handleFileSelected(file: File | null) {
     if (!file || !onUploadAvatar) return;
@@ -147,6 +196,19 @@ export default function ProfileHeader({
           <div className="text-gray-500 text-sm">@{profile.username}</div>
         </div>
       </div>
+
+      {!isMe && myId && (
+        <button
+          type="button"
+          onClick={toggleBlock}
+          disabled={blockBusy}
+          className={`h-9 px-3 rounded border text-sm disabled:opacity-60 ${
+            blocked ? "bg-gray-900 text-white" : "hover:bg-gray-50"
+          }`}
+        >
+          {blockBusy ? "…" : blocked ? "Blocked · Unblock" : "Block"}
+        </button>
+      )}
     </header>
   );
 }
