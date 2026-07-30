@@ -27,6 +27,11 @@ export default function SettingsPage() {
   const [emailMsg, setEmailMsg] = useState<string | null>(null);
   const [emailErr, setEmailErr] = useState<string | null>(null);
 
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteErr, setDeleteErr] = useState<string | null>(null);
+
   useEffect(() => {
     (async () => {
       const sess = (await supa.auth.getSession()).data.session;
@@ -92,6 +97,49 @@ export default function SettingsPage() {
       setEmailErr(e.message ?? "Something went wrong");
     } finally {
       setSavingEmail(false);
+    }
+  }
+
+  async function deleteAccount() {
+    if (!uid || deleteConfirmText !== "DELETE") return;
+    setDeleteErr(null);
+    setDeleting(true);
+    try {
+      // 1) Scrub our own profile — self-service, keeps posts/comments
+      // intact (shown as "Private user") instead of cascade-deleting them.
+      const { error: profErr } = await supa
+        .from("profiles")
+        .update({
+          username: `private_user_${uid.slice(0, 8)}`,
+          display_name: "Private user",
+          bio: null,
+          avatar_url: "/deleted-avatar.svg",
+          employment: null,
+          education: null,
+          location: null,
+          topics: null,
+          deleted_at: new Date().toISOString(),
+        })
+        .eq("id", uid);
+      if (profErr) throw profErr;
+
+      // 2) Ban the auth account server-side so it can never sign in again.
+      const token = (await supa.auth.getSession()).data.session?.access_token;
+      const res = await fetch("/api/delete-account", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? "Could not fully delete the account. Contact support.");
+      }
+
+      await supa.auth.signOut();
+      window.location.href = "/";
+    } catch (e: any) {
+      setDeleteErr(e.message ?? "Something went wrong");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -223,6 +271,55 @@ export default function SettingsPage() {
           </button>
         </form>
         {feedMsg && <p className="text-xs text-gray-600">{feedMsg}</p>}
+      </section>
+
+      <section className="bg-white border border-red-200 rounded-xl p-4 space-y-3">
+        <h2 className="text-sm font-semibold text-red-700">Delete account</h2>
+        <p className="text-xs text-gray-600">
+          Your posts and comments stay up (so other people's conversations aren't broken) but are shown as
+          "Private user" instead of your name — your profile, bio, and personal info are wiped. You won't be able
+          to sign back in with this account. This can't be undone.
+        </p>
+
+        {!showDelete ? (
+          <button
+            onClick={() => setShowDelete(true)}
+            className="px-4 py-2 border border-red-300 text-red-700 rounded-md text-sm hover:bg-red-50"
+          >
+            Delete my account
+          </button>
+        ) : (
+          <div className="space-y-2">
+            <label className="block text-xs text-gray-600">
+              Type <strong>DELETE</strong> to confirm:
+            </label>
+            <input
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              className="w-full border rounded-md px-3 py-2 text-sm"
+            />
+            {deleteErr && <p className="text-red-600 text-xs">{deleteErr}</p>}
+            <div className="flex gap-2">
+              <button
+                onClick={deleteAccount}
+                disabled={deleteConfirmText !== "DELETE" || deleting}
+                className="px-4 py-2 bg-red-600 text-white rounded-md text-sm disabled:opacity-50"
+              >
+                {deleting ? "Deleting…" : "Permanently delete"}
+              </button>
+              <button
+                onClick={() => {
+                  setShowDelete(false);
+                  setDeleteConfirmText("");
+                  setDeleteErr(null);
+                }}
+                className="px-4 py-2 border rounded-md text-sm hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Hapësirë për opsione të tjera në të ardhmen (njoftime, privatësi, etj.) */}
