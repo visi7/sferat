@@ -359,6 +359,10 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
     <a href="/sign-up" className="underline text-blue-600">
       Krijo një llogari
     </a>
+    {" · "}
+    <a href="/forgot-password" className="underline text-blue-600">
+      Ke harruar fjalëkalimin?
+    </a>
   </p>
 </div>
 
