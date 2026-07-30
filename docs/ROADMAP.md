@@ -48,6 +48,13 @@ Referencë vizioni: `docs/VISION.md`
 
 ## 🔜 Shtyrë me qëllim — mos harro
 
+### Bug UX: Republika e para-zgjedhur automatikisht te kompozuesi i ballinës
+**Problemi:** te `app/page.tsx`, dropdown-i i Republikës në kompozues e zgjedh vetë të parën alfabetikisht si parazgjedhje (`if (reps.data?.length) setRepId(reps.data[0].id)`). Nëse një përdorues s'e vëren/ndryshon dropdown-in para se të postojë, postimi i tij shkon **aksidentalisht** te Republika e gabuar.
+
+**Ide zgjidhjeje (për t'u vendosur më vonë):** ose (a) mos e para-zgjidh fare — dropdown-i fillon bosh/"Select a Republic" dhe butoni "Post" mbetet i çaktivizuar derisa të zgjidhet diçka me dorë, ose (b) një konfirmim i vogël para postimit që thotë qartë "Po poston te [Republika X] — vazhdo?".
+
+**Kur ta rimarrim:** kur pronari të vendosë cilën nga këto (ose diçka tjetër) preferon — flagged tani, jo e zbatuar.
+
 ### Vizion monetizimi (afatgjatë, kërkon planifikim serioz)
 **Konteksti:** platforma duhet të financohet nga diçka, por pa u bërë "e bezdisshme" si reklamat tipike (FB/IG). Ideja e plotë e propozuar (e ndarë sipas rrezikut/kompleksitetit):
 
