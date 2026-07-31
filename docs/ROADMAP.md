@@ -110,6 +110,8 @@ Referencë vizioni: `docs/VISION.md`
 
 - **Favicon i personalizuar** (u zëvendësua ai parazgjedhje i Next.js/Vercel-it): `app/favicon.ico`, `app/icon.png`, `app/apple-icon.png` u gjeneruan nga emoji 🏛️ (i njëjti që përdoret te niveli "Citizen" i Republic Card) — përputhet me temën qytetare ekzistuese, pa pasur nevojë për logo të dizajnuar ende. Kur të ketë një logo real në të ardhmen, thjesht zëvendësohen këto 3 skedarë.
 
+- **Faqja `/sign-in` u stilizua** — ishte skedar i vjetër/i harruar, plotësisht pa stil (asnjë header/branding, input-e/buton pa asnjë klasë CSS, dukej "e thyer"). Rregulluar për t'u përputhur vizualisht me `/sign-up`/`/forgot-password`. Kjo faqe lidhet nga disa vende (menyja ☰, header-i, dritarja "Join the conversation" për vizitorë), jo kod i vdekur.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Bug UX: Republika e para-zgjedhur automatikisht te kompozuesi i ballinës — U MBYLL
