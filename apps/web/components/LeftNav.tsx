@@ -7,6 +7,7 @@ export default function LeftNav() {
   const [logged, setLogged] = useState(false);
   const [isMod, setIsMod] = useState(false);
   const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
+  const [isManager, setIsManager] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -31,6 +32,7 @@ export default function LeftNav() {
         .in("role", ["admin", "manager", "moderator", "assistant"]);
       setIsMod((data?.length ?? 0) > 0);
       setIsGlobalAdmin((data ?? []).some((r) => r.role === "admin" && r.republic_id === null));
+      setIsManager((data ?? []).some((r) => r.role === "manager"));
     })();
   }, []);
 
@@ -76,7 +78,7 @@ export default function LeftNav() {
           {logged ? (
             <>
               {isMod && <a href="/mod/panel">Moderator panel</a>}
-              {isGlobalAdmin && <a href="/mod/roles">Manage roles</a>}
+              {(isGlobalAdmin || isManager) && <a href="/mod/roles">Manage roles</a>}
               <a href="/settings">Settings</a>
               <button onClick={signOut} className="text-left">Sign out</button>
             </>

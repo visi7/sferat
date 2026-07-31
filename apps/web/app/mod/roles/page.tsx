@@ -23,9 +23,12 @@ const ROLE_LABELS: Record<RoleName, string> = {
 
 type Republic = { id: string; title: string };
 
+type ManagerScope = { republicId: string | null } | null;
+
 export default function ModRolesPage() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
+  const [managerScope, setManagerScope] = useState<ManagerScope>(null);
 
   const [roles, setRoles] = useState<Role[]>([]);
   const [republics, setRepublics] = useState<Republic[]>([]);
@@ -38,6 +41,8 @@ export default function ModRolesPage() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
+  const canManage = isGlobalAdmin || !!managerScope;
+
   useEffect(() => {
     (async () => {
       const s = (await supa.auth.getSession()).data.session;
@@ -47,7 +52,7 @@ export default function ModRolesPage() {
         return;
       }
 
-      const { data } = await supa
+      const { data: adminRow } = await supa
         .from("user_roles")
         .select("id")
         .eq("user_id", uid)
@@ -55,7 +60,23 @@ export default function ModRolesPage() {
         .is("republic_id", null)
         .maybeSingle();
 
-      setIsGlobalAdmin(!!data);
+      if (adminRow) {
+        setIsGlobalAdmin(true);
+      } else {
+        const { data: managerRow } = await supa
+          .from("user_roles")
+          .select("republic_id")
+          .eq("user_id", uid)
+          .eq("role", "manager")
+          .order("republic_id", { ascending: true, nullsFirst: true })
+          .limit(1)
+          .maybeSingle();
+        if (managerRow) {
+          setManagerScope({ republicId: managerRow.republic_id });
+          setRole("assistant");
+          setRepublicId(managerRow.republic_id ?? "");
+        }
+      }
       setCheckingAuth(false);
     })();
   }, []);
@@ -96,13 +117,13 @@ export default function ModRolesPage() {
   }
 
   useEffect(() => {
-    if (!isGlobalAdmin) return;
+    if (!canManage) return;
     loadRoles();
     (async () => {
       const { data } = await supa.from("republics").select("id,title").order("title");
       setRepublics(data ?? []);
     })();
-  }, [isGlobalAdmin]);
+  }, [canManage]);
 
   async function assignRole(e: React.FormEvent) {
     e.preventDefault();
@@ -110,6 +131,14 @@ export default function ModRolesPage() {
 
     const clean = username.trim().toLowerCase();
     if (!clean) return;
+
+    // Managers (non-global-admin) can only ever grant "assistant", within
+    // their own scope — enforced here too, not just in RLS, so the form
+    // can't silently submit something the server will reject anyway.
+    const effectiveRole: RoleName = isGlobalAdmin ? role : "assistant";
+    const effectiveRepublicId = isGlobalAdmin
+      ? republicId || null
+      : managerScope?.republicId ?? (republicId || null);
 
     setSaving(true);
     try {
@@ -127,19 +156,25 @@ export default function ModRolesPage() {
 
       const { error } = await supa.from("user_roles").insert({
         user_id: prof.id,
-        role,
-        republic_id: republicId || null,
+        role: effectiveRole,
+        republic_id: effectiveRepublicId,
       });
       if (error) throw error;
 
       setUsername("");
-      setRepublicId("");
+      if (isGlobalAdmin) setRepublicId("");
       await loadRoles();
     } catch (err: any) {
       setFormError(err.message ?? "Something went wrong");
     } finally {
       setSaving(false);
     }
+  }
+
+  function canRemove(r: Role) {
+    if (isGlobalAdmin) return true;
+    if (!managerScope || r.role !== "assistant") return false;
+    return managerScope.republicId === null || managerScope.republicId === r.republic_id;
   }
 
   async function removeRole(id: string) {
@@ -152,11 +187,11 @@ export default function ModRolesPage() {
     return <div className="p-6 text-sm text-gray-500">Loading…</div>;
   }
 
-  if (!isGlobalAdmin) {
+  if (!canManage) {
     return (
       <div className="p-6">
         <h1 className="text-xl font-bold mb-2">Moderator Roles</h1>
-        <p className="text-gray-600 text-sm">You must be a global admin to view this page.</p>
+        <p className="text-gray-600 text-sm">You must be an admin or manager to view this page.</p>
       </div>
     );
   }
@@ -170,6 +205,14 @@ export default function ModRolesPage() {
 
       <form onSubmit={assignRole} className="bg-white border rounded-xl p-4 space-y-3">
         <h2 className="text-sm font-semibold">Assign a role</h2>
+        {!isGlobalAdmin && (
+          <p className="text-xs text-gray-500">
+            As a Manager, you can grant/remove <strong>Assistant</strong> access
+            {managerScope?.republicId
+              ? " within your own Republic only."
+              : " in any Republic (or globally)."}
+          </p>
+        )}
 
         <div>
           <label className="block text-xs text-gray-500 mb-1">Username</label>
@@ -184,29 +227,41 @@ export default function ModRolesPage() {
         <div className="flex gap-3">
           <div className="flex-1">
             <label className="block text-xs text-gray-500 mb-1">Role</label>
-            <select
-              className="w-full border rounded-md px-3 py-2 text-sm"
-              value={role}
-              onChange={(e) => setRole(e.target.value as RoleName)}
-            >
-              <option value="assistant">{ROLE_LABELS.assistant}</option>
-              <option value="moderator">{ROLE_LABELS.moderator}</option>
-              <option value="manager">{ROLE_LABELS.manager}</option>
-              <option value="admin">{ROLE_LABELS.admin}</option>
-            </select>
+            {isGlobalAdmin ? (
+              <select
+                className="w-full border rounded-md px-3 py-2 text-sm"
+                value={role}
+                onChange={(e) => setRole(e.target.value as RoleName)}
+              >
+                <option value="assistant">{ROLE_LABELS.assistant}</option>
+                <option value="moderator">{ROLE_LABELS.moderator}</option>
+                <option value="manager">{ROLE_LABELS.manager}</option>
+                <option value="admin">{ROLE_LABELS.admin}</option>
+              </select>
+            ) : (
+              <div className="w-full border rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-600">
+                {ROLE_LABELS.assistant}
+              </div>
+            )}
           </div>
           <div className="flex-1">
             <label className="block text-xs text-gray-500 mb-1">Scope</label>
-            <select
-              className="w-full border rounded-md px-3 py-2 text-sm"
-              value={republicId}
-              onChange={(e) => setRepublicId(e.target.value)}
-            >
-              <option value="">Global (all Republics)</option>
-              {republics.map((r) => (
-                <option key={r.id} value={r.id}>{r.title}</option>
-              ))}
-            </select>
+            {isGlobalAdmin || !managerScope?.republicId ? (
+              <select
+                className="w-full border rounded-md px-3 py-2 text-sm"
+                value={republicId}
+                onChange={(e) => setRepublicId(e.target.value)}
+              >
+                <option value="">Global (all Republics)</option>
+                {republics.map((r) => (
+                  <option key={r.id} value={r.id}>{r.title}</option>
+                ))}
+              </select>
+            ) : (
+              <div className="w-full border rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-600">
+                {republics.find((r) => r.id === managerScope.republicId)?.title ?? "Your Republic"}
+              </div>
+            )}
           </div>
         </div>
 
@@ -237,12 +292,14 @@ export default function ModRolesPage() {
                     — {ROLE_LABELS[r.role] ?? r.role} {r.republic_title ? `· ${r.republic_title}` : "· Global"}
                   </span>
                 </div>
-                <button
-                  onClick={() => removeRole(r.id)}
-                  className="text-xs px-2 py-1 border rounded hover:bg-gray-50"
-                >
-                  Remove
-                </button>
+                {canRemove(r) && (
+                  <button
+                    onClick={() => removeRole(r.id)}
+                    className="text-xs px-2 py-1 border rounded hover:bg-gray-50"
+                  >
+                    Remove
+                  </button>
+                )}
               </div>
             ))}
           </div>
