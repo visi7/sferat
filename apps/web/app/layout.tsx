@@ -19,7 +19,7 @@ export const metadata = {
   openGraph: {
     title: "SFERAT",
     description: "Discuss, vote, and share ideas in thematic Republics.",
-    url: "https://sferat.app",
+    url: "https://sferat.com",
     siteName: "SFERAT",
     locale: "en_US",
     type: "website",
