@@ -123,7 +123,7 @@ useEffect(() => {
       if (uid) {
         const { data } = await supa
           .from("follows_users")
-          .select("id")
+          .select("follower_id")
           .eq("follower_id", uid)
           .eq("followed_user_id", p.author_id)
           .limit(1);
