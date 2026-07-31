@@ -96,7 +96,7 @@ useEffect(() => {
 
     const { data, error } = await supa
       .from("bookmarks")
-      .select("id")
+      .select("user_id")
       .eq("user_id", uid)
       .eq("post_id", p.id)
       .maybeSingle();
@@ -390,7 +390,7 @@ async function removePost() {
     (async () => {
       const { data, error } = await supa
         .from("bookmarks")
-        .select("id")
+        .select("user_id")
         .eq("user_id", me)
         .eq("post_id", p.id)
         .maybeSingle();
