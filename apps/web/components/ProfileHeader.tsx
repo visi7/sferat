@@ -39,6 +39,9 @@ export default function ProfileHeader({
   const [followBusy, setFollowBusy] = useState(false);
   const [signInMsg, setSignInMsg] = useState<string | null>(null);
 
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
   useEffect(() => {
     if (isMe) return;
     (async () => {
@@ -95,12 +98,37 @@ export default function ProfileHeader({
   }
 
   function onBlockClick() {
+    setMenuOpen(false);
     if (!myId) return alert("You must be logged in.");
     if (blocked) {
       toggleBlock();
     } else {
       setShowBlockConfirm(true);
     }
+  }
+
+  function profileUrl() {
+    return `${window.location.origin}/profile/${profile.username}`;
+  }
+
+  async function handleShare() {
+    setMenuOpen(false);
+    const url = profileUrl();
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `@${profile.username} on SFERAT`, url });
+      } catch {
+        // felmuar/anuluar nga vetë përdoruesi — nuk ka nevojë për mesazh gabimi
+      }
+    } else {
+      await handleCopyLink();
+    }
+  }
+
+  async function handleCopyLink() {
+    await navigator.clipboard.writeText(profileUrl());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
   }
 
   async function toggleBlock() {
@@ -251,7 +279,7 @@ export default function ProfileHeader({
       </div>
 
       {!isMe && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 relative">
           <button
             type="button"
             onClick={toggleFollow}
@@ -263,17 +291,49 @@ export default function ProfileHeader({
             {followBusy ? "…" : isFollowing ? "Following" : "Follow"}
           </button>
 
-          {myId && (
-            <button
-              type="button"
-              onClick={onBlockClick}
-              disabled={blockBusy}
-              className={`h-9 px-3 rounded border text-sm disabled:opacity-60 ${
-                blocked ? "bg-gray-900 text-white" : "hover:bg-gray-50"
-              }`}
-            >
-              {blockBusy ? "…" : blocked ? "Blocked · Unblock" : "Block"}
-            </button>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            className="h-9 w-9 rounded border hover:bg-gray-50 flex items-center justify-center text-gray-600"
+            title="More options"
+            aria-label="More options"
+          >
+            ⋮
+          </button>
+
+          {menuOpen && (
+            <>
+              <div className="fixed inset-0 z-[9997]" onClick={() => setMenuOpen(false)} />
+              <div className="absolute right-0 top-11 z-[9998] w-52 bg-white border rounded-lg shadow-lg py-1 text-sm overflow-hidden">
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="w-full text-left px-3 py-2 hover:bg-gray-50"
+                >
+                  Share profile
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="w-full text-left px-3 py-2 hover:bg-gray-50"
+                >
+                  {copied ? "Copied!" : "Copy profile link"}
+                </button>
+                {myId && (
+                  <>
+                    <div className="border-t my-1" />
+                    <button
+                      type="button"
+                      onClick={onBlockClick}
+                      disabled={blockBusy}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-50 text-red-600 disabled:opacity-60"
+                    >
+                      {blockBusy ? "…" : blocked ? "Unblock" : "Block"}
+                    </button>
+                  </>
+                )}
+              </div>
+            </>
           )}
         </div>
       )}
