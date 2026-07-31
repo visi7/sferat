@@ -108,6 +108,8 @@ Referencë vizioni: `docs/VISION.md`
 
 - **Mesazhi i "cooldown" te `/forgot-password` u stilizua**: kur kërkohej një link i dytë rikuperimi shumë shpejt pas të parit, faqja shfaqte tekstin e papërpunuar të Supabase-it (`"For security purposes, you can only request this after 49 seconds."`) — dukej si mesazh i një shërbimi të jashtëm, jo pjesë e SFERAT-it. Tani `app/forgot-password/page.tsx` e nxjerr numrin e sekondave nga mesazhi (regex `after (\d+) seconds`), e fsheh tekstin origjinal, dhe shfaq një kuti të stilizuar (portokalli i butë) me numërim mbrapsht të gjallë ("You can request another one in 49s" → 48s → ... → 0), me butonin "Send reset link" të çaktivizuar derisa të mbarojë numërimi.
 
+- **Favicon i personalizuar** (u zëvendësua ai parazgjedhje i Next.js/Vercel-it): `app/favicon.ico`, `app/icon.png`, `app/apple-icon.png` u gjeneruan nga emoji 🏛️ (i njëjti që përdoret te niveli "Citizen" i Republic Card) — përputhet me temën qytetare ekzistuese, pa pasur nevojë për logo të dizajnuar ende. Kur të ketë një logo real në të ardhmen, thjesht zëvendësohen këto 3 skedarë.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Bug UX: Republika e para-zgjedhur automatikisht te kompozuesi i ballinës — U MBYLL
