@@ -14,11 +14,12 @@ export default function RightAside() {
     (async () => {
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
       // trending republics by posts last 7d (cheap heuristic)
-      const { data: reps } = await supa
+      const { data: reps, error: repsErr } = await supa
         .from("posts")
         .select("republic_id, republics!inner(id,slug,title)")
         .gt("created_at", sevenDaysAgo)
         .limit(200);
+      if (repsErr) console.error("[RightAside] trending republics", repsErr);
       const uniq = new Map<string, Republic>();
       (reps ?? []).forEach((row: any) => {
         const r = row.republics;
@@ -27,11 +28,12 @@ export default function RightAside() {
       setTrending(Array.from(uniq.values()).slice(0, 5));
 
       // who to follow (latest posters)
-      const { data: latest } = await supa
+      const { data: latest, error: latestErr } = await supa
         .from("posts")
-        .select("author_id, profiles!inner(id,username,display_name)")
+        .select("author_id, profiles:profiles!posts_author_id_fkey(id,username,display_name)")
         .order("created_at", { ascending: false })
         .limit(30);
+      if (latestErr) console.error("[RightAside] who to follow", latestErr);
       const u = new Map<string, Profile>();
       (latest ?? []).forEach((row: any) => {
         const p = row.profiles;
