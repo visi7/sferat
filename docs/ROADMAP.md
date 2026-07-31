@@ -116,6 +116,8 @@ Referencë vizioni: `docs/VISION.md`
 
 - **Butoni "Block" u zhvendos në menu "⋮"** te profili (jo më buton i vetëm i dukshëm — dukej "shabllon") — "Follow" mbetet veprimi kryesor i dukshëm. Menuja "⋮" përmban tani: **"Share profile"** (Web Share API i telefonit, bie mbrapa te "copy link" në desktop), **"Copy profile link"**, dhe **"Block"/"Unblock"**. "Report user" (raportim direkt i një përdoruesi, jo vetëm postimesh) u diskutua por u la qëllimisht jashtë — kërkonte ndryshim skeme (`reports.post_id` opsionale + kolonë e re `reported_user_id` + përshtatje RLS/`/mod/panel`), pronari vendosi s'i nevojitet tani.
 
+- **Opsioni "Add link" u hoq nga kompozuesi** (ballina) — pronari vendosi s'e do më. Postimet e reja tani insertohen gjithmonë me `url: null`, `post_type` "text" ose "image". Postimet ekzistuese me link (nëse ka) vazhdojnë të shfaqen normalisht — vetëm mundësia për të shtuar link të ri u hoq nga kompozuesi, jo shfaqja e postimeve të vjetra.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Bug UX: Republika e para-zgjedhur automatikisht te kompozuesi i ballinës — U MBYLL
