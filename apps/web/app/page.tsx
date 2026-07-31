@@ -66,8 +66,6 @@ export default function Home() {
   const [body, setBody] = useState("");
   const [file, setFile] = useState<File | null>(null);
 const [imageFile, setImageFile] = useState<File | null>(null);
-const [linkUrl, setLinkUrl] = useState("");
-const [showLink, setShowLink] = useState(false);
 const [duration, setDuration] = useState<1 | 3 | 7>(7);
 const [uploadingImage, setUploadingImage] = useState(false);
 // ---- Section per republic (Home composer) — no UI picker; every
@@ -280,11 +278,10 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
   if (!repId) return alert("Please choose a republic.");
 
   const hasText = !!body.trim();
-  const hasLink = !!linkUrl.trim();
   const hasImage = !!imageFile;
 
-  if (!hasText && !hasImage && !hasLink) {
-    return alert("Write something or attach an image/link.");
+  if (!hasText && !hasImage) {
+    return alert("Write something or attach an image.");
   }
 
   const userId = session.user.id;
@@ -292,11 +289,11 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
     // title hoqëm fare; mbetet bosh
     title: "",
     body: hasText ? body.trim() : "",
-    url: hasLink ? linkUrl.trim() : null,
+    url: null,
     image_url: null,
     republic_id: repId,
     author_id: userId,
-    post_type: hasImage ? "image" : hasLink ? "link" : "text",
+    post_type: hasImage ? "image" : "text",
     section,
     expires_at: new Date(Date.now() + duration * 24 * 3600 * 1000).toISOString(),
   };
@@ -322,8 +319,6 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
     // reset composer
     setBody("");
     setImageFile(null);
-    setShowLink(false);
-    setLinkUrl("");
     setDuration(7);
     await refreshFeed(tab, repFilter, true);
   } catch (e: any) {
@@ -471,22 +466,6 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
                   ✕
                 </button>
               </span>
-            )}
-
-            {/* Add link */}
-            <button
-              className="px-2 py-1 text-xs border rounded bg-white hover:bg-gray-100"
-              onClick={() => setShowLink((s) => !s)}
-            >
-              🔗 Add link
-            </button>
-            {showLink && (
-              <input
-                className="ml-2 border rounded px-2 py-1 text-xs w-64"
-                placeholder="https://example.com"
-                value={linkUrl}
-                onChange={(e) => setLinkUrl(e.target.value)}
-              />
             )}
 
             {/* Post duration */}
