@@ -121,6 +121,8 @@ Referencë vizioni: `docs/VISION.md`
 - **Manager mund të caktojë "Assistant" vetë** (u zbatua ideja e lënë pezull më parë): migrimi `20260731184110_manager_assign_assistants.sql` shton `is_manager_of_scope()` + 2 politika RLS (`user_roles_manager_insert_assistant`/`_delete_assistant`) — Manager (global ose i kufizuar te një Republikë) mund tani të caktojë/heqë vetëm rolin Assistant, brenda "scope"-it të vet, pa nevojë admini global. `/mod/roles` i shfaq Manager-it formular të reduktuar (roli fiks "Assistant", scope-i fiks nëse është i kufizuar); linku "Manage roles" tani shfaqet edhe për Manager, jo vetëm Admin global.
 - **U hoq "cache"-i i personalizuar 5-10 min mbi çdo faqe** (`next.config.ts`) — dyshohej si shkak i "faqja duket e ngecur, duhet refresh i plotë" i raportuar; Vercel/Next.js e trajtojnë vetë "caching"-un e skedarëve statikë në mënyrë të sigurt, ky "override" ynë vetëm dëmtonte freskinë e HTML-it në një app me përmbajtje që ndryshon shpesh.
 
+- **Bug i gjetur: "Who to follow" dilte gjithmonë bosh** (`RightAside.tsx`) — query-t përdorte `profiles!inner(...)` pa specifikuar lidhjen e sakta (foreign key), ndryshe nga feed-i kryesor që përdor `profiles!posts_author_id_fkey`. Rregulluar duke përdorur të njëjtën sintaksë të provuar; shtuar edhe `console.error` për të dyja query-t e `RightAside.tsx` (më parë gabimet zhdukeshin në heshtje, shfaqej thjesht "—").
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Bug UX: Republika e para-zgjedhur automatikisht te kompozuesi i ballinës — U MBYLL
