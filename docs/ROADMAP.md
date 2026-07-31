@@ -112,6 +112,8 @@ Referencë vizioni: `docs/VISION.md`
 
 - **Faqja `/sign-in` u stilizua** — ishte skedar i vjetër/i harruar, plotësisht pa stil (asnjë header/branding, input-e/buton pa asnjë klasë CSS, dukej "e thyer"). Rregulluar për t'u përputhur vizualisht me `/sign-up`/`/forgot-password`. Kjo faqe lidhet nga disa vende (menyja ☰, header-i, dritarja "Join the conversation" për vizitorë), jo kod i vdekur.
 
+- **Buton "Follow" direkt te profili i përdoruesit** (mungonte fare — deri tani ndjekja bëhej vetëm nga karta e postimit në feed, jo nga vetë faqja e profilit). U shtua te `ProfileHeader.tsx`, krah butonit "Block", me të njëjtin model: dritarja e kyçjes (`SignInPrompt`) për vizitorë të pakyçur, gjendje "Follow"/"Following" e sinkronizuar me `follows_users`.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Bug UX: Republika e para-zgjedhur automatikisht te kompozuesi i ballinës — U MBYLL
