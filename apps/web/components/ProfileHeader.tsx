@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
+import SignInPrompt from "@/components/SignInPrompt";
 
 type Props = {
   profile: {
@@ -34,6 +35,10 @@ export default function ProfileHeader({
   const [blockBusy, setBlockBusy] = useState(false);
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
 
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followBusy, setFollowBusy] = useState(false);
+  const [signInMsg, setSignInMsg] = useState<string | null>(null);
+
   useEffect(() => {
     if (isMe) return;
     (async () => {
@@ -49,8 +54,45 @@ export default function ProfileHeader({
         .eq("blocked_id", profile.id)
         .maybeSingle();
       setBlocked(!!data);
+
+      const { data: follow } = await supa
+        .from("follows_users")
+        .select("follower_id")
+        .eq("follower_id", uid)
+        .eq("followed_user_id", profile.id)
+        .maybeSingle();
+      setIsFollowing(!!follow);
     })();
   }, [isMe, profile.id]);
+
+  async function toggleFollow() {
+    if (!myId) return setSignInMsg("Sign in to follow people.");
+    setFollowBusy(true);
+    try {
+      if (isFollowing) {
+        const { error } = await supa
+          .from("follows_users")
+          .delete()
+          .eq("follower_id", myId)
+          .eq("followed_user_id", profile.id);
+        if (error) throw error;
+        setIsFollowing(false);
+      } else {
+        const { error } = await supa
+          .from("follows_users")
+          .upsert(
+            { follower_id: myId, followed_user_id: profile.id },
+            { onConflict: "follower_id,followed_user_id" }
+          );
+        if (error) throw error;
+        setIsFollowing(true);
+      }
+    } catch (e: any) {
+      alert(e.message ?? "Something went wrong");
+    } finally {
+      setFollowBusy(false);
+    }
+  }
 
   function onBlockClick() {
     if (!myId) return alert("You must be logged in.");
@@ -208,17 +250,32 @@ export default function ProfileHeader({
         </div>
       </div>
 
-      {!isMe && myId && (
-        <button
-          type="button"
-          onClick={onBlockClick}
-          disabled={blockBusy}
-          className={`h-9 px-3 rounded border text-sm disabled:opacity-60 ${
-            blocked ? "bg-gray-900 text-white" : "hover:bg-gray-50"
-          }`}
-        >
-          {blockBusy ? "…" : blocked ? "Blocked · Unblock" : "Block"}
-        </button>
+      {!isMe && (
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={toggleFollow}
+            disabled={followBusy}
+            className={`h-9 px-3 rounded text-sm disabled:opacity-60 ${
+              isFollowing ? "border hover:bg-gray-50" : "bg-black text-white hover:bg-gray-800"
+            }`}
+          >
+            {followBusy ? "…" : isFollowing ? "Following" : "Follow"}
+          </button>
+
+          {myId && (
+            <button
+              type="button"
+              onClick={onBlockClick}
+              disabled={blockBusy}
+              className={`h-9 px-3 rounded border text-sm disabled:opacity-60 ${
+                blocked ? "bg-gray-900 text-white" : "hover:bg-gray-50"
+              }`}
+            >
+              {blockBusy ? "…" : blocked ? "Blocked · Unblock" : "Block"}
+            </button>
+          )}
+        </div>
       )}
 
       {showBlockConfirm && (
@@ -253,6 +310,8 @@ export default function ProfileHeader({
           </div>
         </div>
       )}
+
+      <SignInPrompt open={!!signInMsg} message={signInMsg ?? undefined} onClose={() => setSignInMsg(null)} />
     </header>
   );
 }
