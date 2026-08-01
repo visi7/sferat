@@ -195,7 +195,10 @@ useEffect(() => {
       setLocalScore(row.score as number);
       setUserVote((row.user_vote as 0 | 1 | -1) ?? 0);
     }
-    p.onChanged?.();
+    // s'thërrasim p.onChanged() këtu qëllimisht — do të rifreskonte GJITHË
+    // feed-in (reset=true) për çdo votë të vetme, duke shkaktuar "Loading…"
+    // të dukshëm dhe rirenditje befasuese; gjendja lokale (score/userVote)
+    // e mbulon plotësisht ndryshimin që i duhet UI-t.
   }
 
   // ========= Komente =========
@@ -237,7 +240,8 @@ if (error) throw error;
   return [...arr, newRow];
 });
 
-      p.onChanged?.();
+      // s'thërrasim p.onChanged() këtu për të njëjtën arsye si te doVote() —
+      // gjendja lokale (commentCount/comments) tashmë e mbulon UI-n.
     } catch (e: any) {
       const m = /wait (\d+) seconds?/i.exec(e.message ?? "");
       if (m) {
