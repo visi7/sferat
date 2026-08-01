@@ -128,6 +128,13 @@ Referencë vizioni: `docs/VISION.md`
   - **#3 Transparencë publike**: faqja e Republikës (`republic/[slug]/page.tsx`) tani shfaq "Moderated by" nën përshkrim — listë admin/manager/moderator (global + të kufizuar te ajo Republikë), me link te profilet. "Assistant" s'përfshihet (vetëm-shqyrtues, jo rol publik).
   - **#4 (vetë-dorëheqje nga roli), #5 (promovim automatik sipas pikëve), #6 (skadim roli për joaktivitet)** mbeten ende të pazbatuara — shih më poshtë.
 
+- **Anti-flood për postime/komente (#1 nga lista e platformës)**: trigger-a databaze (`enforce_post_rate_limit`/`enforce_comment_rate_limit`) — 1 postim/60s, 1 koment/10s për autor, të zbatuara në databazë (jo vetëm klient). Mesazhi i gabimit përfshin sekondat e sakta të mbetura; klienti (ballina + komentet) e shndërron në kuti të stilizuar me numërim mbrapsht, si te "cooldown"-i i `/forgot-password`, në vend të `alert()`-it të papërpunuar. Votat e dyfishta ishin tashmë të pamundura (kufizime unike ekzistuese).
+- **"Moderated by" u hoq** nga faqja e Republikës — pronari vendosi s'i nevojitet.
+- **3 bug-e vizuale të gjetura dhe rregulluara** gjatë testimit të anti-flood-it:
+  - Kutia e "cooldown" te kompozuesi ishte ngjeshur në të njëjtin rresht me "Add image"/kohëzgjatjen, duke u bërë e ngushtë dhe teksti thyhej keq — tani rresht i vetëm, i plotë.
+  - Butonat Upvote/Downvote (postim + koment) e ndryshonin gjerësinë e kufirit (1px → 2px) kur votoje, duke "zhvendosur" pak elementët përreth — dukej si "loading", ishte CSS. Rregulluar duke mbajtur gjerësinë konstante.
+  - **Gjetja më e madhe**: çdo votë ose koment i ri **rifreskonte gjithë feed-in nga zeroja** (`onChanged()` → `refreshFeed(reset=true)`) edhe pse gjendja lokale tashmë e mbulonte ndryshimin — kjo shkaktonte "Loading…" të dukshëm dhe rrezik rirenditjeje befasuese. Hequr thirrja e panevojshme te `doVote()`/`addCommentRaw()`; fshirja/redaktimi i postimit vazhdojnë të rifreskojnë siç duhet (aty është e nevojshme).
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Bug UX: Republika e para-zgjedhur automatikisht te kompozuesi i ballinës — U MBYLL
