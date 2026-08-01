@@ -7,6 +7,12 @@ import SignInPrompt from "@/components/SignInPrompt";
 import { followRepublic, unfollowRepublic } from "@/app/actions";
 type Section = { slug: string; label: string; position: number };
 
+const MOD_ROLE_LABELS: Record<string, string> = {
+  admin: "Admin",
+  manager: "Manager",
+  moderator: "Moderator",
+};
+
 export default function RepublicPage() {
   const params = useParams();
   const slugStr = Array.isArray((params as any)?.slug)
@@ -27,6 +33,9 @@ export default function RepublicPage() {
   const [isMuted, setIsMuted] = useState(false);
   const [signInMsg, setSignInMsg] = useState<string | null>(null);
   const [muteBusy, setMuteBusy] = useState(false);
+  const [moderators, setModerators] = useState<
+    { username: string; display_name: string | null; role: string }[]
+  >([]);
 
   // 1) Load republic + sections
   useEffect(() => {
@@ -61,6 +70,33 @@ export default function RepublicPage() {
       // prefero ?tab= nga URL; ndryshe përdor të parin ose "feed"
       const qtab = searchParams.get("tab");
       setActiveTab(qtab ?? "feed");
+
+      // "Kush e moderon këtë Republikë" — transparencë publike (admin/manager/
+      // moderator, global ose të kufizuar te kjo Republikë; Assistant s'përfshihet,
+      // është vetëm-shqyrtues, jo "moderator" publik).
+      const { data: mods } = await supa
+        .from("user_roles")
+        .select("role, republic_id, profiles:profiles!user_roles_user_id_fkey(username,display_name)")
+        .in("role", ["admin", "manager", "moderator"])
+        .or(`republic_id.eq.${rep.id},republic_id.is.null`);
+
+      const rolePriority: Record<string, number> = { admin: 0, manager: 1, moderator: 2 };
+      const byUsername = new Map<string, { username: string; display_name: string | null; role: string }>();
+      for (const row of (mods ?? []) as any[]) {
+        const prof = row.profiles;
+        if (!prof?.username) continue;
+        const existing = byUsername.get(prof.username);
+        if (!existing || rolePriority[row.role] < rolePriority[existing.role]) {
+          byUsername.set(prof.username, {
+            username: prof.username,
+            display_name: prof.display_name,
+            role: row.role,
+          });
+        }
+      }
+      setModerators(
+        Array.from(byUsername.values()).sort((a, b) => rolePriority[a.role] - rolePriority[b.role])
+      );
 
       setLoading(false);
     })();
@@ -221,6 +257,23 @@ setPosts(data ?? []);
         </div>
       </div>
       <p className="text-gray-500 mb-4">{republic.description}</p>
+
+      {moderators.length > 0 && (
+        <p className="text-xs text-gray-500 mb-4">
+          Moderated by{" "}
+          {moderators.map((m, i) => (
+            <span key={m.username}>
+              <a href={`/profile/${m.username}`} className="hover:underline text-gray-700">
+                {m.display_name || `@${m.username}`}
+              </a>{" "}
+              <span className="text-gray-400">
+                ({MOD_ROLE_LABELS[m.role] ?? m.role})
+              </span>
+              {i < moderators.length - 1 ? ", " : ""}
+            </span>
+          ))}
+        </p>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-3 border-b mb-4 pb-2">
