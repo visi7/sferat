@@ -139,7 +139,7 @@ export default function CommentItem({
       <div className="mt-2 flex items-center gap-2 text-[11px]">
         <button
           className={`inline-flex items-center justify-center gap-1 whitespace-nowrap leading-none h-7 px-2.5 rounded-full border bg-white hover:bg-gray-50 ${
-            myVote === 1 ? "border-green-600 border-2 bg-green-50 text-green-700" : ""
+            myVote === 1 ? "border-green-600 bg-green-50 text-green-700" : ""
           }`}
           onClick={() => onVote(c.id, 1)}
           aria-pressed={myVote === 1}
@@ -148,7 +148,7 @@ export default function CommentItem({
         </button>
         <button
           className={`inline-flex items-center justify-center gap-1 whitespace-nowrap leading-none h-7 px-2.5 rounded-full border bg-white hover:bg-gray-50 ${
-            myVote === -1 ? "border-red-600 border-2 bg-red-50 text-red-700" : ""
+            myVote === -1 ? "border-red-600 bg-red-50 text-red-700" : ""
           }`}
           onClick={() => onVote(c.id, -1)}
           aria-pressed={myVote === -1}

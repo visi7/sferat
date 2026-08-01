@@ -455,58 +455,60 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
         />
 
         {/* Toolbar brenda kutisë (poshtë) */}
-        <div className="flex items-center justify-between px-3 py-2 border-t rounded-b-xl bg-gray-50">
-          <div className="flex items-center gap-2">
-            {/* Add image */}
-            <label className="inline-flex items-center gap-1 px-2 py-1 text-xs border rounded cursor-pointer bg-white hover:bg-gray-100">
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-              />
-              🖼️ Add image
-            </label>
-            {imageFile && (
-              <span className="text-xs text-gray-600">
-                {imageFile.name}
-                <button
-                  className="ml-2 text-gray-400 hover:text-gray-600"
-                  onClick={() => setImageFile(null)}
-                  title="Remove"
-                >
-                  ✕
-                </button>
-              </span>
-            )}
+        <div className="px-3 py-2 border-t rounded-b-xl bg-gray-50 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {/* Add image */}
+              <label className="inline-flex items-center gap-1 px-2 py-1 text-xs border rounded cursor-pointer bg-white hover:bg-gray-100">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+                />
+                🖼️ Add image
+              </label>
+              {imageFile && (
+                <span className="text-xs text-gray-600">
+                  {imageFile.name}
+                  <button
+                    className="ml-2 text-gray-400 hover:text-gray-600"
+                    onClick={() => setImageFile(null)}
+                    title="Remove"
+                  >
+                    ✕
+                  </button>
+                </span>
+              )}
 
-            {/* Post duration */}
-            <select
-              className="px-2 py-1 text-xs border rounded bg-white"
-              value={duration}
-              onChange={(e) => setDuration(Number(e.target.value) as 1 | 3 | 7)}
-              aria-label="Post duration"
-              title="How long this post stays up"
+              {/* Post duration */}
+              <select
+                className="px-2 py-1 text-xs border rounded bg-white"
+                value={duration}
+                onChange={(e) => setDuration(Number(e.target.value) as 1 | 3 | 7)}
+                aria-label="Post duration"
+                title="How long this post stays up"
+              >
+                <option value={1}>1 day</option>
+                <option value={3}>3 days</option>
+                <option value={7}>7 days</option>
+              </select>
+            </div>
+
+            <button
+              onClick={createPost}
+              disabled={uploadingImage || !repId || postCooldown > 0}
+              className="bg-black text-white rounded-md px-4 py-1.5 text-sm hover:bg-gray-800 disabled:opacity-60"
             >
-              <option value={1}>1 day</option>
-              <option value={3}>3 days</option>
-              <option value={7}>7 days</option>
-            </select>
+              {uploadingImage ? "Uploading…" : postCooldown > 0 ? `Wait ${postCooldown}s` : "Post"}
+            </button>
           </div>
 
           {postCooldown > 0 && (
-            <p className="flex items-center gap-2 rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
+            <p className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
               You're posting too fast — you can post again in <strong>{postCooldown}s</strong>.
             </p>
           )}
-
-          <button
-            onClick={createPost}
-            disabled={uploadingImage || !repId || postCooldown > 0}
-            className="bg-black text-white rounded-md px-4 py-1.5 text-sm hover:bg-gray-800 disabled:opacity-60"
-          >
-            {uploadingImage ? "Uploading…" : postCooldown > 0 ? `Wait ${postCooldown}s` : "Post"}
-          </button>
         </div>
       </div>
     </div>
