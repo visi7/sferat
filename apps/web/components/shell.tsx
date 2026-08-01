@@ -100,6 +100,15 @@ function TopNav() {
   return (
     <nav className="flex items-center gap-1 sm:gap-2">
       <a
+        href="/"
+        className="w-9 h-9 grid place-items-center rounded hover:bg-gray-100"
+        title="Home"
+        aria-label="Home"
+      >
+        🏠
+      </a>
+
+      <a
         href="/search"
         className="w-9 h-9 grid place-items-center rounded hover:bg-gray-100"
         title="Search"
