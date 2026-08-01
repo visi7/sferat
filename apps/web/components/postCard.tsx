@@ -44,6 +44,13 @@ export default function PostCard(p: PostCardProps) {
   const [busy, setBusy] = useState(false);
   const [me, setMe] = useState<string | null>(null);
   const [signInMsg, setSignInMsg] = useState<string | null>(null);
+  const [commentCooldown, setCommentCooldown] = useState(0);
+
+  useEffect(() => {
+    if (commentCooldown <= 0) return;
+    const t = setInterval(() => setCommentCooldown((s) => Math.max(0, s - 1)), 1000);
+    return () => clearInterval(t);
+  }, [commentCooldown]);
 const [imgOpen, setImgOpen] = useState(false);
 
 const [comments, setComments] = useState<CommentRow[]>([]);
@@ -232,7 +239,12 @@ if (error) throw error;
 
       p.onChanged?.();
     } catch (e: any) {
-      alert(e.message);
+      const m = /wait (\d+) seconds?/i.exec(e.message ?? "");
+      if (m) {
+        setCommentCooldown(parseInt(m[1], 10));
+      } else {
+        alert(e.message);
+      }
     } finally {
       setBusy(false);
     }
@@ -613,8 +625,9 @@ async function removePost() {
           {/* input i përgjithshëm */}
           <div className="mb-3">
             <input
-              className="border rounded-md w-full h-9 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
-              placeholder="Write a comment… (Enter)"
+              className="border rounded-md w-full h-9 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 disabled:bg-gray-50 disabled:text-gray-400"
+              placeholder={commentCooldown > 0 ? `Wait ${commentCooldown}s…` : "Write a comment… (Enter)"}
+              disabled={commentCooldown > 0}
               onKeyDown={async (e) => {
                 if (e.key !== "Enter") return;
                 const v = (e.target as HTMLInputElement).value.trim();
@@ -623,6 +636,11 @@ async function removePost() {
                 (e.target as HTMLInputElement).value = "";
               }}
             />
+            {commentCooldown > 0 && (
+              <p className="mt-1 flex items-center gap-2 rounded-md bg-amber-50 border border-amber-200 px-3 py-1.5 text-xs text-amber-800">
+                You're commenting too fast — you can comment again in <strong>{commentCooldown}s</strong>.
+              </p>
+            )}
           </div>
 
           {/* lista e komenteve */}

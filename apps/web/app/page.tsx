@@ -68,6 +68,13 @@ export default function Home() {
 const [imageFile, setImageFile] = useState<File | null>(null);
 const [duration, setDuration] = useState<1 | 3 | 7>(7);
 const [uploadingImage, setUploadingImage] = useState(false);
+const [postCooldown, setPostCooldown] = useState(0);
+
+useEffect(() => {
+  if (postCooldown <= 0) return;
+  const t = setInterval(() => setPostCooldown((s) => Math.max(0, s - 1)), 1000);
+  return () => clearInterval(t);
+}, [postCooldown]);
 // ---- Section per republic (Home composer) — no UI picker; every
 // Republic has exactly one section ("feed") today, so we just use it.
 const [section, setSection] = useState<string>("feed");
@@ -322,7 +329,12 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
     setDuration(7);
     await refreshFeed(tab, repFilter, true);
   } catch (e: any) {
-    alert(e.message);
+    const m = /wait (\d+) seconds?/i.exec(e.message ?? "");
+    if (m) {
+      setPostCooldown(parseInt(m[1], 10));
+    } else {
+      alert(e.message);
+    }
   } finally {
     setUploadingImage(false);
   }
@@ -482,12 +494,18 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
             </select>
           </div>
 
+          {postCooldown > 0 && (
+            <p className="flex items-center gap-2 rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
+              You're posting too fast — you can post again in <strong>{postCooldown}s</strong>.
+            </p>
+          )}
+
           <button
             onClick={createPost}
-            disabled={uploadingImage || !repId}
+            disabled={uploadingImage || !repId || postCooldown > 0}
             className="bg-black text-white rounded-md px-4 py-1.5 text-sm hover:bg-gray-800 disabled:opacity-60"
           >
-            {uploadingImage ? "Uploading…" : "Post"}
+            {uploadingImage ? "Uploading…" : postCooldown > 0 ? `Wait ${postCooldown}s` : "Post"}
           </button>
         </div>
       </div>
