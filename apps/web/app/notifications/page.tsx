@@ -89,6 +89,14 @@ export default function NotificationsPage() {
       case "post_upvoted":     return `${actor} upvoted your post.`;
       case "comment_upvoted":  return `${actor} upvoted your comment.`;
       case "report_result":    return `Your report was ${n.payload?.status ?? "processed"}.`;
+      case "role_changed": {
+        const p = n.payload ?? {};
+        const roleLabel = p.role ? p.role.charAt(0).toUpperCase() + p.role.slice(1) : "a role";
+        const scope = p.republic_title ? ` in ${p.republic_title}` : " (global)";
+        return p.action === "revoked"
+          ? `${actor} removed your ${roleLabel} role${scope}.`
+          : `${actor} granted you the ${roleLabel} role${scope}.`;
+      }
       default:                 return "You have a new notification.";
     }
   }

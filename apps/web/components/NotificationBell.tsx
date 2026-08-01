@@ -10,6 +10,15 @@ type Noti = {
   read_at?: string | null;
 };
 
+function roleChangeText(p: any) {
+  const roleLabel = p.role ? p.role.charAt(0).toUpperCase() + p.role.slice(1) : "a role";
+  const scope = p.republic_title ? ` in ${p.republic_title}` : " (global)";
+  const actor = p.actor_username || "An admin";
+  return p.action === "revoked"
+    ? `${actor} removed your ${roleLabel} role${scope}.`
+    : `${actor} granted you the ${roleLabel} role${scope}.`;
+}
+
 function bellText(n: { type: string | null; payload: any | null }) {
   const p = n.payload ?? {};
   const actor = p.actor_username || p.actor_name || p.actor_handle || "Someone";
@@ -21,6 +30,7 @@ function bellText(n: { type: string | null; payload: any | null }) {
     case "post_upvoted":     return `${actor} upvoted your post.`;
     case "comment_upvoted":  return `${actor} upvoted your comment.`;
     case "report_result":    return `Your report was ${p.status ?? "processed"}.`;
+    case "role_changed":     return roleChangeText(p);
     default:                 return "You have a new notification.";
   }
 }
