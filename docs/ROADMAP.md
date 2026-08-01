@@ -123,6 +123,11 @@ Referencë vizioni: `docs/VISION.md`
 
 - **Bug i gjetur: "Who to follow" dilte gjithmonë bosh** (`RightAside.tsx`) — query-t përdorte `profiles!inner(...)` pa specifikuar lidhjen e sakta (foreign key), ndryshe nga feed-i kryesor që përdor `profiles!posts_author_id_fkey`. Rregulluar duke përdorur të njëjtën sintaksë të provuar; shtuar edhe `console.error` për të dyja query-t e `RightAside.tsx` (më parë gabimet zhdukeshin në heshtje, shfaqej thjesht "—").
 
+- **Idetë e roleve (#1, #2, #3) u zbatuan:**
+  - **#1 Njoftim + #2 Audit log**: migrimi `20260801184604_notify_and_audit_role_changes.sql` — çdo caktim/heqje roli tani (a) shkruan rresht te `audit_log` (kush, kujt, çfarë), dhe (b) njofton përdoruesin e prekur (përveç kur ndryshon rolin e vet). U shtua tipi i ri `role_changed` te `notifications` + rendering në `NotificationBell.tsx`/`app/notifications/page.tsx`.
+  - **#3 Transparencë publike**: faqja e Republikës (`republic/[slug]/page.tsx`) tani shfaq "Moderated by" nën përshkrim — listë admin/manager/moderator (global + të kufizuar te ajo Republikë), me link te profilet. "Assistant" s'përfshihet (vetëm-shqyrtues, jo rol publik).
+  - **#4 (vetë-dorëheqje nga roli), #5 (promovim automatik sipas pikëve), #6 (skadim roli për joaktivitet)** mbeten ende të pazbatuara — shih më poshtë.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Bug UX: Republika e para-zgjedhur automatikisht te kompozuesi i ballinës — U MBYLL
