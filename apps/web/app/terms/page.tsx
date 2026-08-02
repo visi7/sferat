@@ -67,10 +67,7 @@ export default function TermsPage() {
 
       <section className="space-y-2">
         <h2 className="text-base font-semibold text-gray-900">8. Governing law</h2>
-        <p className="bg-amber-50 border border-amber-200 rounded px-3 py-2 text-amber-800">
-          [PLACEHOLDER — jurisdiction not yet decided. Needs the owner's input: which country's laws
-          govern these Terms, and where disputes would be handled.]
-        </p>
+        <p>These Terms are governed by the laws of Albania, without regard to its conflict-of-law principles. Any dispute arising from these Terms or your use of SFERAT will be subject to the exclusive jurisdiction of the competent courts of Albania.</p>
       </section>
 
       <section className="space-y-2">

@@ -143,7 +143,7 @@ Referencë vizioni: `docs/VISION.md`
 
 - **Privacy Policy / Terms of Use — përditësuar kundrejt asaj çka është ndërtuar realisht**:
   - Privacy: shtuar Resend/Sentry/Cloudflare Turnstile te lista e palëve të treta (tani përpunojnë vërtet të dhëna), seksion "Cookies", shënim për transferime ndërkombëtare të dhënash, gjuhë e emërtuar GDPR (akses/korrigjim/portabilitet/kundërshtim).
-  - Terms: shtuar proces ankimimi për shkelje autoresh (copyright), seksion "Changes to these Terms", dhe **"Governing Law" si placeholder i qëllimshëm** — kërkon vendim të pronarit (cili shtet/juridiksion), s'e kam zgjedhur vetë.
+  - Terms: shtuar proces ankimimi për shkelje autoresh (copyright), seksion "Changes to these Terms", dhe **"Governing Law"** — fillimisht placeholder, tani i finalizuar: pronari zgjodhi **Shqipërinë** si juridiksion; seksioni 8 përcakton se Termat qeverisen nga ligji shqiptar dhe mosmarrëveshjet trajtohen nga gjykatat kompetente të Shqipërisë.
   - **Mbetet ende: rishikim ligjor real** nga dikush me njohuri juridike — draft-et janë tani më të plota, jo më finale.
 
 ## 🔜 Shtyrë me qëllim — mos harro
