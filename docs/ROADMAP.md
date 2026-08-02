@@ -135,6 +135,12 @@ Referencë vizioni: `docs/VISION.md`
   - Butonat Upvote/Downvote (postim + koment) e ndryshonin gjerësinë e kufirit (1px → 2px) kur votoje, duke "zhvendosur" pak elementët përreth — dukej si "loading", ishte CSS. Rregulluar duke mbajtur gjerësinë konstante.
   - **Gjetja më e madhe**: çdo votë ose koment i ri **rifreskonte gjithë feed-in nga zeroja** (`onChanged()` → `refreshFeed(reset=true)`) edhe pse gjendja lokale tashmë e mbulonte ndryshimin — kjo shkaktonte "Loading…" të dukshëm dhe rrezik rirenditjeje befasuese. Hequr thirrja e panevojshme te `doVote()`/`addCommentRaw()`; fshirja/redaktimi i postimit vazhdojnë të rifreskojnë siç duhet (aty është e nevojshme).
 
+- **Siguria e llogarive — hapi i parë (fillimi i sesionit "vazhdojmë")**:
+  - **Gjatësia minimale e fjalëkalimit**: 6 → 8 karaktere. Ndryshuar te Supabase Dashboard (Authentication → Sign In / Providers → Email) + kontrollet e kodit klientit (`reset-password`, `settings`, dhe `sign-up` — kjo e fundit **s'kishte fare** kontroll më parë, çdo fjalëkalim shkonte direkt te Supabase pa validim paraprak).
+  - **"Prevent use of leaked passwords"** — u kontrollua, del **vetëm për planin Pro** të Supabase-it (jo Free). Lënë e shtyrë me qëllim derisa platforma të ketë përdorues realë dhe të konsiderohet ngritja e planit.
+  - **CAPTCHA (Cloudflare Turnstile) — u shtua**: komponent i ri `components/Turnstile.tsx`, i integruar te formulari i kyçjes së ballinës, `/sign-in`, `/sign-up`, dhe `/forgot-password`. Kërkon `NEXT_PUBLIC_TURNSTILE_SITE_KEY` si env var te Vercel + Secret Key-n përkatës te Supabase → Attack Protection. **Shënim sigurie:** Secret Key-n fillestar e ekspozoi pronari gabimisht në bisedë — u rekomandua rrotullimi i tij te Cloudflare para se të përdoret.
+  - **Mbetën për më vonë:** 2FA/MFA (ndërtim UI real, projekt më vete), kontrollimi i konfigurimit të "Rate Limits" te Supabase.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Bug UX: Republika e para-zgjedhur automatikisht te kompozuesi i ballinës — U MBYLL
