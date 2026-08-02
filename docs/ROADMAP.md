@@ -160,6 +160,7 @@ Referencë vizioni: `docs/VISION.md`
   - Njoftim i ri (`comment_convinced`) autorit kur komenti i tij bind dikë — trajtim identik te `NotificationBell.tsx` dhe `notifications/page.tsx` si `comment_upvoted`.
   - Stat i 4-t te profili ("Contributions"): **Convinced** — sa herë gjithsej janë "bindur" komentet e dikujt (`ProfileStatsCard.tsx`).
   - **Kërkon migrim SQL manual** (`20260802190000_comment_convinces.sql`) — dhënë në chat, duhet ekzekutuar te Supabase SQL Editor para se të funksionojë në prodhim.
+  - **Bug i gjetur gjatë testimit real**: `notifications_type_check` (check constraint ekzistues) ende s'e njihte `'comment_convinced'` si vlerë e lejuar — çdo shënim dështonte dhe rrëzohej fare (trigger-i vrapon në të njëjtin transaction si insert-i). Rregulluar me migrim shtesë `20260802193000_notifications_allow_comment_convinced.sql` (zgjeron listën e lejuar).
   - **Vizioni pas kësaj**: lidhet me idenë e Agora-s si "arenë debati të sponsorizuar" (jo thjesht reklama) — argumenti më "Convinced me" në një temë të sponsorizuar fiton çmim, diçka që s'e ka askush tjetër. Hapi tjetër natyror kur të vendoset të vazhdohet me Agora-n.
 
 ## 🔜 Shtyrë me qëllim — mos harro
