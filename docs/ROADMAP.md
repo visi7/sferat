@@ -146,6 +146,12 @@ Referencë vizioni: `docs/VISION.md`
   - Terms: shtuar proces ankimimi për shkelje autoresh (copyright), seksion "Changes to these Terms", dhe **"Governing Law"** — fillimisht placeholder, tani i finalizuar: pronari zgjodhi **Shqipërinë** si juridiksion; seksioni 8 përcakton se Termat qeverisen nga ligji shqiptar dhe mosmarrëveshjet trajtohen nga gjykatat kompetente të Shqipërisë.
   - **Mbetet ende: rishikim ligjor real** nga dikush me njohuri juridike — draft-et janë tani më të plota, jo më finale.
 
+- **Kyçje me Google (OAuth) — u shtua, hapi 1 nga i saj**:
+  - Komponent i ri `components/GoogleSignInButton.tsx`, i integruar te `/sign-in` (pa kufizim) dhe `/sign-up` (i çaktivizuar derisa të pranohen Terms/Privacy, njësoj si emaili). Thërret `supa.auth.signInWithOAuth({ provider: "google" })` — meqë klienti ynë është krejt client-side, s'na nevojitet route i ri callback-u, Supabase-js e kap vetë sesionin.
+  - Trigger-i `handle_new_user` (krijon rreshtin te `profiles` automatikisht) mbështetet vetëm te `new.email`/`new.id`, të cilat i ka edhe një përdorues Google — s'u desh ndryshim databaze.
+  - **Kërkon konfigurim jashtë Claude Code, nga pronari**: (1) krijim OAuth Client te Google Cloud Console (Client ID + Secret), (2) aktivizim i "Google" te Supabase Dashboard → Authentication → Providers, duke futur Client ID + Secret atje. Pa këto dy hapa, butoni s'do funksionojë ende në prodhim.
+  - **Mbetet i mundshëm më vonë:** Facebook, Apple, si te Quora, nëse duam t'i shtojmë.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Bug UX: Republika e para-zgjedhur automatikisht te kompozuesi i ballinës — U MBYLL
