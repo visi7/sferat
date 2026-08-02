@@ -8,10 +8,16 @@ export default function SignUpPage() {
   const [pw, setPw] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!agreed) return;
+    setErr(null);
+    if (pw.length < 8) {
+      setErr("Password must be at least 8 characters.");
+      return;
+    }
     setLoading(true);
     try {
       const { error } = await supa.auth.signUp({
@@ -50,8 +56,11 @@ export default function SignUpPage() {
           value={pw}
           onChange={(e) => setPw(e.target.value)}
           className="border rounded px-3 py-2"
+          minLength={8}
           required
         />
+        <p className="text-xs text-gray-500 -mt-2">At least 8 characters.</p>
+        {err && <p className="text-red-600 text-xs">{err}</p>}
         <label className="flex items-start gap-2 text-xs text-gray-600 cursor-pointer">
           <input
             type="checkbox"

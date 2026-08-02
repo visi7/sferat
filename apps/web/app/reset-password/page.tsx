@@ -29,8 +29,8 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     setErr(null);
 
-    if (pw.length < 6) {
-      setErr("Password must be at least 6 characters.");
+    if (pw.length < 8) {
+      setErr("Password must be at least 8 characters.");
       return;
     }
     if (pw !== pw2) {
