@@ -151,6 +151,8 @@ Referencë vizioni: `docs/VISION.md`
   - Trigger-i `handle_new_user` (krijon rreshtin te `profiles` automatikisht) mbështetet vetëm te `new.email`/`new.id`, të cilat i ka edhe një përdorues Google — s'u desh ndryshim databaze.
   - **Kërkon konfigurim jashtë Claude Code, nga pronari**: (1) krijim OAuth Client te Google Cloud Console (Client ID + Secret), (2) aktivizim i "Google" te Supabase Dashboard → Authentication → Providers, duke futur Client ID + Secret atje. Pa këto dy hapa, butoni s'do funksionojë ende në prodhim.
   - **Mbetet i mundshëm më vonë:** Facebook, Apple, si te Quora, nëse duam t'i shtojmë.
+  - **Konfiguruar dhe testuar në prodhim** nga pronari (Google Cloud OAuth client + Supabase Provider), duke ndjekur udhëzimet hap-pas-hapi.
+  - **2 gjetje shtesë gjatë testimit**: (1) formulari i kyçjes te ballina (`app/page.tsx`) kishte vetëm email/fjalëkalim, pa Google — u shtua edhe atje, njësoj si te `/sign-in`. (2) gabimi i kyçjes së dështuar shfaqej si `alert()` i papërpunuar i browser-it (dukej si "mesazh sistemi") — u zëvendësua me kuti gabimi të stilizuar (e kuqe), në linjë me kutitë e tjera ekzistuese (cooldown, etj.).
 
 ## 🔜 Shtyrë me qëllim — mos harro
 
