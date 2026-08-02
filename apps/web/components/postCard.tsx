@@ -80,6 +80,8 @@ const [postReportText, setPostReportText] = useState("");
   // Votes e komenteve: comment_id -> score dhe vota ime
   const [cScores, setCScores] = useState<Record<string, number>>({});
   const [cUserVotes, setCUserVotes] = useState<Record<string, -1 | 0 | 1>>({});
+  const [cConvinced, setCConvinced] = useState<Record<string, number>>({});
+  const [cMyConvinced, setCMyConvinced] = useState<Record<string, boolean>>({});
 
   // Për reply inline
   const [replyingId, setReplyingId] = useState<string | null>(null);
@@ -315,6 +317,33 @@ if (error) throw error;
           setCUserVotes(mine);
         }
       }
+
+      // "Convinced me" — sa herë gjithsej + a e kam shënuar unë
+      const cc = await supa
+        .from("comment_convinces")
+        .select("comment_id")
+        .in("comment_id", ids);
+
+      if (!cc.error) {
+        const map: Record<string, number> = {};
+        for (const row of cc.data ?? []) {
+          map[row.comment_id] = (map[row.comment_id] ?? 0) + 1;
+        }
+        setCConvinced(map);
+      }
+
+      if (me) {
+        const mcc = await supa
+          .from("comment_convinces")
+          .select("comment_id")
+          .eq("user_id", me)
+          .in("comment_id", ids);
+        if (!mcc.error) {
+          const mine: Record<string, boolean> = {};
+          for (const row of mcc.data ?? []) mine[row.comment_id] = true;
+          setCMyConvinced(mine);
+        }
+      }
     }
 
     setCommentsLoading(false);
@@ -354,6 +383,37 @@ if (error) throw error;
       // rollback
       setCUserVotes((m) => ({ ...m, [commentId]: prev }));
       setCScores((m) => ({ ...m, [commentId]: (m[commentId] ?? 0) - delta }));
+      alert(e.message);
+    }
+  }
+
+  async function toggleConvince(commentId: string) {
+    if (!me) return setSignInMsg("Sign in to mark a comment as convincing.");
+
+    const wasConvinced = cMyConvinced[commentId] ?? false;
+
+    // Optimistic
+    setCMyConvinced((m) => ({ ...m, [commentId]: !wasConvinced }));
+    setCConvinced((m) => ({ ...m, [commentId]: (m[commentId] ?? 0) + (wasConvinced ? -1 : 1) }));
+
+    try {
+      if (wasConvinced) {
+        const { error } = await supa
+          .from("comment_convinces")
+          .delete()
+          .eq("user_id", me)
+          .eq("comment_id", commentId);
+        if (error) throw error;
+      } else {
+        const { error } = await supa
+          .from("comment_convinces")
+          .insert({ user_id: me, comment_id: commentId });
+        if (error) throw error;
+      }
+    } catch (e: any) {
+      // rollback
+      setCMyConvinced((m) => ({ ...m, [commentId]: wasConvinced }));
+      setCConvinced((m) => ({ ...m, [commentId]: (m[commentId] ?? 0) + (wasConvinced ? 1 : -1) }));
       alert(e.message);
     }
   }
@@ -662,6 +722,9 @@ async function removePost() {
       myVote={cUserVotes[c.id] ?? 0}
       score={cScores[c.id] ?? 0}
       onVote={voteComment}
+      convinced={cConvinced[c.id] ?? 0}
+      myConvinced={cMyConvinced[c.id] ?? false}
+      onConvince={toggleConvince}
       onReport={(reason) => reportComment(c.id, reason)}
 
       onDelete={async (id) => {

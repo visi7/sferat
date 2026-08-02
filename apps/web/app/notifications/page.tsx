@@ -34,9 +34,14 @@ export default function NotificationsPage() {
       const list = (data as Noti[]) ?? [];
       setRows(list);
 
-      // comment_upvoted s'e ka post_id te payload — e marrim veçmas që linku të dijë ku të çojë
+      // comment_upvoted/comment_convinced s'e kanë post_id te payload — e marrim veçmas që linku të dijë ku të çojë
       const commentIds = Array.from(
-        new Set(list.filter((n) => n.type === "comment_upvoted").map((n) => n.payload?.comment_id).filter(Boolean))
+        new Set(
+          list
+            .filter((n) => n.type === "comment_upvoted" || n.type === "comment_convinced")
+            .map((n) => n.payload?.comment_id)
+            .filter(Boolean)
+        )
       );
       if (commentIds.length > 0) {
         const { data: comments } = await supa.from("comments").select("id,post_id").in("id", commentIds);
@@ -88,6 +93,7 @@ export default function NotificationsPage() {
       case "comment_replied":  return `${actor} replied to your comment.`;
       case "post_upvoted":     return `${actor} upvoted your post.`;
       case "comment_upvoted":  return `${actor} upvoted your comment.`;
+      case "comment_convinced": return `${actor} said your comment convinced them.`;
       case "report_result":    return `Your report was ${n.payload?.status ?? "processed"}.`;
       case "role_changed": {
         const p = n.payload ?? {};
@@ -106,7 +112,8 @@ export default function NotificationsPage() {
       case "comment_replied":
       case "post_upvoted":
         return n.payload?.post_id ? `/post/${n.payload.post_id}` : null;
-      case "comment_upvoted": {
+      case "comment_upvoted":
+      case "comment_convinced": {
         const postId = commentPostMap[n.payload?.comment_id];
         return postId ? `/post/${postId}` : null;
       }

@@ -29,6 +29,7 @@ function bellText(n: { type: string | null; payload: any | null }) {
     case "comment_replied":  return `${actor} replied to your comment.`;
     case "post_upvoted":     return `${actor} upvoted your post.`;
     case "comment_upvoted":  return `${actor} upvoted your comment.`;
+    case "comment_convinced": return `${actor} said your comment convinced them.`;
     case "report_result":    return `Your report was ${p.status ?? "processed"}.`;
     case "role_changed":     return roleChangeText(p);
     default:                 return "You have a new notification.";
@@ -41,7 +42,8 @@ function notificationHref(n: Noti, commentPostMap: Record<string, string>): stri
     case "comment_replied":
     case "post_upvoted":
       return p.post_id ? `/post/${p.post_id}` : null;
-    case "comment_upvoted": {
+    case "comment_upvoted":
+    case "comment_convinced": {
       const postId = commentPostMap[p.comment_id];
       return postId ? `/post/${postId}` : null;
     }
@@ -108,7 +110,7 @@ export default function NotificationBell() {
         const commentIds = Array.from(
           new Set(
             (data as Noti[])
-              .filter((n) => n.type === "comment_upvoted")
+              .filter((n) => n.type === "comment_upvoted" || n.type === "comment_convinced")
               .map((n) => n.payload?.comment_id)
               .filter(Boolean)
           )

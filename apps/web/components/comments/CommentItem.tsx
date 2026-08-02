@@ -10,6 +10,10 @@ type Props = {
   score: number;
   onVote: (id: string, wanted: 1 | -1) => void;
 
+  convinced: number;
+  myConvinced: boolean;
+  onConvince: (id: string) => void;
+
   // TANI: onReport merr edhe arsyen
   onReport: (id: string, reason: string) => Promise<void> | void;
 
@@ -27,6 +31,9 @@ export default function CommentItem({
   myVote,
   score,
   onVote,
+  convinced,
+  myConvinced,
+  onConvince,
   onReport,
   onDelete,
   onUpdate,
@@ -156,6 +163,19 @@ export default function CommentItem({
           ▼ Downvote
         </button>
         <span className="text-gray-500">Score: {score}</span>
+
+        {me !== c.author_id && (
+          <button
+            className={`inline-flex items-center justify-center gap-1 whitespace-nowrap leading-none h-7 px-2.5 rounded-full border bg-white hover:bg-gray-50 ${
+              myConvinced ? "border-amber-500 bg-amber-50 text-amber-700" : ""
+            }`}
+            onClick={() => onConvince(c.id)}
+            aria-pressed={myConvinced}
+            title="This comment changed my mind"
+          >
+            💡 Convinced me{convinced > 0 ? ` · ${convinced}` : ""}
+          </button>
+        )}
 
         <span className="mx-2 text-gray-300">·</span>
 

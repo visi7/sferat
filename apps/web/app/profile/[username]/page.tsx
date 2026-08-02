@@ -12,7 +12,7 @@ import ProfileRight, { type ProfileInfo } from "@/components/ProfileRight";
 type Profile = { id:string; username:string; display_name:string|null; bio:string|null; avatar_url:string|null };
 type Post = { id:string; title:string; body:string; created_at:string; score:number; republic_id:string; author_id:string };
 type Comment = { id:string; post_id:string; body:string; created_at:string; score:number; postTitle:string };
-type Stats = { postsCount:number; commentsCount:number; karma:number };
+type Stats = { postsCount:number; commentsCount:number; karma:number; convincedCount:number };
 
 export default function ProfilePage() {
   const params = useParams<{ username: string }>();
@@ -79,14 +79,25 @@ export default function ProfilePage() {
       // Contribution stats: llogaritur nga të dhëna reale, jo të deklaruara
       const [allPosts, allComments] = await Promise.all([
         supa.from("posts").select("score").eq("author_id", (p as any).id).neq("status", "removed"),
-        supa.from("comments").select("score").eq("author_id", (p as any).id).neq("status", "removed"),
+        supa.from("comments").select("id,score").eq("author_id", (p as any).id).neq("status", "removed"),
       ]);
       const postsCount = allPosts.data?.length ?? 0;
       const commentsCount = allComments.data?.length ?? 0;
       const karma =
         (allPosts.data ?? []).reduce((s, r) => s + (r.score ?? 0), 0) +
         (allComments.data ?? []).reduce((s, r) => s + (r.score ?? 0), 0);
-      setStats({ postsCount, commentsCount, karma });
+
+      const myCommentIds = (allComments.data ?? []).map((r) => r.id);
+      let convincedCount = 0;
+      if (myCommentIds.length) {
+        const { count } = await supa
+          .from("comment_convinces")
+          .select("comment_id", { count: "exact", head: true })
+          .in("comment_id", myCommentIds);
+        convincedCount = count ?? 0;
+      }
+
+      setStats({ postsCount, commentsCount, karma, convincedCount });
     })();
   }, [username]);
 

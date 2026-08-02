@@ -21,7 +21,7 @@ export type ProfileInfo = {
   credentials_private?: boolean;
 };
 
-type Stats = { postsCount: number; commentsCount: number; karma: number };
+type Stats = { postsCount: number; commentsCount: number; karma: number; convincedCount: number };
 
 type Props = {
   profile: ProfileInfo;
@@ -52,6 +52,7 @@ export default function ProfileRight({ profile, isMe, stats, viewerLoggedIn }: P
           postsCount={stats.postsCount}
           commentsCount={stats.commentsCount}
           karma={stats.karma}
+          convincedCount={stats.convincedCount}
         />
       )}
       <ProfileCredentialsCard profile={profile} isMe={isMe} onUpdate={updateProfile} />
