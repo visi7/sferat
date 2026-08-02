@@ -7,6 +7,7 @@ import LeftNav from "@/components/LeftNav";
 import RightAside from "@/components/RightAside";
 import PostCard from "@/components/postCard";
 import Turnstile from "@/components/Turnstile";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 type Post = {
   id: string;
@@ -47,6 +48,7 @@ export default function Home() {
   const [password, setPassword] = useState("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // Data
   const [republics, setRepublics] = useState<Republic[]>([]);
@@ -269,13 +271,14 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
   // ---- Auth ----
   async function signIn() {
     setAuthLoading(true);
+    setAuthError(null);
     const { data, error } = await supa.auth.signInWithPassword({
       email,
       password,
       options: captchaToken ? { captchaToken } : undefined,
     });
     setAuthLoading(false);
-    if (error) return alert(error.message);
+    if (error) return setAuthError(error.message);
     setSession(data.session ?? null);
   }
   async function signOut() {
@@ -400,6 +403,14 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
      <section className="bg-white border rounded-xl p-4 mb-4 w-full mt-3">
   {!session ? (
           <div className="flex flex-col gap-1">
+  <GoogleSignInButton />
+
+  <div className="flex items-center gap-3 my-2">
+    <div className="flex-1 border-t" />
+    <span className="text-xs text-gray-400">or</span>
+    <div className="flex-1 border-t" />
+  </div>
+
   <div className="flex flex-wrap items-center gap-2">
     <input
       type="email"
@@ -423,6 +434,12 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
       {authLoading ? "..." : "Sign in"}
     </button>
   </div>
+
+  {authError && (
+    <p className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-800">
+      {authError}
+    </p>
+  )}
 
   <Turnstile onVerify={setCaptchaToken} />
 
