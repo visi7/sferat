@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { supa } from "@/lib/supabase";
 import Turnstile from "@/components/Turnstile";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 export default function EmailSignIn() {
   const [email, setEmail] = useState("");
@@ -27,6 +28,15 @@ export default function EmailSignIn() {
   return (
     <main className="mx-auto max-w-sm p-6">
       <h1 className="text-xl font-semibold mb-4">Sign in</h1>
+
+      <GoogleSignInButton />
+
+      <div className="flex items-center gap-3 my-4">
+        <div className="flex-1 border-t" />
+        <span className="text-xs text-gray-400">or</span>
+        <div className="flex-1 border-t" />
+      </div>
+
       <form onSubmit={submit} className="flex flex-col gap-3">
         <input
           type="email"

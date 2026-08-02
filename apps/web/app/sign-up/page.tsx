@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { supa } from "@/lib/supabase";
 import Turnstile from "@/components/Turnstile";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -44,6 +45,28 @@ export default function SignUpPage() {
   return (
     <main className="mx-auto max-w-sm p-6">
       <h1 className="text-xl font-semibold mb-4">Create account</h1>
+
+      <label className="flex items-start gap-2 text-xs text-gray-600 cursor-pointer mb-4">
+        <input
+          type="checkbox"
+          className="mt-0.5"
+          checked={agreed}
+          onChange={(e) => setAgreed(e.target.checked)}
+        />
+        <span>
+          I agree to the <a href="/terms" target="_blank" className="text-blue-600 underline">Terms of Use</a>{" "}
+          and <a href="/privacy" target="_blank" className="text-blue-600 underline">Privacy Policy</a>.
+        </span>
+      </label>
+
+      <GoogleSignInButton disabled={!agreed} />
+
+      <div className="flex items-center gap-3 my-4">
+        <div className="flex-1 border-t" />
+        <span className="text-xs text-gray-400">or</span>
+        <div className="flex-1 border-t" />
+      </div>
+
       <form onSubmit={submit} className="flex flex-col gap-3">
         <input
           type="email"
@@ -64,18 +87,6 @@ export default function SignUpPage() {
         />
         <p className="text-xs text-gray-500 -mt-2">At least 8 characters.</p>
         {err && <p className="text-red-600 text-xs">{err}</p>}
-        <label className="flex items-start gap-2 text-xs text-gray-600 cursor-pointer">
-          <input
-            type="checkbox"
-            className="mt-0.5"
-            checked={agreed}
-            onChange={(e) => setAgreed(e.target.checked)}
-          />
-          <span>
-            I agree to the <a href="/terms" target="_blank" className="text-blue-600 underline">Terms of Use</a>{" "}
-            and <a href="/privacy" target="_blank" className="text-blue-600 underline">Privacy Policy</a>.
-          </span>
-        </label>
 
         <Turnstile onVerify={setCaptchaToken} />
 
