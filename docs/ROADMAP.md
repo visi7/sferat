@@ -154,6 +154,14 @@ Referencë vizioni: `docs/VISION.md`
   - **Konfiguruar dhe testuar në prodhim** nga pronari (Google Cloud OAuth client + Supabase Provider), duke ndjekur udhëzimet hap-pas-hapi.
   - **2 gjetje shtesë gjatë testimit**: (1) formulari i kyçjes te ballina (`app/page.tsx`) kishte vetëm email/fjalëkalim, pa Google — u shtua edhe atje, njësoj si te `/sign-in`. (2) gabimi i kyçjes së dështuar shfaqej si `alert()` i papërpunuar i browser-it (dukej si "mesazh sistemi") — u zëvendësua me kuti gabimi të stilizuar (e kuqe), në linjë me kutitë e tjera ekzistuese (cooldown, etj.).
 
+- **"Convinced me" — veçoria e parë "unike" e strategjisë** (diferencim nga Reddit/Quora, hapi 1 drejt idesë së Agora-s si arenë debati):
+  - Tabelë e re `comment_convinces` (toggle, `(user_id, comment_id)`, RLS lexim publik/shkrim vetëm pronari) — mirroret struktura e `comment_votes`/`bookmarks`.
+  - Buton i ri "💡 Convinced me" te `CommentItem.tsx`, ndarë qartë nga Upvote/Downvote — shënon se komenti *e bindi* dikë, jo thjesht që i pëlqeu. I fshehur te komenti yt (s'ka kuptim ta shënosh veten).
+  - Njoftim i ri (`comment_convinced`) autorit kur komenti i tij bind dikë — trajtim identik te `NotificationBell.tsx` dhe `notifications/page.tsx` si `comment_upvoted`.
+  - Stat i 4-t te profili ("Contributions"): **Convinced** — sa herë gjithsej janë "bindur" komentet e dikujt (`ProfileStatsCard.tsx`).
+  - **Kërkon migrim SQL manual** (`20260802190000_comment_convinces.sql`) — dhënë në chat, duhet ekzekutuar te Supabase SQL Editor para se të funksionojë në prodhim.
+  - **Vizioni pas kësaj**: lidhet me idenë e Agora-s si "arenë debati të sponsorizuar" (jo thjesht reklama) — argumenti më "Convinced me" në një temë të sponsorizuar fiton çmim, diçka që s'e ka askush tjetër. Hapi tjetër natyror kur të vendoset të vazhdohet me Agora-n.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Bug UX: Republika e para-zgjedhur automatikisht te kompozuesi i ballinës — U MBYLL
