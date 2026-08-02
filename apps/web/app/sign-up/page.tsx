@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supa } from "@/lib/supabase";
+import Turnstile from "@/components/Turnstile";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -9,6 +10,7 @@ export default function SignUpPage() {
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -23,6 +25,7 @@ export default function SignUpPage() {
       const { error } = await supa.auth.signUp({
         email,
         password: pw,
+        options: captchaToken ? { captchaToken } : undefined,
         // nëse do redirect pas konfirmimit:
         // options: { emailRedirectTo: `${window.location.origin}` },
       });
@@ -73,9 +76,12 @@ export default function SignUpPage() {
             and <a href="/privacy" target="_blank" className="text-blue-600 underline">Privacy Policy</a>.
           </span>
         </label>
+
+        <Turnstile onVerify={setCaptchaToken} />
+
         <button
           type="submit"
-          disabled={loading || !agreed}
+          disabled={loading || !agreed || !captchaToken}
           className="mt-2 bg-black text-white rounded px-4 py-2 disabled:opacity-50"
         >
           {loading ? "Creating..." : "Create account"}

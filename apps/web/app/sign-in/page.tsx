@@ -1,16 +1,22 @@
 "use client";
 import { useState } from "react";
 import { supa } from "@/lib/supabase";
+import Turnstile from "@/components/Turnstile";
 
 export default function EmailSignIn() {
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supa.auth.signInWithPassword({ email, password: pw });
+    const { error } = await supa.auth.signInWithPassword({
+      email,
+      password: pw,
+      options: captchaToken ? { captchaToken } : undefined,
+    });
     if (error) {
       setLoading(false);
       return alert(error.message);
@@ -38,9 +44,11 @@ export default function EmailSignIn() {
           className="border rounded px-3 py-2"
           required
         />
+        <Turnstile onVerify={setCaptchaToken} />
+
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !captchaToken}
           className="mt-2 bg-black text-white rounded px-4 py-2 disabled:opacity-50"
         >
           {loading ? "Signing in..." : "Sign in"}

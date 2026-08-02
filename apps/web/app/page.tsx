@@ -6,6 +6,7 @@ import Shell from "@/components/shell";
 import LeftNav from "@/components/LeftNav";
 import RightAside from "@/components/RightAside";
 import PostCard from "@/components/postCard";
+import Turnstile from "@/components/Turnstile";
 
 type Post = {
   id: string;
@@ -44,6 +45,7 @@ export default function Home() {
     useState<Awaited<ReturnType<typeof supa.auth.getSession>>["data"]["session"]>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
   // Data
@@ -267,7 +269,11 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
   // ---- Auth ----
   async function signIn() {
     setAuthLoading(true);
-    const { data, error } = await supa.auth.signInWithPassword({ email, password });
+    const { data, error } = await supa.auth.signInWithPassword({
+      email,
+      password,
+      options: captchaToken ? { captchaToken } : undefined,
+    });
     setAuthLoading(false);
     if (error) return alert(error.message);
     setSession(data.session ?? null);
@@ -410,13 +416,15 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
       className="border p-2 rounded flex-1 min-w-[140px]"
     />
     <button
-      disabled={authLoading}
+      disabled={authLoading || !captchaToken}
       onClick={signIn}
-      className="px-3 py-2 rounded bg-black text-white"
+      className="px-3 py-2 rounded bg-black text-white disabled:opacity-50"
     >
       {authLoading ? "..." : "Sign in"}
     </button>
   </div>
+
+  <Turnstile onVerify={setCaptchaToken} />
 
   <p className="text-xs text-gray-600">
     Don't have an account?{" "}

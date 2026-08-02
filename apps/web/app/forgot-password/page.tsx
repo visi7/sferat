@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
+import Turnstile from "@/components/Turnstile";
 
 // Supabase e kthen këtë limit si tekst i papërpunuar, p.sh. "For security
 // purposes, you can only request this after 49 seconds." — e nxjerrim numrin
@@ -17,6 +18,7 @@ export default function ForgotPasswordPage() {
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -31,6 +33,7 @@ export default function ForgotPasswordPage() {
     try {
       const { error } = await supa.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
+        captchaToken: captchaToken ?? undefined,
       });
       if (error) throw error;
       setSent(true);
@@ -76,9 +79,11 @@ export default function ForgotPasswordPage() {
               </span>
             </p>
           )}
+          <Turnstile onVerify={setCaptchaToken} />
+
           <button
             type="submit"
-            disabled={loading || cooldown > 0}
+            disabled={loading || cooldown > 0 || !captchaToken}
             className="mt-2 bg-black text-white rounded px-4 py-2 disabled:opacity-50"
           >
             {loading ? "Sending…" : cooldown > 0 ? `Wait ${cooldown}s` : "Send reset link"}
