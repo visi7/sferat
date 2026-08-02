@@ -141,6 +141,11 @@ Referencë vizioni: `docs/VISION.md`
   - **CAPTCHA (Cloudflare Turnstile) — u shtua**: komponent i ri `components/Turnstile.tsx`, i integruar te formulari i kyçjes së ballinës, `/sign-in`, `/sign-up`, dhe `/forgot-password`. Kërkon `NEXT_PUBLIC_TURNSTILE_SITE_KEY` si env var te Vercel + Secret Key-n përkatës te Supabase → Attack Protection. **Shënim sigurie:** Secret Key-n fillestar e ekspozoi pronari gabimisht në bisedë — u rekomandua rrotullimi i tij te Cloudflare para se të përdoret.
   - **Mbetën për më vonë:** 2FA/MFA (ndërtim UI real, projekt më vete), kontrollimi i konfigurimit të "Rate Limits" te Supabase.
 
+- **Privacy Policy / Terms of Use — përditësuar kundrejt asaj çka është ndërtuar realisht**:
+  - Privacy: shtuar Resend/Sentry/Cloudflare Turnstile te lista e palëve të treta (tani përpunojnë vërtet të dhëna), seksion "Cookies", shënim për transferime ndërkombëtare të dhënash, gjuhë e emërtuar GDPR (akses/korrigjim/portabilitet/kundërshtim).
+  - Terms: shtuar proces ankimimi për shkelje autoresh (copyright), seksion "Changes to these Terms", dhe **"Governing Law" si placeholder i qëllimshëm** — kërkon vendim të pronarit (cili shtet/juridiksion), s'e kam zgjedhur vetë.
+  - **Mbetet ende: rishikim ligjor real** nga dikush me njohuri juridike — draft-et janë tani më të plota, jo më finale.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Bug UX: Republika e para-zgjedhur automatikisht te kompozuesi i ballinës — U MBYLL
