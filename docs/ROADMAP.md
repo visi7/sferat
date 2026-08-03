@@ -181,6 +181,7 @@ Referencë vizioni: `docs/VISION.md`
   - `/post/[id]`: banderolë sponsorizimi kur postimi është pjesë e një arene, dhe kuti e veçantë "🏆 Winning argument" kur fituesi është shpallur.
   - **Vendim i qëllimshëm i fushëveprimit**: pagesa e çmimit **s'automatizohet** — bëhet manualisht nga pronari jashtë platformës (kontakt direkt me fituesin), derisa integrimi i pagesave (Stripe/KYC) të vendoset si projekt më vete, siç ishte shënuar tashmë te "Vizioni i monetizimit".
   - **Kërkon migrim SQL manual** (`20260803190000_debate_arenas.sql`) — dhënë në chat.
+  - **Abuzim i gjetur gjatë testimit real dhe rregulluar**: admini mund t'i shkruante komente vetes te posti i arenës dhe t'i shpallte fituese, pa asnjë "Convinced me" nga dikush tjetër. `award_debate_arena()` tani refuzon (1) vetë-shpalljen fitues (koment i shkruar nga vetë awarder-i), dhe (2) komente me 0 "Convinced me" — të dyja të zbatuara në databazë, jo vetëm në ndërfaqe. Leaderboard-i i fsheh butonin "Award" dhe tregon arsyen për rreshtat jo të lejuar. Migrim shtesë `20260804000000_award_debate_arena_safeguards.sql`.
 
 - **Përshkallëzim raportesh nga Assistant te menaxheri konkret — u ndërtua** (lindi nga pyetja "a janë rolet qartazi të ndara" → zbulim: `/mod/panel` fshihte çdo raport nën 3 raportime, edhe për Assistent):
   - Assistent-ët tani shohin **çdo** raport në fushën e tyre (jo vetëm 3+); Moderator/Manager/Admin vazhdojnë të shohin vetëm 3+, si më parë.
