@@ -94,6 +94,10 @@ export default function NotificationsPage() {
       case "post_upvoted":     return `${actor} upvoted your post.`;
       case "comment_upvoted":  return `${actor} upvoted your comment.`;
       case "comment_convinced": return `${actor} said your comment convinced them.`;
+      case "debate_arena_won": {
+        const p = n.payload ?? {};
+        return `🏆 Your argument won "${p.arena_title ?? "a debate arena"}"${p.prize_description ? ` — ${p.prize_description}` : ""}!`;
+      }
       case "report_result":    return `Your report was ${n.payload?.status ?? "processed"}.`;
       case "role_changed": {
         const p = n.payload ?? {};
@@ -117,6 +121,8 @@ export default function NotificationsPage() {
         const postId = commentPostMap[n.payload?.comment_id];
         return postId ? `/post/${postId}` : null;
       }
+      case "debate_arena_won":
+        return n.payload?.post_id ? `/post/${n.payload.post_id}` : null;
       case "follow":
         return n.payload?.actor_username ? `/profile/${n.payload.actor_username}` : null;
       default:

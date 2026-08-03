@@ -18,6 +18,20 @@ type SponsoredPost = {
   created_at: string;
 };
 
+type Arena = {
+  id: string;
+  sponsor_name: string;
+  title: string;
+  prize_description: string | null;
+  post_id: string;
+  ends_at: string;
+  status: "open" | "awarded";
+};
+
+function daysUntil(iso: string): number {
+  return Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000);
+}
+
 // YouTube/Vimeo linqe zakonshme -> URL embed-i; çdo gjë tjetër trajtohet si
 // skedar video direkt (p.sh. .mp4 i hostuar diku), shfaqet me <video>.
 function getEmbedUrl(url: string): string | null {
@@ -30,16 +44,24 @@ function getEmbedUrl(url: string): string | null {
 
 export default function AgoraPage() {
   const [ads, setAds] = useState<SponsoredPost[]>([]);
+  const [arenas, setArenas] = useState<Arena[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const { data } = await supa
-        .from("sponsored_posts")
-        .select("id,sponsor_name,title,body,image_url,video_url,cta_label,cta_url,created_at")
-        .eq("is_active", true)
-        .order("created_at", { ascending: false });
-      setAds(data ?? []);
+      const [adsRes, arenasRes] = await Promise.all([
+        supa
+          .from("sponsored_posts")
+          .select("id,sponsor_name,title,body,image_url,video_url,cta_label,cta_url,created_at")
+          .eq("is_active", true)
+          .order("created_at", { ascending: false }),
+        supa
+          .from("debate_arenas")
+          .select("id,sponsor_name,title,prize_description,post_id,ends_at,status")
+          .order("created_at", { ascending: false }),
+      ]);
+      setAds(adsRes.data ?? []);
+      setArenas((arenasRes.data as Arena[]) ?? []);
       setLoading(false);
     })();
   }, []);
@@ -55,9 +77,50 @@ export default function AgoraPage() {
           </p>
         </div>
 
+        {!loading && arenas.length > 0 && (
+          <div className="space-y-2">
+            <h2 className="text-sm font-semibold text-gray-600">🏆 Debate Arenas</h2>
+            {arenas.map((arena) => {
+              const d = daysUntil(arena.ends_at);
+              return (
+                <a
+                  key={arena.id}
+                  href={`/post/${arena.post_id}`}
+                  className="block bg-white border rounded-xl p-4 space-y-1 hover:border-amber-300"
+                >
+                  <div className="flex items-center gap-2 text-xs flex-wrap">
+                    <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-medium">
+                      Sponsored Debate
+                    </span>
+                    <span className="text-gray-500">{arena.sponsor_name}</span>
+                    {arena.status === "awarded" ? (
+                      <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
+                        🏆 Winner announced
+                      </span>
+                    ) : d < 0 ? (
+                      <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium">
+                        Voting closed
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
+                        Ends in {d}d
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="font-semibold">{arena.title}</h3>
+                  {arena.prize_description && (
+                    <p className="text-sm text-gray-600">Prize: {arena.prize_description}</p>
+                  )}
+                  <p className="text-sm text-amber-700 font-medium">Join the debate →</p>
+                </a>
+              );
+            })}
+          </div>
+        )}
+
         {loading ? (
           <p className="text-sm text-gray-500 text-center">Loading…</p>
-        ) : ads.length === 0 ? (
+        ) : ads.length === 0 && arenas.length === 0 ? (
           <p className="text-sm text-gray-500 text-center">Nothing sponsored right now.</p>
         ) : (
           ads.map((ad) => (

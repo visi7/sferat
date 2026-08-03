@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { supa } from "@/lib/supabase";
+import ArenaManager from "@/components/agora/ArenaManager";
 
 type SponsoredPost = {
   id: string;
@@ -71,6 +72,8 @@ export default function ModAgoraPage() {
   const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
   const [isMarketingMod, setIsMarketingMod] = useState(false);
   const canManage = isGlobalAdmin || isMarketingMod;
+
+  const [tab, setTab] = useState<"ads" | "arenas">("ads");
 
   const [ads, setAds] = useState<SponsoredPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -313,6 +316,25 @@ export default function ModAgoraPage() {
         <a href="/agora" className="px-3 py-1 border rounded text-sm hover:bg-gray-50">View Agora</a>
       </div>
 
+      <div className="flex gap-1 text-sm">
+        <button
+          onClick={() => setTab("ads")}
+          className={`px-3 py-1.5 rounded-full border ${tab === "ads" ? "bg-black text-white border-black" : "hover:bg-gray-50"}`}
+        >
+          Sponsored Posts
+        </button>
+        <button
+          onClick={() => setTab("arenas")}
+          className={`px-3 py-1.5 rounded-full border ${tab === "arenas" ? "bg-black text-white border-black" : "hover:bg-gray-50"}`}
+        >
+          🏆 Debate Arenas
+        </button>
+      </div>
+
+      {tab === "arenas" ? (
+        <ArenaManager />
+      ) : (
+      <>
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
         <form onSubmit={submitForm} className="lg:col-span-3 bg-white border border-l-4 border-l-amber-400 rounded-xl p-5 space-y-3">
           <div className="flex items-center justify-between">
@@ -642,6 +664,8 @@ export default function ModAgoraPage() {
           </div>
         )}
       </div>
+      </>
+      )}
     </div>
   );
 }
