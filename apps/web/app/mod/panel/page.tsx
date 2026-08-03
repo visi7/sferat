@@ -20,6 +20,7 @@ export default function ModPanel() {
   const [reports, setReports] = useState<ReportGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [postsMap, setPostsMap] = useState<Record<string, any>>({});
   const [commentsMap, setCommentsMap] = useState<Record<string, any>>({});
   const [republicsMap, setRepublicsMap] = useState<Record<string, string>>({});
@@ -232,7 +233,7 @@ export default function ModPanel() {
       setReports((prev) => prev.filter((r) => r.id !== report.id));
     } catch (e: any) {
       console.error('ACCEPT ERROR:', e);
-      alert(e.message ?? 'Error accepting report');
+      setActionError(e.message ?? 'Error accepting report');
     }
   };
 
@@ -251,7 +252,7 @@ export default function ModPanel() {
       setReports((prev) => prev.filter((r) => r.id !== report.id));
     } catch (e: any) {
       console.error('REJECT ERROR:', e);
-      alert(e.message ?? 'Error rejecting report');
+      setActionError(e.message ?? 'Error rejecting report');
     }
   };
 
@@ -269,7 +270,7 @@ export default function ModPanel() {
       );
     } catch (e: any) {
       console.error('ESCALATE ERROR:', e);
-      alert(e.message ?? 'Error escalating report');
+      setActionError(e.message ?? 'Error escalating report');
     }
   };
 
@@ -390,6 +391,13 @@ export default function ModPanel() {
           </div>
         ))}
       </div>
+
+      {actionError && (
+        <div className="fixed bottom-4 right-4 bg-red-50 border border-red-200 text-red-800 text-sm rounded-lg px-4 py-3 shadow-lg z-40 max-w-sm">
+          {actionError}
+          <button onClick={() => setActionError(null)} className="ml-3 text-red-600 underline">Dismiss</button>
+        </div>
+      )}
     </div>
   );
 }

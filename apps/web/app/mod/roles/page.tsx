@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 type RoleName = "admin" | "director" | "manager" | "moderator" | "assistant" | "marketing";
 
@@ -64,6 +65,8 @@ export default function ModRolesPage() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [formNotice, setFormNotice] = useState<string | null>(null);
+  const [pendingRemove, setPendingRemove] = useState<Role | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   // Vetëm Admini global sheh gjithçka (Admin/Director/Marketing përfshirë);
   // Director sheh vetëm rreshtat Assistant/Moderator/Manager — mjaftueshëm
@@ -235,11 +238,14 @@ export default function ModRolesPage() {
     return managerScope.republicId === null || managerScope.republicId === r.republic_id;
   }
 
-  async function removeRole(r: Role) {
-    if (!confirm(`Remove ${ROLE_LABELS[r.role]} from @${r.username}?`)) return;
-    const { error } = await supa.from("user_roles").delete().eq("id", r.id);
-    if (error) return alert(error.message);
-    setRoles((prev) => prev.filter((x) => x.id !== r.id));
+  async function confirmRemoveRole() {
+    if (!pendingRemove) return;
+    setActionError(null);
+    const { error } = await supa.from("user_roles").delete().eq("id", pendingRemove.id);
+    const removed = pendingRemove;
+    setPendingRemove(null);
+    if (error) return setActionError(error.message);
+    setRoles((prev) => prev.filter((x) => x.id !== removed.id));
   }
 
   if (checkingAuth) {
@@ -393,7 +399,7 @@ export default function ModRolesPage() {
                   </div>
                   {canRemove(r) && (
                     <button
-                      onClick={() => removeRole(r)}
+                      onClick={() => setPendingRemove(r)}
                       className="shrink-0 text-xs px-2 py-1 border border-red-200 text-red-700 rounded hover:bg-red-50"
                     >
                       Remove
@@ -409,6 +415,23 @@ export default function ModRolesPage() {
           The full role list is only visible to Admins and Directors.
         </p>
       )}
+
+      {actionError && (
+        <div className="fixed bottom-4 right-4 bg-red-50 border border-red-200 text-red-800 text-sm rounded-lg px-4 py-3 shadow-lg z-40 max-w-sm">
+          {actionError}
+          <button onClick={() => setActionError(null)} className="ml-3 text-red-600 underline">Dismiss</button>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={!!pendingRemove}
+        title="Remove role"
+        message={pendingRemove ? `Remove ${ROLE_LABELS[pendingRemove.role]} from @${pendingRemove.username}?` : ""}
+        confirmLabel="Remove"
+        danger
+        onConfirm={confirmRemoveRole}
+        onCancel={() => setPendingRemove(null)}
+      />
     </div>
   );
 }

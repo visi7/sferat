@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 type Republic = { id: string; title: string };
 
@@ -64,6 +65,8 @@ export default function ArenaManager() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [leaderboards, setLeaderboards] = useState<Record<string, LeaderboardRow[]>>({});
   const [loadingBoard, setLoadingBoard] = useState<string | null>(null);
+  const [pendingAward, setPendingAward] = useState<{ arena: Arena; commentId: string } | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -159,10 +162,15 @@ export default function ArenaManager() {
     setLoadingBoard(null);
   }
 
-  async function award(arena: Arena, commentId: string) {
-    if (!confirm("Award this comment as the winning argument? This can't be undone.")) return;
-    const { error } = await supa.rpc("award_debate_arena", { p_arena_id: arena.id, p_comment_id: commentId });
-    if (error) return alert(error.message);
+  async function confirmAward() {
+    if (!pendingAward) return;
+    setActionError(null);
+    const { error } = await supa.rpc("award_debate_arena", {
+      p_arena_id: pendingAward.arena.id,
+      p_comment_id: pendingAward.commentId,
+    });
+    setPendingAward(null);
+    if (error) return setActionError(error.message);
     await loadArenas();
   }
 
@@ -337,7 +345,7 @@ export default function ArenaManager() {
                             </div>
                             {arena.status === "open" && (
                               <button
-                                onClick={() => award(arena, row.id)}
+                                onClick={() => setPendingAward({ arena, commentId: row.id })}
                                 className="shrink-0 text-xs px-2 py-1 border border-amber-300 text-amber-700 rounded hover:bg-amber-50"
                               >
                                 Award
@@ -354,6 +362,22 @@ export default function ArenaManager() {
           </div>
         )}
       </div>
+
+      {actionError && (
+        <div className="fixed bottom-4 right-4 bg-red-50 border border-red-200 text-red-800 text-sm rounded-lg px-4 py-3 shadow-lg z-40 max-w-sm">
+          {actionError}
+          <button onClick={() => setActionError(null)} className="ml-3 text-red-600 underline">Dismiss</button>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={!!pendingAward}
+        title="Award winning argument"
+        message="This comment becomes the announced winner and its author gets notified. This can't be undone."
+        confirmLabel="Award"
+        onConfirm={confirmAward}
+        onCancel={() => setPendingAward(null)}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supa } from "@/lib/supabase";
 import ArenaManager from "@/components/agora/ArenaManager";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 type SponsoredPost = {
   id: string;
@@ -88,6 +89,8 @@ export default function ModAgoraPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploadStage, setUploadStage] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -257,18 +260,22 @@ export default function ModAgoraPage() {
   }
 
   async function toggleActive(ad: SponsoredPost) {
+    setActionError(null);
     const { error } = await supa
       .from("sponsored_posts")
       .update({ is_active: !ad.is_active })
       .eq("id", ad.id);
-    if (error) return alert(error.message);
+    if (error) return setActionError(error.message);
     setAds((prev) => prev.map((a) => (a.id === ad.id ? { ...a, is_active: !a.is_active } : a)));
   }
 
-  async function deleteAd(id: string) {
-    if (!confirm("Delete this sponsored post? This can't be undone.")) return;
+  async function confirmDeleteAd() {
+    if (!pendingDeleteId) return;
+    setActionError(null);
+    const id = pendingDeleteId;
     const { error } = await supa.from("sponsored_posts").delete().eq("id", id);
-    if (error) return alert(error.message);
+    setPendingDeleteId(null);
+    if (error) return setActionError(error.message);
     setAds((prev) => prev.filter((a) => a.id !== id));
     if (editingId === id) cancelEdit();
   }
@@ -652,7 +659,7 @@ export default function ModAgoraPage() {
                       {ad.is_active ? "Deactivate" : "Activate"}
                     </button>
                     <button
-                      onClick={() => deleteAd(ad.id)}
+                      onClick={() => setPendingDeleteId(ad.id)}
                       className="text-xs px-2 py-1 border border-red-200 text-red-700 rounded hover:bg-red-50"
                     >
                       Delete
@@ -666,6 +673,23 @@ export default function ModAgoraPage() {
       </div>
       </>
       )}
+
+      {actionError && (
+        <div className="fixed bottom-4 right-4 bg-red-50 border border-red-200 text-red-800 text-sm rounded-lg px-4 py-3 shadow-lg z-40 max-w-sm">
+          {actionError}
+          <button onClick={() => setActionError(null)} className="ml-3 text-red-600 underline">Dismiss</button>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={!!pendingDeleteId}
+        title="Delete sponsored post"
+        message="This can't be undone."
+        confirmLabel="Delete"
+        danger
+        onConfirm={confirmDeleteAd}
+        onCancel={() => setPendingDeleteId(null)}
+      />
     </div>
   );
 }
