@@ -79,6 +79,7 @@ export default function LeftNav() {
             <>
               {isMod && <a href="/mod/panel">Moderator panel</a>}
               {(isGlobalAdmin || isManager) && <a href="/mod/roles">Manage roles</a>}
+              {isGlobalAdmin && <a href="/mod/agora">Manage Agora ads</a>}
               <a href="/settings">Settings</a>
               <button onClick={signOut} className="text-left">Sign out</button>
             </>

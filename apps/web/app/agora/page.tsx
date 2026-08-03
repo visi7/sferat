@@ -12,10 +12,21 @@ type SponsoredPost = {
   title: string;
   body: string | null;
   image_url: string | null;
+  video_url: string | null;
   cta_label: string | null;
   cta_url: string | null;
   created_at: string;
 };
+
+// YouTube/Vimeo linqe zakonshme -> URL embed-i; çdo gjë tjetër trajtohet si
+// skedar video direkt (p.sh. .mp4 i hostuar diku), shfaqet me <video>.
+function getEmbedUrl(url: string): string | null {
+  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/);
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+  const vimeo = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
+  return null;
+}
 
 export default function AgoraPage() {
   const [ads, setAds] = useState<SponsoredPost[]>([]);
@@ -25,7 +36,7 @@ export default function AgoraPage() {
     (async () => {
       const { data } = await supa
         .from("sponsored_posts")
-        .select("id,sponsor_name,title,body,image_url,cta_label,cta_url,created_at")
+        .select("id,sponsor_name,title,body,image_url,video_url,cta_label,cta_url,created_at")
         .eq("is_active", true)
         .order("created_at", { ascending: false });
       setAds(data ?? []);
@@ -64,13 +75,29 @@ export default function AgoraPage() {
                 <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{ad.body}</p>
               )}
 
-              {ad.image_url && (
-                <img
-                  src={ad.image_url}
-                  alt={ad.title}
-                  loading="lazy"
-                  className="rounded-lg mt-1 max-h-[400px] w-auto object-contain border"
-                />
+              {ad.video_url ? (
+                (() => {
+                  const embed = getEmbedUrl(ad.video_url!);
+                  return embed ? (
+                    <iframe
+                      src={embed}
+                      className="w-full aspect-video rounded-lg border mt-1"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video controls className="w-full rounded-lg border mt-1" src={ad.video_url!} />
+                  );
+                })()
+              ) : (
+                ad.image_url && (
+                  <img
+                    src={ad.image_url}
+                    alt={ad.title}
+                    loading="lazy"
+                    className="rounded-lg mt-1 max-h-[400px] w-auto object-contain border"
+                  />
+                )
               )}
 
               {ad.cta_label && ad.cta_url && (
