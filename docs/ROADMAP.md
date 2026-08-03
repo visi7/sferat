@@ -167,7 +167,9 @@ Referencë vizioni: `docs/VISION.md`
   - Tabelë e re `sponsored_posts` (sponsor, titull, tekst, foto opsionale, CTA) — lexim publik për ato aktive, shkrim vetëm admin global (`is_global_admin()`, ripërdorur nga sistemi ekzistues i roleve).
   - `/agora` tani i merr dhe i shfaq si karta, me etiketë të qartë "Sponsored" — jo më faqe statike.
   - **Demo e parë e mbjellë**: reklamë për vetë SFERAT-in ("Mendo lirshëm. Debato me argumente. Bindu, ose bind."), me CTA "Eksploro Republikat" → kryefaqja — që Agora të mos jetë bosh gjatë testimit.
-  - **Mbetet për më vonë** (me qëllim, jo harresë): UI admini për shtim/redaktim reklamash (tani vetëm SQL manual), debati i sponsorizuar me çmim (ideja e "arenës"), video si tip përmbajtjeje.
+  - **Panel admini `/mod/agora` + video**: UI i plotë (jo më SQL manual) — publiko, aktivizo/çaktivizo, fshi reklama, lidhur te menuja e majtë. Shtuar `video_url` — link YouTube/Vimeo shfaqet i integruar (iframe), çdo link tjetër trajtohet si skedar video direkt (`<video>`); nëse ka video, zë vendin e fotos. Demo-ja fillestare e SFERAT-it u rishkrua në anglisht (fillimisht ishte gabimisht në shqip).
+  - **Rol i ri "Marketing Moderator" (`marketing`)**: administron VETËM Agora-n (RLS e `sponsored_posts` e zgjeruar me `is_marketing_mod()`, krahas `is_global_admin()`) — pa asnjë pushtet moderimi normal (reports/posts/comments). Caktohet nga admini global te `/mod/roles`, pa fushë Republike (gjithmonë global). `/mod/agora` dhe lidhja te menuja e majtë tani e njohin këtë rol.
+  - **Mbetet për më vonë** (me qëllim, jo harresë): debati i sponsorizuar me çmim (ideja e "arenës").
 
 ## 🔜 Shtyrë me qëllim — mos harro
 
