@@ -198,6 +198,15 @@ Referencë vizioni: `docs/VISION.md`
 
 ## 🔜 Shtyrë me qëllim — mos harro
 
+### Backup i databazës — kontrolluar, s'ka mbrojtje automatike sot
+**Gjetja:** te Supabase Dashboard → Database → Backups u konfirmua: **plani Free s'ka fare backup automatik** (as "Scheduled backups", as "Point in Time Recovery") — nëse ndodh diçka e keqe (fshirje aksidentale, gabim migrimi), s'ka rrugë zyrtare rikuperimi.
+
+**Vendimi:** s'e shohim urgjente ngritja në Pro (~$25/muaj, jep 7 ditë backup + PITR) përderisa platforma është ende në fazë testimi (kryesisht llogari test). **Rekomandohet fort para lançimit publik real**, kur të ketë të dhëna përdoruesish reale.
+
+**Ndërkohë:** backup manual falas nga kompjuteri i pronarit, herë pas here (`supabase db dump --db-url "..." -f backup.sql`) — pronari konfirmoi do bëjë njërin menjëherë.
+
+**Kur ta rimarrim:** para se të fillojë marketing/lançim publik.
+
 ### Bug UX: Republika e para-zgjedhur automatikisht te kompozuesi i ballinës — U MBYLL
 **Problemi:** te `app/page.tsx`, dropdown-i i Republikës në kompozues zgjidhte vetë të parën alfabetikisht si parazgjedhje. Nëse një përdorues s'e vinte re/ndryshonte dropdown-in para se të postonte, postimi i tij shkonte aksidentalisht te Republika e gabuar.
 
