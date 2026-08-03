@@ -237,7 +237,7 @@ return (
                 ) : (
                   <div>
                     {profile.bio ? (
-                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{profile.bio}</p>
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{profile.bio}</p>
                     ) : (
                       <p className="text-sm text-gray-500">No bio yet.</p>
                     )}
@@ -276,7 +276,7 @@ return (
                         {new Date(c.created_at).toLocaleString()} — on{" "}
                         <a className="underline" href={`/post/${c.post_id}`}>{c.postTitle}</a>
                       </div>
-                      <div className="mt-1 whitespace-pre-wrap">{c.body}</div>
+                      <div className="mt-1 whitespace-pre-wrap break-words">{c.body}</div>
                     </article>
                   ))}
                 </div>

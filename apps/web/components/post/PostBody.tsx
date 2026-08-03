@@ -24,7 +24,7 @@ export default function PostBody({
 
       {/* body */}
       {body ? (
-        <div className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">
+        <div className="text-sm text-gray-700 mt-1 whitespace-pre-wrap break-words">
           {body}
         </div>
       ) : null}

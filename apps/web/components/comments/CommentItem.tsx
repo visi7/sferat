@@ -139,7 +139,7 @@ export default function CommentItem({
           </button>
         </div>
       ) : (
-        <div className="text-sm whitespace-pre-wrap">{c.body}</div>
+        <div className="text-sm whitespace-pre-wrap break-words">{c.body}</div>
       )}
 
       {/* Toolbar i komentit */}
