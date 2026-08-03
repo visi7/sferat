@@ -26,7 +26,7 @@ export function useIsModerator(republicId?: string) {
         .from("user_roles")
         .select("role, republic_id")
         .eq("user_id", uid)
-        .in("role", ["admin", "manager", "moderator", "assistant"]);
+        .in("role", ["admin", "director", "manager", "moderator", "assistant"]);
 
       query = republicId
         ? query.or(`republic_id.is.null,republic_id.eq.${republicId}`)

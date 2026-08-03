@@ -30,7 +30,7 @@ export default function ModPanel() {
   function canResolve(republicId: string | null) {
     return myRoles.some(
       (r) =>
-        ["admin", "manager", "moderator"].includes(r.role) &&
+        ["admin", "director", "manager", "moderator"].includes(r.role) &&
         (r.republic_id === null || r.republic_id === republicId)
     );
   }
@@ -173,11 +173,11 @@ export default function ModPanel() {
         const myRolesLocal = rolesData ?? [];
         const canResolveLocal = (republicId: string | null) =>
           myRolesLocal.some(
-            (r) => ['admin', 'manager', 'moderator'].includes(r.role) && (r.republic_id === null || r.republic_id === republicId)
+            (r) => ['admin', 'director', 'manager', 'moderator'].includes(r.role) && (r.republic_id === null || r.republic_id === republicId)
           );
         const isReviewerLocal = (republicId: string | null) =>
           myRolesLocal.some(
-            (r) => ['admin', 'manager', 'moderator', 'assistant'].includes(r.role) && (r.republic_id === null || r.republic_id === republicId)
+            (r) => ['admin', 'director', 'manager', 'moderator', 'assistant'].includes(r.role) && (r.republic_id === null || r.republic_id === republicId)
           );
         reportsData = reportsData.filter((g) => {
           if (g.escalatedAt) return true;

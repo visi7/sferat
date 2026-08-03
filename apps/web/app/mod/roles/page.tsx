@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 
-type RoleName = "admin" | "manager" | "moderator" | "assistant" | "marketing";
+type RoleName = "admin" | "director" | "manager" | "moderator" | "assistant" | "marketing";
 
 type Role = {
   id: string;
@@ -18,8 +18,28 @@ const ROLE_LABELS: Record<RoleName, string> = {
   assistant: "Assistant (view-only)",
   moderator: "Moderator",
   manager: "Manager",
+  director: "Director",
   admin: "Admin",
   marketing: "Marketing Moderator (Agora only)",
+};
+
+const ROLE_BADGE: Record<RoleName, string> = {
+  assistant: "bg-gray-100 text-gray-600",
+  moderator: "bg-blue-100 text-blue-700",
+  manager: "bg-indigo-100 text-indigo-700",
+  director: "bg-teal-100 text-teal-700",
+  admin: "bg-gray-900 text-white",
+  marketing: "bg-amber-100 text-amber-700",
+};
+
+// Renditje hierarkie për listën "Current roles" — më i larti lart.
+const ROLE_RANK: Record<RoleName, number> = {
+  admin: 0,
+  director: 1,
+  manager: 2,
+  moderator: 3,
+  marketing: 4,
+  assistant: 5,
 };
 
 type Republic = { id: string; title: string };
@@ -29,11 +49,13 @@ type ManagerScope = { republicId: string | null } | null;
 export default function ModRolesPage() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
+  const [isDirector, setIsDirector] = useState(false);
   const [managerScope, setManagerScope] = useState<ManagerScope>(null);
 
   const [roles, setRoles] = useState<Role[]>([]);
   const [republics, setRepublics] = useState<Republic[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   // form
   const [username, setUsername] = useState("");
@@ -41,8 +63,14 @@ export default function ModRolesPage() {
   const [republicId, setRepublicId] = useState<string>(""); // "" = global
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [formNotice, setFormNotice] = useState<string | null>(null);
 
-  const canManage = isGlobalAdmin || !!managerScope;
+  // Vetëm Admini global sheh gjithçka (Admin/Director/Marketing përfshirë);
+  // Director sheh vetëm rreshtat Assistant/Moderator/Manager — mjaftueshëm
+  // për t'i menaxhuar, jo panoramën e plotë. Manager i thjeshtë s'sheh listë
+  // fare — zbatuar direkt në databazë (RLS), jo vetëm këtu.
+  const canSeeList = isGlobalAdmin || isDirector;
+  const canManage = isGlobalAdmin || isDirector || !!managerScope;
 
   useEffect(() => {
     (async () => {
@@ -63,6 +91,21 @@ export default function ModRolesPage() {
 
       if (adminRow) {
         setIsGlobalAdmin(true);
+        setCheckingAuth(false);
+        return;
+      }
+
+      const { data: directorRow } = await supa
+        .from("user_roles")
+        .select("id")
+        .eq("user_id", uid)
+        .eq("role", "director")
+        .is("republic_id", null)
+        .maybeSingle();
+
+      if (directorRow) {
+        setIsDirector(true);
+        setRole("moderator");
       } else {
         const { data: managerRow } = await supa
           .from("user_roles")
@@ -108,37 +151,46 @@ export default function ModRolesPage() {
     for (const r of reps ?? []) repMap[r.id] = r.title;
 
     setRoles(
-      list.map((r) => ({
-        ...r,
-        username: profMap[r.user_id] ?? r.user_id.slice(0, 8),
-        republic_title: r.republic_id ? repMap[r.republic_id] ?? r.republic_id.slice(0, 8) : null,
-      }))
+      (list as Role[])
+        .map((r) => ({
+          ...r,
+          username: profMap[r.user_id] ?? r.user_id.slice(0, 8),
+          republic_title: r.republic_id ? repMap[r.republic_id] ?? r.republic_id.slice(0, 8) : null,
+        }))
+        .sort((a, b) => ROLE_RANK[a.role] - ROLE_RANK[b.role])
     );
     setLoading(false);
   }
 
   useEffect(() => {
     if (!canManage) return;
-    loadRoles();
+    if (canSeeList) loadRoles();
+    else setLoading(false);
     (async () => {
       const { data } = await supa.from("republics").select("id,title").order("title");
       setRepublics(data ?? []);
     })();
-  }, [canManage]);
+  }, [canManage, canSeeList]);
 
   async function assignRole(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
+    setFormNotice(null);
 
     const clean = username.trim().toLowerCase();
     if (!clean) return;
 
-    // Managers (non-global-admin) can only ever grant "assistant", within
-    // their own scope — enforced here too, not just in RLS, so the form
-    // can't silently submit something the server will reject anyway.
-    const effectiveRole: RoleName = isGlobalAdmin ? role : "assistant";
+    // Manager (thjeshtë) mund të japë vetëm "assistant"; Director mund të
+    // japë assistant/moderator/manager; vetëm Admini global mund të japë
+    // çdo rol (përfshi admin/director/marketing) — zbatuar edhe në RLS,
+    // kjo është vetëm që forma të mos dërgojë diçka që serveri do refuzonte.
+    const effectiveRole: RoleName = isGlobalAdmin || isDirector ? role : "assistant";
     const effectiveRepublicId = isGlobalAdmin
-      ? (effectiveRole === "marketing" ? null : republicId || null)
+      ? effectiveRole === "marketing" || effectiveRole === "director"
+        ? null
+        : republicId || null
+      : isDirector
+      ? republicId || null
       : managerScope?.republicId ?? (republicId || null);
 
     setSaving(true);
@@ -164,7 +216,11 @@ export default function ModRolesPage() {
 
       setUsername("");
       if (isGlobalAdmin) setRepublicId("");
-      await loadRoles();
+      if (canSeeList) {
+        await loadRoles();
+      } else {
+        setFormNotice(`Role assigned to @${clean}.`);
+      }
     } catch (err: any) {
       setFormError(err.message ?? "Something went wrong");
     } finally {
@@ -174,14 +230,16 @@ export default function ModRolesPage() {
 
   function canRemove(r: Role) {
     if (isGlobalAdmin) return true;
+    if (isDirector) return ["assistant", "moderator", "manager"].includes(r.role);
     if (!managerScope || r.role !== "assistant") return false;
     return managerScope.republicId === null || managerScope.republicId === r.republic_id;
   }
 
-  async function removeRole(id: string) {
-    const { error } = await supa.from("user_roles").delete().eq("id", id);
+  async function removeRole(r: Role) {
+    if (!confirm(`Remove ${ROLE_LABELS[r.role]} from @${r.username}?`)) return;
+    const { error } = await supa.from("user_roles").delete().eq("id", r.id);
     if (error) return alert(error.message);
-    setRoles((prev) => prev.filter((r) => r.id !== id));
+    setRoles((prev) => prev.filter((x) => x.id !== r.id));
   }
 
   if (checkingAuth) {
@@ -192,21 +250,33 @@ export default function ModRolesPage() {
     return (
       <div className="p-6">
         <h1 className="text-xl font-bold mb-2">Moderator Roles</h1>
-        <p className="text-gray-600 text-sm">You must be an admin or manager to view this page.</p>
+        <p className="text-gray-600 text-sm">You must be an admin, director, or manager to view this page.</p>
       </div>
     );
   }
 
+  const visibleRoles = roles.filter((r) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    return r.username?.toLowerCase().includes(q) || ROLE_LABELS[r.role].toLowerCase().includes(q);
+  });
+
   return (
-    <div className="p-6 max-w-2xl mx-auto space-y-6">
+    <div className="p-6 max-w-3xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Moderator Roles</h1>
-        <a href="/" className="px-3 py-1 border rounded text-sm">Home</a>
+        <h1 className="text-xl font-bold">🛡️ Moderator Roles</h1>
+        <a href="/" className="px-3 py-1 border rounded text-sm hover:bg-gray-50">Home</a>
       </div>
 
-      <form onSubmit={assignRole} className="bg-white border rounded-xl p-4 space-y-3">
+      <form onSubmit={assignRole} className="bg-white border border-l-4 border-l-teal-400 rounded-xl p-5 space-y-3">
         <h2 className="text-sm font-semibold">Assign a role</h2>
-        {!isGlobalAdmin && (
+        {!isGlobalAdmin && isDirector && (
+          <p className="text-xs text-gray-500">
+            As a Director, you can grant/remove <strong>Assistant</strong>, <strong>Moderator</strong>, and{" "}
+            <strong>Manager</strong> — globally or within any Republic.
+          </p>
+        )}
+        {!isGlobalAdmin && !isDirector && (
           <p className="text-xs text-gray-500">
             As a Manager, you can grant/remove <strong>Assistant</strong> access
             {managerScope?.republicId
@@ -237,8 +307,19 @@ export default function ModRolesPage() {
                 <option value="assistant">{ROLE_LABELS.assistant}</option>
                 <option value="moderator">{ROLE_LABELS.moderator}</option>
                 <option value="manager">{ROLE_LABELS.manager}</option>
+                <option value="director">{ROLE_LABELS.director}</option>
                 <option value="admin">{ROLE_LABELS.admin}</option>
                 <option value="marketing">{ROLE_LABELS.marketing}</option>
+              </select>
+            ) : isDirector ? (
+              <select
+                className="w-full border rounded-md px-3 py-2 text-sm"
+                value={role}
+                onChange={(e) => setRole(e.target.value as RoleName)}
+              >
+                <option value="assistant">{ROLE_LABELS.assistant}</option>
+                <option value="moderator">{ROLE_LABELS.moderator}</option>
+                <option value="manager">{ROLE_LABELS.manager}</option>
               </select>
             ) : (
               <div className="w-full border rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-600">
@@ -248,11 +329,11 @@ export default function ModRolesPage() {
           </div>
           <div className="flex-1">
             <label className="block text-xs text-gray-500 mb-1">Scope</label>
-            {isGlobalAdmin && role === "marketing" ? (
+            {isGlobalAdmin && (role === "marketing" || role === "director") ? (
               <div className="w-full border rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-600">
-                Global (Agora only — no Republic)
+                Global (no Republic)
               </div>
-            ) : isGlobalAdmin || !managerScope?.republicId ? (
+            ) : isGlobalAdmin || isDirector || !managerScope?.republicId ? (
               <select
                 className="w-full border rounded-md px-3 py-2 text-sm"
                 value={republicId}
@@ -272,6 +353,7 @@ export default function ModRolesPage() {
         </div>
 
         {formError && <p className="text-red-600 text-xs">{formError}</p>}
+        {formNotice && <p className="text-green-700 text-xs">{formNotice}</p>}
 
         <button
           type="submit"
@@ -282,35 +364,51 @@ export default function ModRolesPage() {
         </button>
       </form>
 
-      <div className="bg-white border rounded-xl p-4">
-        <h2 className="text-sm font-semibold mb-3">Current roles</h2>
-        {loading ? (
-          <p className="text-sm text-gray-500">Loading…</p>
-        ) : roles.length === 0 ? (
-          <p className="text-sm text-gray-500">No roles assigned yet.</p>
-        ) : (
-          <div className="space-y-2">
-            {roles.map((r) => (
-              <div key={r.id} className="flex items-center justify-between text-sm border-b pb-2 last:border-b-0">
-                <div>
-                  <span className="font-medium">@{r.username}</span>{" "}
-                  <span className="text-gray-500">
-                    — {ROLE_LABELS[r.role] ?? r.role} {r.republic_title ? `· ${r.republic_title}` : "· Global"}
-                  </span>
-                </div>
-                {canRemove(r) && (
-                  <button
-                    onClick={() => removeRole(r.id)}
-                    className="text-xs px-2 py-1 border rounded hover:bg-gray-50"
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
-            ))}
+      {canSeeList ? (
+        <div className="bg-white border rounded-xl p-4">
+          <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+            <h2 className="text-sm font-semibold">Current roles</h2>
+            <input
+              type="text"
+              placeholder="Search username or role…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="border rounded-md px-2 py-1 text-xs w-48"
+            />
           </div>
-        )}
-      </div>
+          {loading ? (
+            <p className="text-sm text-gray-500">Loading…</p>
+          ) : visibleRoles.length === 0 ? (
+            <p className="text-sm text-gray-500">Nothing here.</p>
+          ) : (
+            <div className="space-y-2">
+              {visibleRoles.map((r) => (
+                <div key={r.id} className="flex items-center justify-between gap-2 text-sm border-b pb-2 last:border-b-0">
+                  <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                    <span className="font-medium">@{r.username}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ROLE_BADGE[r.role]}`}>
+                      {ROLE_LABELS[r.role]}
+                    </span>
+                    <span className="text-xs text-gray-500">{r.republic_title ?? "Global"}</span>
+                  </div>
+                  {canRemove(r) && (
+                    <button
+                      onClick={() => removeRole(r)}
+                      className="shrink-0 text-xs px-2 py-1 border border-red-200 text-red-700 rounded hover:bg-red-50"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <p className="text-xs text-gray-400 text-center">
+          The full role list is only visible to Admins and Directors.
+        </p>
+      )}
     </div>
   );
 }
