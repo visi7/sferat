@@ -10,6 +10,8 @@ type ReportGroup = {
   firstReportedAt: string;
   reportCount: number;
   republicId: string | null;
+  escalatedAt: string | null;
+  escalatedByUsername: string | null;
 };
 
 const MIN_REPORTS = 3;
@@ -41,17 +43,19 @@ export default function ModPanel() {
 
         const sess = (await supa.auth.getSession()).data.session;
         const uid = sess?.user?.id;
+        let rolesData: { role: string; republic_id: string | null }[] = [];
         if (uid) {
-          const { data: rolesData } = await supa
+          const { data } = await supa
             .from("user_roles")
             .select("role,republic_id")
             .eq("user_id", uid);
+          rolesData = data ?? [];
           setMyRoles(rolesData ?? []);
         }
 
         const { data, error } = await supa
           .from('reports')
-          .select('post_id, comment_id, created_at')
+          .select('post_id, comment_id, created_at, escalated_at, escalated_by')
           .eq('status', 'pending')
           .order('created_at', { ascending: true });
 
@@ -59,7 +63,8 @@ export default function ModPanel() {
 
         // Grupojmë në kod: një grup për post_id, një për comment_id
         const groups = new Map<string, ReportGroup>();
-        for (const r of data ?? []) {
+        const escalatorIds = new Set<string>();
+        for (const r of (data ?? []) as any[]) {
           const type: 'post' | 'comment' = r.post_id ? 'post' : 'comment';
           const targetId = r.post_id ?? r.comment_id;
           if (!targetId) continue;
@@ -68,7 +73,12 @@ export default function ModPanel() {
           const existing = groups.get(key);
           if (existing) {
             existing.reportCount += 1;
+            if (r.escalated_at && !existing.escalatedAt) {
+              existing.escalatedAt = r.escalated_at;
+              if (r.escalated_by) escalatorIds.add(r.escalated_by);
+            }
           } else {
+            if (r.escalated_by) escalatorIds.add(r.escalated_by);
             groups.set(key, {
               id: key,
               targetId,
@@ -76,13 +86,33 @@ export default function ModPanel() {
               firstReportedAt: r.created_at,
               reportCount: 1,
               republicId: null,
+              escalatedAt: r.escalated_at ?? null,
+              escalatedByUsername: null,
             });
           }
         }
 
-        let reportsData = Array.from(groups.values())
-          .filter((g) => g.reportCount >= MIN_REPORTS)
-          .sort((a, b) => b.reportCount - a.reportCount);
+        let escalatorMap: Record<string, string> = {};
+        if (escalatorIds.size > 0) {
+          const { data: escalators } = await supa
+            .from('profiles')
+            .select('id,username')
+            .in('id', Array.from(escalatorIds));
+          for (const p of escalators ?? []) escalatorMap[p.id] = p.username;
+        }
+        for (const r of (data ?? []) as any[]) {
+          if (!r.escalated_by) continue;
+          const type: 'post' | 'comment' = r.post_id ? 'post' : 'comment';
+          const targetId = r.post_id ?? r.comment_id;
+          const key = `${type}:${targetId}`;
+          const g = groups.get(key);
+          if (g && !g.escalatedByUsername) g.escalatedByUsername = escalatorMap[r.escalated_by] ?? null;
+        }
+
+        let reportsData = Array.from(groups.values()).sort((a, b) => {
+          if (!!a.escalatedAt !== !!b.escalatedAt) return a.escalatedAt ? -1 : 1;
+          return b.reportCount - a.reportCount;
+        });
 
         const postIds = reportsData.filter((r) => r.type === 'post').map((r) => r.targetId);
         const commentIds = reportsData.filter((r) => r.type === 'comment').map((r) => r.targetId);
@@ -135,6 +165,25 @@ export default function ModPanel() {
         reportsData = reportsData.map((g) =>
           g.type === 'post' ? { ...g, republicId: postsById[g.targetId]?.republic_id ?? null } : g
         );
+
+        // Resolvers (Moderator+) vetëm 3+ raportime, si më parë. Assistant-ët
+        // (vetëm-shqyrtues) shohin çdo rast në fushën e tyre, pavarësisht
+        // numrit — pikërisht që të mund ta përshkallëzojnë herët, jo pas
+        // pragut. Çdo gjë e përshkallëzuar mbetet gjithmonë e dukshme.
+        const myRolesLocal = rolesData ?? [];
+        const canResolveLocal = (republicId: string | null) =>
+          myRolesLocal.some(
+            (r) => ['admin', 'manager', 'moderator'].includes(r.role) && (r.republic_id === null || r.republic_id === republicId)
+          );
+        const isReviewerLocal = (republicId: string | null) =>
+          myRolesLocal.some(
+            (r) => ['admin', 'manager', 'moderator', 'assistant'].includes(r.role) && (r.republic_id === null || r.republic_id === republicId)
+          );
+        reportsData = reportsData.filter((g) => {
+          if (g.escalatedAt) return true;
+          if (canResolveLocal(g.republicId)) return g.reportCount >= MIN_REPORTS;
+          return isReviewerLocal(g.republicId);
+        });
 
         setReports(reportsData);
 
@@ -206,6 +255,24 @@ export default function ModPanel() {
     }
   };
 
+  // ESCALATE: Assistant s'mund të zgjidhë vetë raportin, por mund t'ia
+  // sinjalizojë direkt menaxherit të vet — pa pritur pragun e 3 raportimeve.
+  const handleEscalate = async (report: ReportGroup) => {
+    try {
+      const { error } = await supa.rpc('escalate_report', {
+        p_type: report.type,
+        p_target_id: report.targetId,
+      });
+      if (error) throw error;
+      setReports((prev) =>
+        prev.map((r) => (r.id === report.id ? { ...r, escalatedAt: new Date().toISOString() } : r))
+      );
+    } catch (e: any) {
+      console.error('ESCALATE ERROR:', e);
+      alert(e.message ?? 'Error escalating report');
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-4">
@@ -250,8 +317,15 @@ export default function ModPanel() {
       <div className="space-y-3">
         {reports.map((r) => (
           <div key={r.id} className="border rounded p-3 flex flex-col gap-1 bg-white">
-            <div className="text-xs text-gray-500">
-              {new Date(r.firstReportedAt).toLocaleString()}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs text-gray-500">
+                {new Date(r.firstReportedAt).toLocaleString()}
+              </span>
+              {r.escalatedAt && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">
+                  🚩 Escalated{r.escalatedByUsername ? ` by @${r.escalatedByUsername}` : ''}
+                </span>
+              )}
             </div>
 
             <div>
@@ -294,10 +368,17 @@ export default function ModPanel() {
                     ✕ Reject
                   </button>
                 </>
-              ) : (
+              ) : r.escalatedAt ? (
                 <span className="text-xs text-gray-500 italic">
-                  View only — resolving needs a Moderator or higher here.
+                  Escalated — waiting on a Manager to resolve it.
                 </span>
+              ) : (
+                <button
+                  onClick={() => handleEscalate(r)}
+                  className="px-3 py-1 border border-red-300 text-red-700 rounded hover:bg-red-50"
+                >
+                  🚩 Escalate to Manager
+                </button>
               )}
 
               {r.type === 'post' && (

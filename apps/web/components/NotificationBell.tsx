@@ -31,6 +31,7 @@ function bellText(n: { type: string | null; payload: any | null }) {
     case "comment_upvoted":  return `${actor} upvoted your comment.`;
     case "comment_convinced": return `${actor} said your comment convinced them.`;
     case "debate_arena_won": return `🏆 Your argument won "${p.arena_title ?? "a debate arena"}"${p.prize_description ? ` — ${p.prize_description}` : ""}!`;
+    case "report_escalated": return `🚩 ${actor} escalated a ${p.target_type ?? "report"} for your review.`;
     case "report_result":    return `Your report was ${p.status ?? "processed"}.`;
     case "role_changed":     return roleChangeText(p);
     default:                 return "You have a new notification.";
@@ -50,6 +51,8 @@ function notificationHref(n: Noti, commentPostMap: Record<string, string>): stri
     }
     case "debate_arena_won":
       return p.post_id ? `/post/${p.post_id}` : null;
+    case "report_escalated":
+      return "/mod/panel";
     case "follow":
       return p.actor_username ? `/profile/${p.actor_username}` : null;
     default:
