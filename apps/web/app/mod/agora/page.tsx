@@ -13,8 +13,30 @@ type SponsoredPost = {
   cta_label: string | null;
   cta_url: string | null;
   is_active: boolean;
+  expires_at: string | null;
   created_at: string;
 };
+
+// Buton i shpejtë -> sa ditë t'i shtohen datës së sotme.
+const DURATION_PRESETS: { label: string; days: number | null }[] = [
+  { label: "No expiry", days: null },
+  { label: "+1 week", days: 7 },
+  { label: "+2 weeks", days: 14 },
+  { label: "+1 month", days: 30 },
+  { label: "+3 months", days: 90 },
+  { label: "+1 year", days: 365 },
+];
+
+function toDateInputValue(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+function daysUntil(iso: string): number {
+  const ms = new Date(iso).getTime() - Date.now();
+  return Math.ceil(ms / 86400000);
+}
 
 const emptyForm = {
   sponsor_name: "",
@@ -53,8 +75,11 @@ export default function ModAgoraPage() {
   const [ads, setAds] = useState<SponsoredPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"newest" | "expiring">("newest");
 
   const [form, setForm] = useState(emptyForm);
+  const [expiresAtInput, setExpiresAtInput] = useState(""); // yyyy-mm-dd, "" = no expiry
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -95,7 +120,7 @@ export default function ModAgoraPage() {
     setLoading(true);
     const { data } = await supa
       .from("sponsored_posts")
-      .select("id,sponsor_name,title,body,image_url,video_url,cta_label,cta_url,is_active,created_at")
+      .select("id,sponsor_name,title,body,image_url,video_url,cta_label,cta_url,is_active,expires_at,created_at")
       .order("created_at", { ascending: false });
     setAds(data ?? []);
     setLoading(false);
@@ -140,6 +165,7 @@ export default function ModAgoraPage() {
       cta_label: ad.cta_label ?? "",
       cta_url: ad.cta_url ?? "",
     });
+    setExpiresAtInput(ad.expires_at ? ad.expires_at.slice(0, 10) : "");
     resetMediaInputs();
     setFormError(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -156,6 +182,7 @@ export default function ModAgoraPage() {
       cta_label: ad.cta_label ?? "",
       cta_url: ad.cta_url ?? "",
     });
+    setExpiresAtInput(ad.expires_at ? ad.expires_at.slice(0, 10) : "");
     resetMediaInputs();
     setFormError(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -164,6 +191,7 @@ export default function ModAgoraPage() {
   function cancelEdit() {
     setEditingId(null);
     setForm(emptyForm);
+    setExpiresAtInput("");
     resetMediaInputs();
     setFormError(null);
   }
@@ -202,6 +230,7 @@ export default function ModAgoraPage() {
         video_url,
         cta_label: form.cta_label.trim() || null,
         cta_url: form.cta_url.trim() || null,
+        expires_at: expiresAtInput ? new Date(`${expiresAtInput}T23:59:59`).toISOString() : null,
       };
 
       if (editingId) {
@@ -212,6 +241,7 @@ export default function ModAgoraPage() {
         if (error) throw error;
       }
       setForm(emptyForm);
+      setExpiresAtInput("");
       resetMediaInputs();
       setEditingId(null);
       await loadAds();
@@ -256,11 +286,25 @@ export default function ModAgoraPage() {
   const previewVideoUrl = videoFile ? null : form.video_url.trim() || null;
   const previewEmbed = previewVideoUrl ? getEmbedUrl(previewVideoUrl) : null;
 
-  const filteredAds = ads.filter((ad) => {
-    if (filter === "active") return ad.is_active;
-    if (filter === "inactive") return !ad.is_active;
-    return true;
-  });
+  const filteredAds = ads
+    .filter((ad) => {
+      if (filter === "active") return ad.is_active;
+      if (filter === "inactive") return !ad.is_active;
+      return true;
+    })
+    .filter((ad) => {
+      const q = search.trim().toLowerCase();
+      if (!q) return true;
+      return ad.title.toLowerCase().includes(q) || ad.sponsor_name.toLowerCase().includes(q);
+    })
+    .sort((a, b) => {
+      if (sortBy === "expiring") {
+        const ax = a.expires_at ? new Date(a.expires_at).getTime() : Infinity;
+        const bx = b.expires_at ? new Date(b.expires_at).getTime() : Infinity;
+        return ax - bx;
+      }
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
@@ -373,6 +417,35 @@ export default function ModAgoraPage() {
             If both image and video are set, the video is shown instead of the image.
           </p>
 
+          <div className="border rounded-md p-3 space-y-2">
+            <label className="block text-xs font-medium text-gray-600">
+              Runs until (e.g. sponsor paid for 1 month)
+            </label>
+            <div className="flex flex-wrap gap-1.5">
+              {DURATION_PRESETS.map((p) => (
+                <button
+                  key={p.label}
+                  type="button"
+                  onClick={() => setExpiresAtInput(p.days ? toDateInputValue(p.days) : "")}
+                  className="text-xs px-2 py-1 border rounded-full hover:bg-gray-50"
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            <input
+              type="date"
+              className="border rounded-md px-3 py-2 text-sm"
+              value={expiresAtInput}
+              onChange={(e) => setExpiresAtInput(e.target.value)}
+            />
+            <p className="text-xs text-gray-400">
+              {expiresAtInput
+                ? `Automatically deactivates at the end of ${expiresAtInput}.`
+                : "No expiry — stays active until deactivated by hand."}
+            </p>
+          </div>
+
           <div className="flex gap-3">
             <div className="flex-1">
               <label className="block text-xs text-gray-500 mb-1">Button label (optional)</label>
@@ -454,20 +527,37 @@ export default function ModAgoraPage() {
       </div>
 
       <div className="bg-white border rounded-xl p-4">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
           <h2 className="text-sm font-semibold">All sponsored posts</h2>
-          <div className="flex gap-1 text-xs">
-            {(["all", "active", "inactive"] as const).map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-2 py-1 rounded-full border capitalize ${
-                  filter === f ? "bg-black text-white border-black" : "hover:bg-gray-50"
-                }`}
-              >
-                {f}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="text"
+              placeholder="Search sponsor or title…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="border rounded-md px-2 py-1 text-xs w-48"
+            />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as "newest" | "expiring")}
+              className="border rounded-md px-2 py-1 text-xs"
+            >
+              <option value="newest">Newest first</option>
+              <option value="expiring">Expiring soonest</option>
+            </select>
+            <div className="flex gap-1 text-xs">
+              {(["all", "active", "inactive"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`px-2 py-1 rounded-full border capitalize ${
+                    filter === f ? "bg-black text-white border-black" : "hover:bg-gray-50"
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         {loading ? (
@@ -500,6 +590,21 @@ export default function ModAgoraPage() {
                     >
                       {ad.is_active ? "Active" : "Inactive"}
                     </span>
+                    {ad.expires_at && (() => {
+                      const d = daysUntil(ad.expires_at!);
+                      const label = d < 0 ? "Expired" : d === 0 ? "Expires today" : `Expires in ${d}d`;
+                      const color =
+                        d < 0
+                          ? "bg-red-100 text-red-700"
+                          : d <= 3
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-gray-100 text-gray-500";
+                      return (
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${color}`}>
+                          ⏱ {label}
+                        </span>
+                      );
+                    })()}
                   </div>
                   <div className="text-xs text-gray-500">{ad.sponsor_name}</div>
 
