@@ -163,6 +163,12 @@ Referencë vizioni: `docs/VISION.md`
   - **Bug i gjetur gjatë testimit real**: `notifications_type_check` (check constraint ekzistues) ende s'e njihte `'comment_convinced'` si vlerë e lejuar — çdo shënim dështonte dhe rrëzohej fare (trigger-i vrapon në të njëjtin transaction si insert-i). Rregulluar me migrim shtesë `20260802193000_notifications_allow_comment_convinced.sql` (zgjeron listën e lejuar).
   - **Vizioni pas kësaj**: lidhet me idenë e Agora-s si "arenë debati të sponsorizuar" (jo thjesht reklama) — argumenti më "Convinced me" në një temë të sponsorizuar fiton çmim, diçka që s'e ka askush tjetër. Hapi tjetër natyror kur të vendoset të vazhdohet me Agora-n.
 
+- **Agora — infrastrukturë reale, jo më "Coming soon"**:
+  - Tabelë e re `sponsored_posts` (sponsor, titull, tekst, foto opsionale, CTA) — lexim publik për ato aktive, shkrim vetëm admin global (`is_global_admin()`, ripërdorur nga sistemi ekzistues i roleve).
+  - `/agora` tani i merr dhe i shfaq si karta, me etiketë të qartë "Sponsored" — jo më faqe statike.
+  - **Demo e parë e mbjellë**: reklamë për vetë SFERAT-in ("Mendo lirshëm. Debato me argumente. Bindu, ose bind."), me CTA "Eksploro Republikat" → kryefaqja — që Agora të mos jetë bosh gjatë testimit.
+  - **Mbetet për më vonë** (me qëllim, jo harresë): UI admini për shtim/redaktim reklamash (tani vetëm SQL manual), debati i sponsorizuar me çmim (ideja e "arenës"), video si tip përmbajtjeje.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Bug UX: Republika e para-zgjedhur automatikisht te kompozuesi i ballinës — U MBYLL
