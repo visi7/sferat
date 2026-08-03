@@ -53,6 +53,7 @@ const emptyForm = {
 };
 
 export default function ArenaManager() {
+  const [me, setMe] = useState<string | null>(null);
   const [republics, setRepublics] = useState<Republic[]>([]);
   const [arenas, setArenas] = useState<Arena[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,6 +70,10 @@ export default function ArenaManager() {
   const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
+    (async () => {
+      const s = (await supa.auth.getSession()).data.session;
+      setMe(s?.user?.id ?? null);
+    })();
     (async () => {
       const { data } = await supa.from("republics").select("id,title").eq("is_active", true).order("title");
       setRepublics(data ?? []);
@@ -329,30 +334,43 @@ export default function ArenaManager() {
                       ) : (leaderboards[arena.id]?.length ?? 0) === 0 ? (
                         <p className="text-xs text-gray-500">No comments yet.</p>
                       ) : (
-                        leaderboards[arena.id].map((row, i) => (
-                          <div
-                            key={row.id}
-                            className={`flex items-start justify-between gap-2 text-xs p-2 rounded ${
-                              arena.winner_comment_id === row.id ? "bg-amber-50 border border-amber-200" : "bg-gray-50"
-                            }`}
-                          >
-                            <div className="min-w-0">
-                              <div className="text-gray-500">
-                                #{i + 1} · @{row.username} · 💡 {row.convinced} Convinced me
-                                {arena.winner_comment_id === row.id && " · 🏆 Winner"}
+                        leaderboards[arena.id].map((row, i) => {
+                          const ineligibleReason =
+                            row.author_id === me
+                              ? "Can't award your own comment"
+                              : row.convinced < 1
+                              ? "Needs a real \"Convinced me\" first"
+                              : null;
+                          return (
+                            <div
+                              key={row.id}
+                              className={`flex items-start justify-between gap-2 text-xs p-2 rounded ${
+                                arena.winner_comment_id === row.id ? "bg-amber-50 border border-amber-200" : "bg-gray-50"
+                              }`}
+                            >
+                              <div className="min-w-0">
+                                <div className="text-gray-500">
+                                  #{i + 1} · @{row.username} · 💡 {row.convinced} Convinced me
+                                  {arena.winner_comment_id === row.id && " · 🏆 Winner"}
+                                </div>
+                                <div className="text-gray-800 truncate">{row.body}</div>
                               </div>
-                              <div className="text-gray-800 truncate">{row.body}</div>
+                              {arena.status === "open" &&
+                                (ineligibleReason ? (
+                                  <span className="shrink-0 text-xs text-gray-400 italic max-w-[110px] text-right">
+                                    {ineligibleReason}
+                                  </span>
+                                ) : (
+                                  <button
+                                    onClick={() => setPendingAward({ arena, commentId: row.id })}
+                                    className="shrink-0 text-xs px-2 py-1 border border-amber-300 text-amber-700 rounded hover:bg-amber-50"
+                                  >
+                                    Award
+                                  </button>
+                                ))}
                             </div>
-                            {arena.status === "open" && (
-                              <button
-                                onClick={() => setPendingAward({ arena, commentId: row.id })}
-                                className="shrink-0 text-xs px-2 py-1 border border-amber-300 text-amber-700 rounded hover:bg-amber-50"
-                              >
-                                Award
-                              </button>
-                            )}
-                          </div>
-                        ))
+                          );
+                        })
                       )}
                     </div>
                   )}
