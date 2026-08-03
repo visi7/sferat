@@ -26,6 +26,15 @@ const emptyForm = {
   cta_url: "",
 };
 
+// Njësoj si te /agora — YouTube/Vimeo -> embed, çdo gjë tjetër -> <video> direkt.
+function getEmbedUrl(url: string): string | null {
+  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/);
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+  const vimeo = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
+  return null;
+}
+
 export default function ModAgoraPage() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
@@ -36,6 +45,7 @@ export default function ModAgoraPage() {
   const [loading, setLoading] = useState(true);
 
   const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -82,7 +92,43 @@ export default function ModAgoraPage() {
     if (canManage) loadAds();
   }, [canManage]);
 
-  async function createAd(e: React.FormEvent) {
+  function startEdit(ad: SponsoredPost) {
+    setEditingId(ad.id);
+    setForm({
+      sponsor_name: ad.sponsor_name,
+      title: ad.title,
+      body: ad.body ?? "",
+      image_url: ad.image_url ?? "",
+      video_url: ad.video_url ?? "",
+      cta_label: ad.cta_label ?? "",
+      cta_url: ad.cta_url ?? "",
+    });
+    setFormError(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function duplicateAd(ad: SponsoredPost) {
+    setEditingId(null);
+    setForm({
+      sponsor_name: ad.sponsor_name,
+      title: `${ad.title} (copy)`,
+      body: ad.body ?? "",
+      image_url: ad.image_url ?? "",
+      video_url: ad.video_url ?? "",
+      cta_label: ad.cta_label ?? "",
+      cta_url: ad.cta_url ?? "",
+    });
+    setFormError(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setForm(emptyForm);
+    setFormError(null);
+  }
+
+  async function submitForm(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
 
@@ -93,20 +139,27 @@ export default function ModAgoraPage() {
       return;
     }
 
+    const payload = {
+      sponsor_name,
+      title,
+      body: form.body.trim() || null,
+      image_url: form.image_url.trim() || null,
+      video_url: form.video_url.trim() || null,
+      cta_label: form.cta_label.trim() || null,
+      cta_url: form.cta_url.trim() || null,
+    };
+
     setSaving(true);
     try {
-      const { error } = await supa.from("sponsored_posts").insert({
-        sponsor_name,
-        title,
-        body: form.body.trim() || null,
-        image_url: form.image_url.trim() || null,
-        video_url: form.video_url.trim() || null,
-        cta_label: form.cta_label.trim() || null,
-        cta_url: form.cta_url.trim() || null,
-        is_active: true,
-      });
-      if (error) throw error;
+      if (editingId) {
+        const { error } = await supa.from("sponsored_posts").update(payload).eq("id", editingId);
+        if (error) throw error;
+      } else {
+        const { error } = await supa.from("sponsored_posts").insert({ ...payload, is_active: true });
+        if (error) throw error;
+      }
       setForm(emptyForm);
+      setEditingId(null);
       await loadAds();
     } catch (err: any) {
       setFormError(err.message ?? "Something went wrong");
@@ -129,6 +182,7 @@ export default function ModAgoraPage() {
     const { error } = await supa.from("sponsored_posts").delete().eq("id", id);
     if (error) return alert(error.message);
     setAds((prev) => prev.filter((a) => a.id !== id));
+    if (editingId === id) cancelEdit();
   }
 
   if (checkingAuth) {
@@ -144,15 +198,30 @@ export default function ModAgoraPage() {
     );
   }
 
+  const previewEmbed = form.video_url.trim() ? getEmbedUrl(form.video_url.trim()) : null;
+
   return (
     <div className="p-6 max-w-2xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Manage Agora</h1>
-        <a href="/agora" className="px-3 py-1 border rounded text-sm">View Agora</a>
+        <h1 className="text-xl font-bold">🏛️ Manage Agora</h1>
+        <a href="/agora" className="px-3 py-1 border rounded text-sm hover:bg-gray-50">View Agora</a>
       </div>
 
-      <form onSubmit={createAd} className="bg-white border rounded-xl p-4 space-y-3">
-        <h2 className="text-sm font-semibold">New sponsored post</h2>
+      <form onSubmit={submitForm} className="bg-white border border-l-4 border-l-amber-400 rounded-xl p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold">
+            {editingId ? "Edit sponsored post" : "New sponsored post"}
+          </h2>
+          {editingId && (
+            <button
+              type="button"
+              onClick={cancelEdit}
+              className="text-xs px-2 py-1 border rounded hover:bg-gray-50"
+            >
+              Cancel edit
+            </button>
+          )}
+        </div>
 
         <div className="flex gap-3">
           <div className="flex-1">
@@ -233,9 +302,46 @@ export default function ModAgoraPage() {
           disabled={saving}
           className="px-4 py-2 bg-black text-white rounded-md text-sm disabled:opacity-60"
         >
-          {saving ? "Saving…" : "Publish"}
+          {saving ? "Saving…" : editingId ? "Save changes" : "Publish"}
         </button>
       </form>
+
+      {/* Paraprijë e gjallë — saktësisht si do dukej te /agora */}
+      {(form.sponsor_name || form.title) && (
+        <div className="space-y-1">
+          <h3 className="text-xs font-semibold text-gray-500">Preview</h3>
+          <article className="bg-white border rounded-xl p-4 space-y-2">
+            <div className="flex items-center gap-2 text-xs">
+              <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-medium">
+                Sponsored
+              </span>
+              <span className="text-gray-500">{form.sponsor_name || "Sponsor name"}</span>
+            </div>
+            <h2 className="font-semibold text-lg">{form.title || "Title"}</h2>
+            {form.body && <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{form.body}</p>}
+            {form.video_url ? (
+              previewEmbed ? (
+                <iframe src={previewEmbed} className="w-full aspect-video rounded-lg border mt-1" allowFullScreen />
+              ) : (
+                <video controls className="w-full rounded-lg border mt-1" src={form.video_url} />
+              )
+            ) : (
+              form.image_url && (
+                <img
+                  src={form.image_url}
+                  alt={form.title}
+                  className="rounded-lg mt-1 max-h-[300px] w-auto object-contain border"
+                />
+              )
+            )}
+            {form.cta_label && (
+              <span className="inline-block mt-1 px-4 py-2 rounded-md bg-black text-white text-sm">
+                {form.cta_label}
+              </span>
+            )}
+          </article>
+        </div>
+      )}
 
       <div className="bg-white border rounded-xl p-4">
         <h2 className="text-sm font-semibold mb-3">All sponsored posts</h2>
@@ -244,27 +350,62 @@ export default function ModAgoraPage() {
         ) : ads.length === 0 ? (
           <p className="text-sm text-gray-500">Nothing yet.</p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {ads.map((ad) => (
-              <div key={ad.id} className="flex items-center justify-between text-sm border-b pb-2 last:border-b-0">
-                <div className="min-w-0">
-                  <span className="font-medium">{ad.title}</span>{" "}
-                  <span className="text-gray-500">— {ad.sponsor_name}</span>{" "}
-                  {!ad.is_active && <span className="text-xs text-gray-400">(inactive)</span>}
-                </div>
-                <div className="flex gap-2 shrink-0">
-                  <button
-                    onClick={() => toggleActive(ad)}
-                    className="text-xs px-2 py-1 border rounded hover:bg-gray-50"
-                  >
-                    {ad.is_active ? "Deactivate" : "Activate"}
-                  </button>
-                  <button
-                    onClick={() => deleteAd(ad.id)}
-                    className="text-xs px-2 py-1 border rounded hover:bg-gray-50"
-                  >
-                    Delete
-                  </button>
+              <div key={ad.id} className="flex items-start gap-3 border-b pb-3 last:border-b-0">
+                {ad.video_url ? (
+                  <div className="w-14 h-14 shrink-0 rounded-md border bg-gray-50 flex items-center justify-center text-xl">
+                    🎬
+                  </div>
+                ) : ad.image_url ? (
+                  <img src={ad.image_url} alt="" className="w-14 h-14 shrink-0 rounded-md border object-cover" />
+                ) : (
+                  <div className="w-14 h-14 shrink-0 rounded-md border bg-gray-50 flex items-center justify-center text-xl">
+                    📢
+                  </div>
+                )}
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-medium text-sm">{ad.title}</span>
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                        ad.is_active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      {ad.is_active ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-500">{ad.sponsor_name}</div>
+
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <button
+                      onClick={() => startEdit(ad)}
+                      className="text-xs px-2 py-1 border border-blue-200 text-blue-700 rounded hover:bg-blue-50"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => duplicateAd(ad)}
+                      className="text-xs px-2 py-1 border rounded text-gray-700 hover:bg-gray-50"
+                    >
+                      Duplicate
+                    </button>
+                    <button
+                      onClick={() => toggleActive(ad)}
+                      className={`text-xs px-2 py-1 border rounded hover:bg-amber-50 ${
+                        ad.is_active ? "border-amber-200 text-amber-700" : "border-green-200 text-green-700"
+                      }`}
+                    >
+                      {ad.is_active ? "Deactivate" : "Activate"}
+                    </button>
+                    <button
+                      onClick={() => deleteAd(ad.id)}
+                      className="text-xs px-2 py-1 border border-red-200 text-red-700 rounded hover:bg-red-50"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
