@@ -182,6 +182,14 @@ Referencë vizioni: `docs/VISION.md`
   - **Vendim i qëllimshëm i fushëveprimit**: pagesa e çmimit **s'automatizohet** — bëhet manualisht nga pronari jashtë platformës (kontakt direkt me fituesin), derisa integrimi i pagesave (Stripe/KYC) të vendoset si projekt më vete, siç ishte shënuar tashmë te "Vizioni i monetizimit".
   - **Kërkon migrim SQL manual** (`20260803190000_debate_arenas.sql`) — dhënë në chat.
 
+- **Përshkallëzim raportesh nga Assistant te menaxheri konkret — u ndërtua** (lindi nga pyetja "a janë rolet qartazi të ndara" → zbulim: `/mod/panel` fshihte çdo raport nën 3 raportime, edhe për Assistent):
+  - Assistent-ët tani shohin **çdo** raport në fushën e tyre (jo vetëm 3+); Moderator/Manager/Admin vazhdojnë të shohin vetëm 3+, si më parë.
+  - Buton i ri "🚩 Escalate to Manager" (në vend të "View only") — njofton **konkretisht menaxherin që e caktoi atë Asistent** në atë fushë (kolonë e re `user_roles.granted_by`, mbushur automatikisht nga trigger server-side, jo nga klienti — s'mund të hamendësohet/mashtrohet). Zgjedhur me qëllim kështu (jo transmetim te gjithë ekipi) — që përgjegjësia të mos "shpërndahet" dhe dikush të mos supozojë se "dikush tjetër do ta bëjë".
+  - **Rrjetë sigurie**: nëse menaxheri që e caktoi s'e mban më rolin, njoftohet automatikisht krejt ekipi me të drejtë zgjidhjeje në atë fushë — sinjali s'humbet kurrë.
+  - Rastet e përshkallëzuara shfaqen gjithmonë (pavarësisht numrit të raportimeve), me etiketë të kuqe "🚩 Escalated by @username" te paneli.
+  - **Shënim**: `granted_by` mbetet bosh për caktimet ekzistuese (para këtij migrimi) — bien automatikisht te rezerva derisa të ricaktohen.
+  - **Kërkon migrim SQL manual** (`20260803200000_assistant_escalation.sql`) — dhënë në chat.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Bug UX: Republika e para-zgjedhur automatikisht te kompozuesi i ballinës — U MBYLL
