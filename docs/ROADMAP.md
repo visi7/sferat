@@ -171,7 +171,16 @@ Referencë vizioni: `docs/VISION.md`
   - **Panel admini `/mod/agora` + video**: UI i plotë (jo më SQL manual) — publiko, aktivizo/çaktivizo, fshi reklama, lidhur te menuja e majtë. Shtuar `video_url` — link YouTube/Vimeo shfaqet i integruar (iframe), çdo link tjetër trajtohet si skedar video direkt (`<video>`); nëse ka video, zë vendin e fotos. Demo-ja fillestare e SFERAT-it u rishkrua në anglisht (fillimisht ishte gabimisht në shqip).
   - **Rol i ri "Marketing Moderator" (`marketing`)**: administron VETËM Agora-n (RLS e `sponsored_posts` e zgjeruar me `is_marketing_mod()`, krahas `is_global_admin()`) — pa asnjë pushtet moderimi normal (reports/posts/comments). Caktohet nga admini global te `/mod/roles`, pa fushë Republike (gjithmonë global). `/mod/agora` dhe lidhja te menuja e majtë tani e njohin këtë rol.
   - **Rimodelim i panelit `/mod/agora`** (pronari e pa "të varfër" në pamje) — shtuar: **Edit** (ngarkon reklamën ekzistuese te formulari, update në vend të fshirje+rikrijim), **Duplicate** (klono një reklamë si pikënisje), **paraprijë e gjallë** (live preview, saktësisht si te `/agora` real), etiketa me ngjyra Active (jeshile)/Inactive (gri), miniaturë (foto/🎬/📢) te çdo rresht. Vetëm ndryshim frontend, s'kërkon SQL.
-  - **Mbetet për më vonë** (me qëllim, jo harresë): debati i sponsorizuar me çmim (ideja e "arenës"), statistika impresionesh/klikimesh.
+  - **Mbetet për më vonë** (me qëllim, jo harresë): statistika impresionesh/klikimesh.
+
+- **Arena e debatit të sponsorizuar — u ndërtua** (diferencuesi real i Agora-s, jo thjesht reklama):
+  - Tabelë e re `debate_arenas` (sponsor, temë, çmim, afat, status open/awarded, komenti fitues) — **ripërdor krejt infrastrukturën ekzistuese** (posts/comments/comment_convinces) në vend që të ndërtojë koment/votim të ri: një arenë është thjesht metadata sponsorizimi mbi një postim real, brenda një Republike të zgjedhur — njerëzit debatojnë saktësisht si te çdo postim tjetër.
+  - Dy funksione `SECURITY DEFINER` që bëjnë gjithçka atomikisht (autorizim + veprim, pa mundësi gjendjeje të pjesshme): `create_debate_arena()` (krijon postimin real + rreshtin e arenës njëherësh, s'mbetet kurrë postim "jetim"), `award_debate_arena()` (autorizim + shpallje fituesi + njoftim, e gjitha në një transaction).
+  - Panel i ri `/mod/agora` → tab "🏆 Debate Arenas": formular krijimi (sponsor, temë, kontekst, Republikë, çmim, afat me butona të shpejtë), listë arenash me "Leaderboard" të gjallë (renditur sipas "Convinced me"), dhe buton "Award" — vendimi final gjithmonë manual nga admini (jo automatik), pikërisht që të mos manipulohet.
+  - `/agora` (publik): seksion i ri "🏆 Debate Arenas" mbi listën e reklamave normale, me status Open/Voting closed/Awarded.
+  - `/post/[id]`: banderolë sponsorizimi kur postimi është pjesë e një arene, dhe kuti e veçantë "🏆 Winning argument" kur fituesi është shpallur.
+  - **Vendim i qëllimshëm i fushëveprimit**: pagesa e çmimit **s'automatizohet** — bëhet manualisht nga pronari jashtë platformës (kontakt direkt me fituesin), derisa integrimi i pagesave (Stripe/KYC) të vendoset si projekt më vete, siç ishte shënuar tashmë te "Vizioni i monetizimit".
+  - **Kërkon migrim SQL manual** (`20260803190000_debate_arenas.sql`) — dhënë në chat.
 
 ## 🔜 Shtyrë me qëllim — mos harro
 
