@@ -29,6 +29,8 @@ const emptyForm = {
 export default function ModAgoraPage() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
+  const [isMarketingMod, setIsMarketingMod] = useState(false);
+  const canManage = isGlobalAdmin || isMarketingMod;
 
   const [ads, setAds] = useState<SponsoredPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,6 +55,15 @@ export default function ModAgoraPage() {
         .is("republic_id", null)
         .maybeSingle();
       setIsGlobalAdmin(!!adminRow);
+
+      const { data: marketingRow } = await supa
+        .from("user_roles")
+        .select("id")
+        .eq("user_id", uid)
+        .eq("role", "marketing")
+        .maybeSingle();
+      setIsMarketingMod(!!marketingRow);
+
       setCheckingAuth(false);
     })();
   }, []);
@@ -68,8 +79,8 @@ export default function ModAgoraPage() {
   }
 
   useEffect(() => {
-    if (isGlobalAdmin) loadAds();
-  }, [isGlobalAdmin]);
+    if (canManage) loadAds();
+  }, [canManage]);
 
   async function createAd(e: React.FormEvent) {
     e.preventDefault();
@@ -124,11 +135,11 @@ export default function ModAgoraPage() {
     return <div className="p-6 text-sm text-gray-500">Loading…</div>;
   }
 
-  if (!isGlobalAdmin) {
+  if (!canManage) {
     return (
       <div className="p-6">
         <h1 className="text-xl font-bold mb-2">Manage Agora</h1>
-        <p className="text-gray-600 text-sm">You must be a global admin to view this page.</p>
+        <p className="text-gray-600 text-sm">You must be a global admin or a Marketing Moderator to view this page.</p>
       </div>
     );
   }

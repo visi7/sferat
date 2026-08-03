@@ -8,6 +8,7 @@ export default function LeftNav() {
   const [isMod, setIsMod] = useState(false);
   const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
   const [isManager, setIsManager] = useState(false);
+  const [isMarketingMod, setIsMarketingMod] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -29,10 +30,12 @@ export default function LeftNav() {
         .from("user_roles")
         .select("role,republic_id")
         .eq("user_id", uid)
-        .in("role", ["admin", "manager", "moderator", "assistant"]);
-      setIsMod((data?.length ?? 0) > 0);
-      setIsGlobalAdmin((data ?? []).some((r) => r.role === "admin" && r.republic_id === null));
-      setIsManager((data ?? []).some((r) => r.role === "manager"));
+        .in("role", ["admin", "manager", "moderator", "assistant", "marketing"]);
+      const roles = data ?? [];
+      setIsMod(roles.some((r) => r.role !== "marketing"));
+      setIsGlobalAdmin(roles.some((r) => r.role === "admin" && r.republic_id === null));
+      setIsManager(roles.some((r) => r.role === "manager"));
+      setIsMarketingMod(roles.some((r) => r.role === "marketing"));
     })();
   }, []);
 
@@ -79,7 +82,7 @@ export default function LeftNav() {
             <>
               {isMod && <a href="/mod/panel">Moderator panel</a>}
               {(isGlobalAdmin || isManager) && <a href="/mod/roles">Manage roles</a>}
-              {isGlobalAdmin && <a href="/mod/agora">Manage Agora ads</a>}
+              {(isGlobalAdmin || isMarketingMod) && <a href="/mod/agora">Manage Agora ads</a>}
               <a href="/settings">Settings</a>
               <button onClick={signOut} className="text-left">Sign out</button>
             </>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 
-type RoleName = "admin" | "manager" | "moderator" | "assistant";
+type RoleName = "admin" | "manager" | "moderator" | "assistant" | "marketing";
 
 type Role = {
   id: string;
@@ -19,6 +19,7 @@ const ROLE_LABELS: Record<RoleName, string> = {
   moderator: "Moderator",
   manager: "Manager",
   admin: "Admin",
+  marketing: "Marketing Moderator (Agora only)",
 };
 
 type Republic = { id: string; title: string };
@@ -137,7 +138,7 @@ export default function ModRolesPage() {
     // can't silently submit something the server will reject anyway.
     const effectiveRole: RoleName = isGlobalAdmin ? role : "assistant";
     const effectiveRepublicId = isGlobalAdmin
-      ? republicId || null
+      ? (effectiveRole === "marketing" ? null : republicId || null)
       : managerScope?.republicId ?? (republicId || null);
 
     setSaving(true);
@@ -237,6 +238,7 @@ export default function ModRolesPage() {
                 <option value="moderator">{ROLE_LABELS.moderator}</option>
                 <option value="manager">{ROLE_LABELS.manager}</option>
                 <option value="admin">{ROLE_LABELS.admin}</option>
+                <option value="marketing">{ROLE_LABELS.marketing}</option>
               </select>
             ) : (
               <div className="w-full border rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-600">
@@ -246,7 +248,11 @@ export default function ModRolesPage() {
           </div>
           <div className="flex-1">
             <label className="block text-xs text-gray-500 mb-1">Scope</label>
-            {isGlobalAdmin || !managerScope?.republicId ? (
+            {isGlobalAdmin && role === "marketing" ? (
+              <div className="w-full border rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-600">
+                Global (Agora only — no Republic)
+              </div>
+            ) : isGlobalAdmin || !managerScope?.republicId ? (
               <select
                 className="w-full border rounded-md px-3 py-2 text-sm"
                 value={republicId}
