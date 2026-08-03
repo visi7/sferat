@@ -169,7 +169,8 @@ Referencë vizioni: `docs/VISION.md`
   - **Demo e parë e mbjellë**: reklamë për vetë SFERAT-in ("Mendo lirshëm. Debato me argumente. Bindu, ose bind."), me CTA "Eksploro Republikat" → kryefaqja — që Agora të mos jetë bosh gjatë testimit.
   - **Panel admini `/mod/agora` + video**: UI i plotë (jo më SQL manual) — publiko, aktivizo/çaktivizo, fshi reklama, lidhur te menuja e majtë. Shtuar `video_url` — link YouTube/Vimeo shfaqet i integruar (iframe), çdo link tjetër trajtohet si skedar video direkt (`<video>`); nëse ka video, zë vendin e fotos. Demo-ja fillestare e SFERAT-it u rishkrua në anglisht (fillimisht ishte gabimisht në shqip).
   - **Rol i ri "Marketing Moderator" (`marketing`)**: administron VETËM Agora-n (RLS e `sponsored_posts` e zgjeruar me `is_marketing_mod()`, krahas `is_global_admin()`) — pa asnjë pushtet moderimi normal (reports/posts/comments). Caktohet nga admini global te `/mod/roles`, pa fushë Republike (gjithmonë global). `/mod/agora` dhe lidhja te menuja e majtë tani e njohin këtë rol.
-  - **Mbetet për më vonë** (me qëllim, jo harresë): debati i sponsorizuar me çmim (ideja e "arenës").
+  - **Rimodelim i panelit `/mod/agora`** (pronari e pa "të varfër" në pamje) — shtuar: **Edit** (ngarkon reklamën ekzistuese te formulari, update në vend të fshirje+rikrijim), **Duplicate** (klono një reklamë si pikënisje), **paraprijë e gjallë** (live preview, saktësisht si te `/agora` real), etiketa me ngjyra Active (jeshile)/Inactive (gri), miniaturë (foto/🎬/📢) te çdo rresht. Vetëm ndryshim frontend, s'kërkon SQL.
+  - **Mbetet për më vonë** (me qëllim, jo harresë): debati i sponsorizuar me çmim (ideja e "arenës"), statistika impresionesh/klikimesh.
 
 ## 🔜 Shtyrë me qëllim — mos harro
 
