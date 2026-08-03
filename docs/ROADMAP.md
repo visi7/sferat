@@ -190,6 +190,12 @@ Referencë vizioni: `docs/VISION.md`
   - **Shënim**: `granted_by` mbetet bosh për caktimet ekzistuese (para këtij migrimi) — bien automatikisht te rezerva derisa të ricaktohen.
   - **Kërkon migrim SQL manual** (`20260803200000_assistant_escalation.sql`) — dhënë në chat.
 
+- **Rol i ri "Director" + mbyllje e vrimës së privatësisë te rolet — u ndërtua** (lindi nga pyetja "a janë rolet qartazi të ndara"):
+  - **Director**: gjithmonë global, të njëjtat pushtete moderimi si Moderator/Manager/Admin (`is_global_mod`, `is_mod_of_republic`, `is_any_mod`, `is_global_reviewer`, `is_reviewer_of_republic` u zgjeruan), plus mundësinë t'u japë/heqë role **Assistant/Moderator/Manager** të tjerëve — jo Admin/Director/Marketing, ato mbeten vetëm admin-global-only.
+  - **Gjetje reale sigurie, jo vetëm UI**: tabela `user_roles` lejonte çdo përdorues të kyçur ta pyeste API-n direkt dhe të merrte **rolet e të gjithëve** (`select using (true)`) — jo vetëm ato që shfaqeshin te ekrani. Rregulluar: secili sheh vetëm rreshtin e vet; Director sheh rreshtat Assistant/Moderator/Manager (i duhen për t'i menaxhuar); **vetëm admini global sheh gjithçka** (Admin/Director/Marketing përfshirë). Manager i thjeshtë tani s'sheh më asnjë listë — siç u kërkua.
+  - **Rimodelim i `/mod/roles`**: etiketa me ngjyra për çdo rol, kërkim, renditje sipas hierarkisë, konfirmim para heqjes së një roli.
+  - **Kërkon migrim SQL manual** (`20260803210000_director_role_and_role_privacy.sql`) — dhënë në chat.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Bug UX: Republika e para-zgjedhur automatikisht te kompozuesi i ballinës — U MBYLL
