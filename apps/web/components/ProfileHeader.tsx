@@ -15,6 +15,7 @@ type Props = {
   onUploadAvatar?: (file: File) => void | Promise<void>;
   onUpdateDisplayName?: (name: string) => void | Promise<void>;
   onSignOut?: () => void;
+  onShowActivity?: () => void;
 };
 
 export default function ProfileHeader({
@@ -22,6 +23,7 @@ export default function ProfileHeader({
   isMe,
   onUploadAvatar,
   onUpdateDisplayName,
+  onShowActivity,
 }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -41,6 +43,11 @@ export default function ProfileHeader({
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const [showReport, setShowReport] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportBusy, setReportBusy] = useState(false);
+  const [reportSent, setReportSent] = useState(false);
 
   useEffect(() => {
     if (isMe) return;
@@ -104,6 +111,34 @@ export default function ProfileHeader({
       toggleBlock();
     } else {
       setShowBlockConfirm(true);
+    }
+  }
+
+  function onReportClick() {
+    setMenuOpen(false);
+    if (!myId) return setSignInMsg("Sign in to report this user.");
+    setReportReason("");
+    setReportSent(false);
+    setShowReport(true);
+  }
+
+  async function submitReport() {
+    if (!myId) return;
+    const clean = reportReason.trim();
+    if (!clean) return;
+    setReportBusy(true);
+    try {
+      const { error } = await supa.from("reports").insert({
+        reported_user_id: profile.id,
+        reporter_id: myId,
+        reason: clean,
+      });
+      if (error) throw error;
+      setReportSent(true);
+    } catch (e: any) {
+      alert(e.message ?? "Something went wrong");
+    } finally {
+      setReportBusy(false);
     }
   }
 
@@ -278,8 +313,8 @@ export default function ProfileHeader({
         </div>
       </div>
 
-      {!isMe && (
-        <div className="flex items-center gap-2 relative">
+      <div className="flex items-center gap-2 relative">
+        {!isMe && (
           <button
             type="button"
             onClick={toggleFollow}
@@ -290,38 +325,68 @@ export default function ProfileHeader({
           >
             {followBusy ? "…" : isFollowing ? "Following" : "Follow"}
           </button>
+        )}
 
-          <button
-            type="button"
-            onClick={() => setMenuOpen((v) => !v)}
-            className="h-9 w-9 rounded border hover:bg-gray-50 flex items-center justify-center text-gray-600"
-            title="More options"
-            aria-label="More options"
-          >
-            ⋮
-          </button>
+        <button
+          type="button"
+          onClick={() => setMenuOpen((v) => !v)}
+          className="h-9 w-9 rounded border hover:bg-gray-50 flex items-center justify-center text-gray-600"
+          title="More options"
+          aria-label="More options"
+        >
+          ⋮
+        </button>
 
-          {menuOpen && (
-            <>
-              <div className="fixed inset-0 z-[9997]" onClick={() => setMenuOpen(false)} />
-              <div className="absolute right-0 top-11 z-[9998] w-52 bg-white border rounded-lg shadow-lg py-1 text-sm overflow-hidden">
+        {menuOpen && (
+          <>
+            <div className="fixed inset-0 z-[9997]" onClick={() => setMenuOpen(false)} />
+            <div className="absolute right-0 top-11 z-[9998] w-52 bg-white border rounded-lg shadow-lg py-1 text-sm overflow-hidden">
+              <button
+                type="button"
+                onClick={handleShare}
+                className="w-full text-left px-3 py-2 hover:bg-gray-50"
+              >
+                Share profile
+              </button>
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="w-full text-left px-3 py-2 hover:bg-gray-50"
+              >
+                {copied ? "Copied!" : "Copy profile link"}
+              </button>
+              {onShowActivity && (
                 <button
                   type="button"
-                  onClick={handleShare}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onShowActivity();
+                  }}
                   className="w-full text-left px-3 py-2 hover:bg-gray-50"
                 >
-                  Share profile
+                  Activity
                 </button>
-                <button
-                  type="button"
-                  onClick={handleCopyLink}
-                  className="w-full text-left px-3 py-2 hover:bg-gray-50"
+              )}
+              {isMe && (
+                <a
+                  href="/settings"
+                  onClick={() => setMenuOpen(false)}
+                  className="block w-full text-left px-3 py-2 hover:bg-gray-50"
                 >
-                  {copied ? "Copied!" : "Copy profile link"}
-                </button>
-                {myId && (
-                  <>
-                    <div className="border-t my-1" />
+                  Account settings
+                </a>
+              )}
+              {!isMe && (
+                <>
+                  <div className="border-t my-1" />
+                  <button
+                    type="button"
+                    onClick={onReportClick}
+                    className="w-full text-left px-3 py-2 hover:bg-gray-50 text-gray-700"
+                  >
+                    Report user
+                  </button>
+                  {myId && (
                     <button
                       type="button"
                       onClick={onBlockClick}
@@ -330,13 +395,13 @@ export default function ProfileHeader({
                     >
                       {blockBusy ? "…" : blocked ? "Unblock" : "Block"}
                     </button>
-                  </>
-                )}
-              </div>
-            </>
-          )}
-        </div>
-      )}
+                  )}
+                </>
+              )}
+            </div>
+          </>
+        )}
+      </div>
 
       {showBlockConfirm && (
         <div
@@ -367,6 +432,64 @@ export default function ProfileHeader({
                 {blockBusy ? "Blocking…" : "Block"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showReport && (
+        <div
+          className="fixed inset-0 z-[9998] bg-black/50 flex items-center justify-center p-4"
+          onClick={() => setShowReport(false)}
+        >
+          <div
+            className="w-full max-w-sm bg-white rounded-xl border shadow p-5 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {reportSent ? (
+              <>
+                <h3 className="text-base font-semibold">Report sent</h3>
+                <p className="text-sm text-gray-600">
+                  Thanks — our moderation team will review @{profile.username}'s account.
+                </p>
+                <div className="flex justify-end">
+                  <button
+                    className="h-9 px-4 rounded bg-gray-900 text-white text-sm"
+                    onClick={() => setShowReport(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="text-base font-semibold">Report @{profile.username}</h3>
+                <p className="text-sm text-gray-600">
+                  Tell us what's wrong. Reports are reviewed by SFERAT moderators.
+                </p>
+                <textarea
+                  autoFocus
+                  className="w-full border rounded-md px-3 py-2 text-sm min-h-[90px]"
+                  placeholder="Reason for report (harassment, spam, impersonation, etc.)"
+                  value={reportReason}
+                  onChange={(e) => setReportReason(e.target.value)}
+                />
+                <div className="flex justify-end gap-2">
+                  <button
+                    className="h-9 px-4 rounded border text-sm"
+                    onClick={() => setShowReport(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="h-9 px-4 rounded bg-red-600 text-white text-sm disabled:opacity-60"
+                    onClick={submitReport}
+                    disabled={reportBusy || !reportReason.trim()}
+                  >
+                    {reportBusy ? "Sending…" : "Send report"}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

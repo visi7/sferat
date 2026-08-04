@@ -197,6 +197,13 @@ Referencë vizioni: `docs/VISION.md`
   - **Rimodelim i `/mod/roles`**: etiketa me ngjyra për çdo rol, kërkim, renditje sipas hierarkisë, konfirmim para heqjes së një roli.
   - **Kërkon migrim SQL manual** (`20260803210000_director_role_and_role_privacy.sql`) — dhënë në chat.
 
+- **Profili: meny "⋮" e zgjeruar + "Report user" (i ri)** — lindi nga kërkesa për të fshehur tab-in "Activity" (mbeti "Comments" i dukshëm) dhe për ta futur në menynë ekzistuese "⋮":
+  - Menyja "⋮" te `ProfileHeader` tani shfaqet edhe kur shikon profilin tënd (më parë ishte plotësisht e fshehur për `isMe`), me përmbajtje sipas kontekstit: **Share profile / Copy profile link / Activity** (gjithmonë), **Account settings** (vetëm në profilin tënd — shkurtore drejt `/settings`, ide shtesë e propozuar), dhe **Report user / Block-Unblock** (vetëm në profile të tjerëve).
+  - "Activity" nuk u fshi si funksion — thjesht u hoq si tab i dukshëm në shirit; hapet tani nga menyja (vendos të njëjtin `tab` state si më parë).
+  - **Report user**: kuti stilizuar (jo `prompt()`/`confirm()` native, e njëjta pamje si dialogu ekzistues i "Block") me arsye të detyrueshme → futet te `reports.reported_user_id` (kolonë e re). S'kërkoi asnjë ndryshim RLS — policy-t ekzistuese `reports_select_self_or_mod`/`reports_update_mod` kishin tashmë degë të pakushtëzuara `is_global_reviewer`/`is_global_mod` që mbulojnë çdo raport global, pavarësisht përmbajtjes.
+  - **Zgjerim i `mod/panel`**: raportet e llojit "user" (pa Republikë, gjithmonë globale) tani shfaqen realisht te paneli — më parë do të kishin qenë të padukshme fare (kodi filtronte çdo raport pa `post_id`/`comment_id`). Shto: kolonë "User" me `@username`, link "Open profile", Accept/Reject (Accept mbyll raportin si "accepted" pa fshirë/pezulluar automatikisht llogarinë — s'ka ende funksion "ban", vetëm gjurmim), dhe Escalate (funksioni `escalate_report` u zgjerua të pranojë edhe tipin `'user'`).
+  - **Kërkon migrime SQL manuale** (`20260804010000_reports_reported_user.sql`, `20260804020000_escalate_report_user_type.sql`) — dhënë në chat.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Backup i databazës — kontrolluar, s'ka mbrojtje automatike sot

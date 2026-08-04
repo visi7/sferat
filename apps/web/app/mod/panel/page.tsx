@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { supa } from '@/lib/supabase';
 
 type ReportGroup = {
-  id: string;                 // ID sintetike për React: "post:<id>" | "comment:<id>"
+  id: string;                 // ID sintetike për React: "post:<id>" | "comment:<id>" | "user:<id>"
   targetId: string;
-  type: 'post' | 'comment';
+  type: 'post' | 'comment' | 'user';
   firstReportedAt: string;
   reportCount: number;
   republicId: string | null;
@@ -23,6 +23,7 @@ export default function ModPanel() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [postsMap, setPostsMap] = useState<Record<string, any>>({});
   const [commentsMap, setCommentsMap] = useState<Record<string, any>>({});
+  const [usersMap, setUsersMap] = useState<Record<string, any>>({});
   const [republicsMap, setRepublicsMap] = useState<Record<string, string>>({});
   const [myRoles, setMyRoles] = useState<{ role: string; republic_id: string | null }[]>([]);
 
@@ -56,18 +57,18 @@ export default function ModPanel() {
 
         const { data, error } = await supa
           .from('reports')
-          .select('post_id, comment_id, created_at, escalated_at, escalated_by')
+          .select('post_id, comment_id, reported_user_id, created_at, escalated_at, escalated_by')
           .eq('status', 'pending')
           .order('created_at', { ascending: true });
 
         if (error) throw error;
 
-        // Grupojmë në kod: një grup për post_id, një për comment_id
+        // Grupojmë në kod: një grup për post_id, një për comment_id, një për reported_user_id
         const groups = new Map<string, ReportGroup>();
         const escalatorIds = new Set<string>();
         for (const r of (data ?? []) as any[]) {
-          const type: 'post' | 'comment' = r.post_id ? 'post' : 'comment';
-          const targetId = r.post_id ?? r.comment_id;
+          const type: 'post' | 'comment' | 'user' = r.post_id ? 'post' : r.comment_id ? 'comment' : 'user';
+          const targetId = r.post_id ?? r.comment_id ?? r.reported_user_id;
           if (!targetId) continue;
 
           const key = `${type}:${targetId}`;
@@ -103,8 +104,8 @@ export default function ModPanel() {
         }
         for (const r of (data ?? []) as any[]) {
           if (!r.escalated_by) continue;
-          const type: 'post' | 'comment' = r.post_id ? 'post' : 'comment';
-          const targetId = r.post_id ?? r.comment_id;
+          const type: 'post' | 'comment' | 'user' = r.post_id ? 'post' : r.comment_id ? 'comment' : 'user';
+          const targetId = r.post_id ?? r.comment_id ?? r.reported_user_id;
           const key = `${type}:${targetId}`;
           const g = groups.get(key);
           if (g && !g.escalatedByUsername) g.escalatedByUsername = escalatorMap[r.escalated_by] ?? null;
@@ -117,6 +118,20 @@ export default function ModPanel() {
 
         const postIds = reportsData.filter((r) => r.type === 'post').map((r) => r.targetId);
         const commentIds = reportsData.filter((r) => r.type === 'comment').map((r) => r.targetId);
+        const userIds = reportsData.filter((r) => r.type === 'user').map((r) => r.targetId);
+
+        if (userIds.length > 0) {
+          const { data: usersData, error: usersError } = await supa
+            .from('profiles')
+            .select('id, username, display_name')
+            .in('id', userIds);
+
+          if (usersError) throw usersError;
+
+          const map: Record<string, any> = {};
+          for (const u of usersData ?? []) map[u.id] = u;
+          setUsersMap(map);
+        }
 
         const postsById: Record<string, any> = {};
 
@@ -213,15 +228,17 @@ export default function ModPanel() {
   // ACCEPT: heq target-in (status = 'removed') dhe mbyll të gjitha raportet si accepted
   const handleAccept = async (report: ReportGroup) => {
     try {
-      const table = report.type === 'post' ? 'posts' : 'comments';
-      const { error: targetErr } = await supa
-        .from(table)
-        .update({ status: 'removed' })
-        .eq('id', report.targetId);
+      if (report.type !== 'user') {
+        const table = report.type === 'post' ? 'posts' : 'comments';
+        const { error: targetErr } = await supa
+          .from(table)
+          .update({ status: 'removed' })
+          .eq('id', report.targetId);
 
-      if (targetErr) throw targetErr;
+        if (targetErr) throw targetErr;
+      }
 
-      const column = report.type === 'post' ? 'post_id' : 'comment_id';
+      const column = report.type === 'post' ? 'post_id' : report.type === 'comment' ? 'comment_id' : 'reported_user_id';
       const { error: repErr } = await supa
         .from('reports')
         .update({ status: 'accepted', resolved_at: new Date().toISOString() })
@@ -240,7 +257,7 @@ export default function ModPanel() {
   // REJECT: lë target-in, mbyll raportet si rejected
   const handleReject = async (report: ReportGroup) => {
     try {
-      const column = report.type === 'post' ? 'post_id' : 'comment_id';
+      const column = report.type === 'post' ? 'post_id' : report.type === 'comment' ? 'comment_id' : 'reported_user_id';
       const { error: repErr } = await supa
         .from('reports')
         .update({ status: 'rejected', resolved_at: new Date().toISOString() })
@@ -339,7 +356,11 @@ export default function ModPanel() {
 
             <div>
               <span className="font-semibold">Republic:</span>{' '}
-              {r.republicId ? republicsMap[r.republicId] ?? r.republicId.slice(0, 8) : 'Unknown'}
+              {r.type === 'user'
+                ? 'Global (account report)'
+                : r.republicId
+                ? republicsMap[r.republicId] ?? r.republicId.slice(0, 8)
+                : 'Unknown'}
             </div>
 
             {r.type === 'post' && (
@@ -355,6 +376,15 @@ export default function ModPanel() {
               <div>
                 <span className="font-semibold">Comment:</span>{' '}
                 {commentsMap[r.targetId] ? commentsMap[r.targetId].body?.slice(0, 80) : r.targetId}
+              </div>
+            )}
+
+            {r.type === 'user' && (
+              <div>
+                <span className="font-semibold">User:</span>{' '}
+                {usersMap[r.targetId]
+                  ? `@${usersMap[r.targetId].username}${usersMap[r.targetId].display_name ? ` (${usersMap[r.targetId].display_name})` : ''}`
+                  : r.targetId}
               </div>
             )}
 
@@ -385,6 +415,12 @@ export default function ModPanel() {
               {r.type === 'post' && (
                 <a href={`/post/${r.targetId}`} className="px-3 py-1 border rounded">
                   Open post
+                </a>
+              )}
+
+              {r.type === 'user' && usersMap[r.targetId] && (
+                <a href={`/profile/${usersMap[r.targetId].username}`} className="px-3 py-1 border rounded">
+                  Open profile
                 </a>
               )}
             </div>

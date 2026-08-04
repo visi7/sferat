@@ -192,6 +192,7 @@ return (
             onUploadAvatar={uploadAvatar}
             onUpdateDisplayName={updateDisplayName}
             onSignOut={doSignOut}
+            onShowActivity={() => setTab("activity")}
           />
 
           {/* Tabs */}
@@ -200,7 +201,6 @@ return (
               <Tab label="Profile"  active={tab==="profile"}  onClick={()=>setTab("profile")} />
               <Tab label="Posts"    active={tab==="posts"}    onClick={()=>setTab("posts")} />
               <Tab label="Comments" active={tab==="comments"} onClick={()=>setTab("comments")} />
-              <Tab label="Activity" active={tab==="activity"} onClick={()=>setTab("activity")} />
             </div>
 
             <div className="p-4">
