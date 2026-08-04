@@ -213,6 +213,11 @@ Referencë vizioni: `docs/VISION.md`
 
 - **Bug: fotot HEIC (iPhone) shfaqeshin "broken image" — u zgjidh**: gjetur nga një raport i mëparshëm real (postim i `@u1899721264` me ikonë imazhi të thyer në mobile). Shkaku: fotot e kamerës në iPhone ruhen si default në format HEIC/HEIF, që s'e deshifron dot asnjë shfletues brenda `<img>` përveç Safari-t; bucket-et "images"/"avatars" s'kishin kufizim mime-type, kështu që ngarkimi "kalonte" pa gabim, thjesht rezultati s'shfaqej. Zgjidhur me konvertim real HEIC→JPEG në browser (libraria `heic2any`, WASM) PARA ngarkimit, në `lib/imageUpload.ts` (helper i ri `prepareImageFile`), përdorur në të tria vendet e ngarkimit: kompozuesi kryesor (`app/page.tsx`), editimi i postimit (`PostEditModal.tsx`), dhe avatari (`profile/[username]/page.tsx`). S'kërkon migrim SQL — fikse vetëm në client.
 
+- **Leaderboard "Top Convincers" + rregullim vetë-convince (i ri)** — lindi nga diskutimi strategjik "Agora si magnet rritjeje, si TikTok": propozova leaderboard javor si hapi i parë (falas teknikisht, zero rrezik ligjor, ndryshe nga çmimet me para reale që mbetën vendim afatgjatë/ligjor i hapur).
+  - **Gjetje reale sigurie gjatë ndërtimit**: asgjë në DB s'e ndalonte dikë të shënonte "Convinced me" te KOMENTI I VET — RLS-ja kontrollonte vetëm `auth.uid() = user_id`, jo nëse ai ishte edhe autori. UI-ja (`CommentItem.tsx`) e fshihte butonin për autorin, por kjo s'është mbrojtje reale (client-i anashkalohet lehtë). Kjo minonte direkt kushtin "≥1 Convinced me nga dikush tjetër" të `award_debate_arena()` (20260804000000) dhe do të prekte saktësinë e vetë leaderboard-it. Rregulluar me trigger `BEFORE INSERT` mbi `comment_convinces` + pastrim retroaktiv i çdo rreshti ekzistues vetë-convince.
+  - **Leaderboard**: funksion i ri `top_convincers(p_days, p_limit)` (7 ditë/30 ditë/gjithë kohës), shfaqur në dy vende: widget kompakt te `RightAside` (i dukshëm në gjithë platformën — pikërisht qëllimi "magnet"), dhe faqe e plotë `/leaderboard` (top 50, me zgjedhje periudhe), me link te menyja majtas.
+  - **Kërkon migrim SQL manual** (`20260804040000_convince_leaderboard.sql`) — dhënë në chat.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Backup i databazës — kontrolluar, s'ka mbrojtje automatike sot
