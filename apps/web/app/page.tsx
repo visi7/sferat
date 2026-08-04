@@ -22,6 +22,7 @@ type Post = {
   post_type?: "text" | "link" | "image";
   url?: string | null;
   image_url?: string | null;
+  hot_score?: number | null;
 };
 
 type Republic = { id: string; title: string; slug?: string };
@@ -55,7 +56,7 @@ export default function Home() {
   const [republics, setRepublics] = useState<Republic[]>([]);
   const [repId, setRepId] = useState<string>("");
   const [repFilter, setRepFilter] = useState<string | null>(null);
-  const [tab, setTab] = useState<"top" | "new">("top");
+  const [tab, setTab] = useState<"top" | "new" | "for_you">("top");
 
   // Feed + paging
   const [posts, setPosts] = useState<Post[]>([]);
@@ -64,6 +65,12 @@ export default function Home() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [loadingFeed, setLoadingFeed] = useState(false);
   const [feedError, setFeedError] = useState<string | null>(null);
+
+  // "For You" — rirenditje personalizuar në client mbi një pool të vetëm
+  // (jo faqe-faqe nga DB si Top/New); ref-a, jo state, që "load more" të
+  // mos varet nga rikthimi i mbylljeve (closures) të vjetra.
+  const forYouPoolRef = useRef<(Post & { republicTitle: string })[]>([]);
+  const forYouVisibleRef = useRef(0);
 
   // Composer
   const [postType, setPostType] = useState<"text" | "link" | "image">("text");
@@ -194,7 +201,7 @@ useEffect(() => {
 
   // ---- Feed loader ----
   async function refreshFeed(
-    which: "top" | "new" = tab,
+    which: "top" | "new" = tab === "new" ? "new" : "top",
     rep: string | null = repFilter,
     reset = false,
     muted: string[] = mutedRepublicIds
@@ -269,6 +276,91 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
     }
   }
 
+  // ---- Feed "For You" (personalizuar) ----
+  // Boston hot_score me bonus sipas afinitetit: Republikë e ndjekur, autor
+  // i ndjekur, aktivitet i mëparshëm në atë Republikë. Rirenditje 100%
+  // në client mbi një pool të vetëm (marrë një herë, jo faqe-faqe si
+  // Top/New) -- "Load more" thjesht zbulon më shumë nga i njëjti pool,
+  // pa thirrje shtesë DB, derisa të mbarojë (limitim i pranueshëm në
+  // këtë fazë, me pak postime totale).
+  const BOOST_FOLLOWED_REPUBLIC = 4;
+  const BOOST_FOLLOWED_AUTHOR = 3;
+  const BOOST_AFFINITY_MULT = 2;
+
+  async function refreshForYouFeed(reset: boolean) {
+    if (!session) return;
+    if (reset) setLoadingFeed(true);
+    setFeedError(null);
+    if (!reset) setLoadingMore(true);
+
+    try {
+      if (reset || forYouPoolRef.current.length === 0) {
+        const uid = session.user.id;
+        const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 3600 * 1000).toISOString();
+
+        const [{ data: candidates, error: candErr }, { data: followedReps }, { data: followedUsers }, { data: affinityRows, error: affErr }] =
+          await Promise.all([
+            supa
+              .from("posts")
+              .select(`
+                id, title, body, section, created_at, author_id, republic_id, score, hot_score,
+                image_url, post_type,
+                profiles:profiles!posts_author_id_fkey ( id, username, avatar_url ),
+                republics:republics!posts_republic_id_fkey ( id, title )
+              `)
+              .eq("status", "active")
+              .gt("created_at", fourteenDaysAgo)
+              .order("hot_score", { ascending: false })
+              .limit(150),
+            supa.from("follows_republics").select("republic_id").eq("user_id", uid),
+            supa.from("follows_users").select("followed_user_id").eq("follower_id", uid),
+            supa.rpc("my_republic_affinity", { p_user_id: uid }),
+          ]);
+
+        if (candErr) throw candErr;
+        if (affErr) throw affErr;
+
+        const followedRepSet = new Set((followedReps ?? []).map((r: any) => r.republic_id));
+        const followedUserSet = new Set((followedUsers ?? []).map((r: any) => r.followed_user_id));
+        const affinityMap = new Map<string, number>();
+        for (const row of (affinityRows ?? []) as any[]) affinityMap.set(row.republic_id, Number(row.affinity_count));
+
+        const pool = ((candidates ?? []) as any[]).filter((p) => !mutedRepublicIds.includes(p.republic_id));
+
+        const scored = pool
+          .map((p) => {
+            const affinity = affinityMap.get(p.republic_id) ?? 0;
+            const personalizedScore =
+              (p.hot_score ?? 0) +
+              (followedRepSet.has(p.republic_id) ? BOOST_FOLLOWED_REPUBLIC : 0) +
+              (followedUserSet.has(p.author_id) ? BOOST_FOLLOWED_AUTHOR : 0) +
+              Math.log1p(affinity) * BOOST_AFFINITY_MULT;
+            return { ...p, republicTitle: p.republics?.title ?? "Republic", _personalizedScore: personalizedScore };
+          })
+          .sort((a, b) => b._personalizedScore - a._personalizedScore);
+
+        forYouPoolRef.current = scored;
+        forYouVisibleRef.current = 0;
+      }
+
+      forYouVisibleRef.current = Math.min(forYouVisibleRef.current + PAGE_SIZE, forYouPoolRef.current.length);
+      setPosts(forYouPoolRef.current.slice(0, forYouVisibleRef.current));
+    } catch (err: any) {
+      console.error("[for-you feed]", err);
+      setFeedError(err?.message ?? "Failed to load personalized feed");
+      if (reset) setPosts([]);
+    } finally {
+      if (reset) setLoadingFeed(false);
+      setLoadingMore(false);
+    }
+  }
+
+  // Dispozitivi i vetëm: cilëndo skedë aktuale (tab) ta rifreskojë saktë
+  function refreshCurrentTab(reset: boolean) {
+    if (tab === "for_you") return refreshForYouFeed(reset);
+    return refreshFeed(tab, repFilter, reset);
+  }
+
   // ---- Auth ----
   async function signIn() {
     setAuthLoading(true);
@@ -338,7 +430,7 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
     setBody("");
     setImageFile(null);
     setDuration(7);
-    await refreshFeed(tab, repFilter, true);
+    await refreshCurrentTab(true);
   } catch (e: any) {
     const m = /wait (\d+) seconds?/i.exec(e.message ?? "");
     if (m) {
@@ -375,9 +467,24 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
         >
           New
         </button>
+        {session && (
+          <button
+            className={`px-3 py-1.5 rounded-full border ${tab === "for_you" ? "bg-black text-white" : "bg-white"}`}
+            onClick={() => {
+              setTab("for_you");
+              setPage(0);
+              refreshForYouFeed(true);
+            }}
+            title="Ranked for you: republics/people you follow, plus your past activity"
+          >
+            ✨ For You
+          </button>
+        )}
 
         <div className="text-sm text-gray-500 ml-2">
-          {repFilter ? (
+          {tab === "for_you" ? (
+            "Ranked for you — republic filter doesn't apply here"
+          ) : repFilter ? (
             <>
               {republics.find((r) => r.id === repFilter || r.slug === repFilter)?.title ?? "Filtered by Republic"}
               {" · "}
@@ -396,7 +503,7 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
           )}
         </div>
 
-        <button className="ml-auto underline text-sm" onClick={() => refreshFeed(tab, repFilter, true)}>
+        <button className="ml-auto underline text-sm" onClick={() => refreshCurrentTab(true)}>
           Refresh
         </button>
       </div>
@@ -564,14 +671,14 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
   image_url={p.image_url ?? ""}
   url={p.url ?? ""}
   republicTitle={repMap.get(p.republic_id)?.title ?? ""}
-  onChanged={() => refreshFeed(tab, repFilter, true)}
+  onChanged={() => refreshCurrentTab(true)}
 />
 
           ))
         )}
       </div>
 
-      <LoadMore onVisible={() => refreshFeed(tab, repFilter, false)} loading={loadingMore} />
+      <LoadMore onVisible={() => refreshCurrentTab(false)} loading={loadingMore} />
     </Shell>
   );
 }
