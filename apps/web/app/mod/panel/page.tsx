@@ -2,6 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { supa } from '@/lib/supabase';
+import ConfirmDialog from '@/components/ConfirmDialog';
+
+const SUSPEND_DURATIONS = [
+  { label: '24 hours', hours: 24 },
+  { label: '7 days', hours: 24 * 7 },
+  { label: '30 days', hours: 24 * 30 },
+  { label: 'Permanently', hours: null as number | null },
+];
 
 type ReportGroup = {
   id: string;                 // ID sintetike për React: "post:<id>" | "comment:<id>" | "user:<id>"
@@ -27,6 +35,12 @@ export default function ModPanel() {
   const [republicsMap, setRepublicsMap] = useState<Record<string, string>>({});
   const [myRoles, setMyRoles] = useState<{ role: string; republic_id: string | null }[]>([]);
 
+  const [pendingSuspend, setPendingSuspend] = useState<ReportGroup | null>(null);
+  const [suspendReason, setSuspendReason] = useState('');
+  const [suspendHours, setSuspendHours] = useState<number | null>(24 * 7);
+  const [suspendBusy, setSuspendBusy] = useState(false);
+  const [pendingUnsuspend, setPendingUnsuspend] = useState<ReportGroup | null>(null);
+
   // Assistant-ët shohin raportet, por s'mund t'i zgjidhin (Accept/Reject) —
   // e njëjta rregull zbatohet edhe në RLS, kjo është vetëm për UI-në.
   function canResolve(republicId: string | null) {
@@ -35,6 +49,12 @@ export default function ModPanel() {
         ["admin", "director", "manager", "moderator"].includes(r.role) &&
         (r.republic_id === null || r.republic_id === republicId)
     );
+  }
+
+  // Pezullimi i llogarisë është veprim më i rëndë se Accept/Reject i thjeshtë
+  // — vetëm admin/director global, jo moderator/manager.
+  function canSuspend() {
+    return myRoles.some((r) => ["admin", "director"].includes(r.role) && r.republic_id === null);
   }
 
   useEffect(() => {
@@ -123,7 +143,7 @@ export default function ModPanel() {
         if (userIds.length > 0) {
           const { data: usersData, error: usersError } = await supa
             .from('profiles')
-            .select('id, username, display_name')
+            .select('id, username, display_name, suspended_at, suspended_until, suspension_reason')
             .in('id', userIds);
 
           if (usersError) throw usersError;
@@ -291,6 +311,66 @@ export default function ModPanel() {
     }
   };
 
+  // SUSPEND: pezullim read-only (posts/comments/votes/follows), me arsye
+  // e detyrueshme dhe kohëzgjatje — mbyll edhe raportin si "accepted".
+  function openSuspend(report: ReportGroup) {
+    setSuspendReason('');
+    setSuspendHours(24 * 7);
+    setPendingSuspend(report);
+  }
+
+  async function submitSuspend() {
+    if (!pendingSuspend) return;
+    const clean = suspendReason.trim();
+    if (!clean) return;
+    setSuspendBusy(true);
+    try {
+      const { error } = await supa.rpc('suspend_user', {
+        p_user_id: pendingSuspend.targetId,
+        p_reason: clean,
+        p_duration_hours: suspendHours,
+      });
+      if (error) throw error;
+
+      const { error: repErr } = await supa
+        .from('reports')
+        .update({ status: 'accepted', resolved_at: new Date().toISOString() })
+        .eq('reported_user_id', pendingSuspend.targetId)
+        .eq('status', 'pending');
+      if (repErr) throw repErr;
+
+      setReports((prev) => prev.filter((r) => r.id !== pendingSuspend.id));
+      setPendingSuspend(null);
+    } catch (e: any) {
+      console.error('SUSPEND ERROR:', e);
+      setActionError(e.message ?? 'Error suspending user');
+    } finally {
+      setSuspendBusy(false);
+    }
+  }
+
+  async function confirmUnsuspend() {
+    if (!pendingUnsuspend) return;
+    try {
+      const { error } = await supa.rpc('unsuspend_user', { p_user_id: pendingUnsuspend.targetId });
+      if (error) throw error;
+      setUsersMap((prev) => ({
+        ...prev,
+        [pendingUnsuspend.targetId]: {
+          ...prev[pendingUnsuspend.targetId],
+          suspended_at: null,
+          suspended_until: null,
+          suspension_reason: null,
+        },
+      }));
+    } catch (e: any) {
+      console.error('UNSUSPEND ERROR:', e);
+      setActionError(e.message ?? 'Error lifting suspension');
+    } finally {
+      setPendingUnsuspend(null);
+    }
+  }
+
   if (loading) {
     return (
       <div className="p-4">
@@ -385,6 +465,15 @@ export default function ModPanel() {
                 {usersMap[r.targetId]
                   ? `@${usersMap[r.targetId].username}${usersMap[r.targetId].display_name ? ` (${usersMap[r.targetId].display_name})` : ''}`
                   : r.targetId}
+                {usersMap[r.targetId]?.suspended_at &&
+                  (!usersMap[r.targetId].suspended_until ||
+                    new Date(usersMap[r.targetId].suspended_until) > new Date()) && (
+                    <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-medium">
+                      ⛔ Suspended{usersMap[r.targetId].suspended_until
+                        ? ` until ${new Date(usersMap[r.targetId].suspended_until).toLocaleDateString()}`
+                        : ' permanently'}
+                    </span>
+                  )}
               </div>
             )}
 
@@ -423,6 +512,25 @@ export default function ModPanel() {
                   Open profile
                 </a>
               )}
+
+              {r.type === 'user' && canSuspend() && (
+                usersMap[r.targetId]?.suspended_at &&
+                (!usersMap[r.targetId].suspended_until || new Date(usersMap[r.targetId].suspended_until) > new Date()) ? (
+                  <button
+                    onClick={() => setPendingUnsuspend(r)}
+                    className="px-3 py-1 border rounded text-gray-700 hover:bg-gray-50"
+                  >
+                    Lift suspension
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => openSuspend(r)}
+                    className="px-3 py-1 border border-orange-300 text-orange-700 rounded hover:bg-orange-50"
+                  >
+                    ⛔ Suspend
+                  </button>
+                )
+              )}
             </div>
           </div>
         ))}
@@ -434,6 +542,76 @@ export default function ModPanel() {
           <button onClick={() => setActionError(null)} className="ml-3 text-red-600 underline">Dismiss</button>
         </div>
       )}
+
+      {pendingSuspend && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          onClick={() => !suspendBusy && setPendingSuspend(null)}
+        >
+          <div
+            className="w-full max-w-sm bg-white rounded-xl border shadow p-5 space-y-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-base font-semibold">
+              Suspend @{usersMap[pendingSuspend.targetId]?.username ?? pendingSuspend.targetId}
+            </h3>
+            <p className="text-sm text-gray-600">
+              They'll still be able to sign in and browse, but won't be able to post, comment, vote, or
+              follow until the suspension is lifted.
+            </p>
+
+            <label className="block text-xs font-medium text-gray-600">Duration</label>
+            <select
+              className="w-full border rounded-md px-2 py-1.5 text-sm"
+              value={suspendHours === null ? 'permanent' : String(suspendHours)}
+              onChange={(e) =>
+                setSuspendHours(e.target.value === 'permanent' ? null : parseInt(e.target.value, 10))
+              }
+            >
+              {SUSPEND_DURATIONS.map((d) => (
+                <option key={d.label} value={d.hours === null ? 'permanent' : String(d.hours)}>
+                  {d.label}
+                </option>
+              ))}
+            </select>
+
+            <label className="block text-xs font-medium text-gray-600">Reason (required)</label>
+            <textarea
+              autoFocus
+              className="w-full border rounded-md px-3 py-2 text-sm min-h-[80px]"
+              value={suspendReason}
+              onChange={(e) => setSuspendReason(e.target.value)}
+              placeholder="Why is this account being suspended?"
+            />
+
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                className="h-9 px-4 rounded border text-sm"
+                onClick={() => setPendingSuspend(null)}
+                disabled={suspendBusy}
+              >
+                Cancel
+              </button>
+              <button
+                className="h-9 px-4 rounded bg-orange-600 text-white text-sm disabled:opacity-60"
+                onClick={submitSuspend}
+                disabled={suspendBusy || !suspendReason.trim()}
+              >
+                {suspendBusy ? 'Suspending…' : 'Suspend'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={!!pendingUnsuspend}
+        title={`Lift suspension for @${pendingUnsuspend ? usersMap[pendingUnsuspend.targetId]?.username ?? pendingUnsuspend.targetId : ''}?`}
+        message="They'll immediately regain the ability to post, comment, vote, and follow."
+        confirmLabel="Lift suspension"
+        onConfirm={confirmUnsuspend}
+        onCancel={() => setPendingUnsuspend(null)}
+      />
     </div>
   );
 }

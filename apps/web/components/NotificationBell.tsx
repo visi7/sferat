@@ -34,6 +34,10 @@ function bellText(n: { type: string | null; payload: any | null }) {
     case "report_escalated": return `🚩 ${actor} escalated a ${p.target_type ?? "report"} for your review.`;
     case "report_result":    return `Your report was ${p.status ?? "processed"}.`;
     case "role_changed":     return roleChangeText(p);
+    case "account_suspended": {
+      const until = p.until ? ` until ${new Date(p.until).toLocaleDateString()}` : " permanently";
+      return `⛔ Your account has been suspended${until}. Reason: ${p.reason ?? "no reason given"}.`;
+    }
     default:                 return "You have a new notification.";
   }
 }

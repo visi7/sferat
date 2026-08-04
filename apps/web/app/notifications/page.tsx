@@ -108,6 +108,11 @@ export default function NotificationsPage() {
           ? `${actor} removed your ${roleLabel} role${scope}.`
           : `${actor} granted you the ${roleLabel} role${scope}.`;
       }
+      case "account_suspended": {
+        const p = n.payload ?? {};
+        const until = p.until ? ` until ${new Date(p.until).toLocaleDateString()}` : " permanently";
+        return `⛔ Your account has been suspended${until}. Reason: ${p.reason ?? "no reason given"}.`;
+      }
       default:                 return "You have a new notification.";
     }
   }
