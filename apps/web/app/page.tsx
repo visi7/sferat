@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
+import { prepareImageFile } from "@/lib/imageUpload";
 import Shell from "@/components/shell";
 import LeftNav from "@/components/LeftNav";
 import RightAside from "@/components/RightAside";
@@ -317,11 +318,12 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
   try {
     if (hasImage && imageFile) {
       setUploadingImage(true);
-      const ext = (imageFile.name.split(".").pop() || "jpg").toLowerCase();
+      const readyFile = await prepareImageFile(imageFile);
+      const ext = (readyFile.name.split(".").pop() || "jpg").toLowerCase();
       const fileName = `${crypto.randomUUID()}.${ext}`;
       const { error: upErr } = await supa.storage
         .from("images")
-        .upload(fileName, imageFile, { upsert: false });
+        .upload(fileName, readyFile, { upsert: false });
       if (upErr) throw upErr;
       const { data: pub } = supa.storage.from("images").getPublicUrl(fileName);
       payload.image_url = pub.publicUrl;

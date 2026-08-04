@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supa } from "@/lib/supabase";
+import { prepareImageFile } from "@/lib/imageUpload";
 import Shell from "@/components/shell";
 import LeftNav from "@/components/LeftNav";
 import ProfileHeader from "@/components/ProfileHeader";
@@ -118,13 +119,14 @@ async function uploadAvatar(file: File) {
   const me = sess?.user.id;
   if (!me) throw new Error("Not signed in");
 
-  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  const readyFile = await prepareImageFile(file);
+  const ext = (readyFile.name.split(".").pop() || "jpg").toLowerCase();
   const fileName = `${me}-${Date.now()}.${ext}`;
 
   // 1) ngarko në bucket "avatars"
   const { error: upErr } = await supa.storage
     .from("avatars")
-    .upload(fileName, file, { upsert: true });
+    .upload(fileName, readyFile, { upsert: true });
   if (upErr) throw upErr;
 
   // 2) mer URL publike

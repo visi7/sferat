@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supa } from "@/lib/supabase";
+import { prepareImageFile } from "@/lib/imageUpload";
 
 type Props = {
   open: boolean;
@@ -25,9 +26,10 @@ export default function PostEditModal({ open, post, onClose, onSaved }: Props) {
 
       // nëse u zgjodh file i ri -> ngarko në bucket "images"
       if (file) {
-        const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+        const readyFile = await prepareImageFile(file);
+        const ext = (readyFile.name.split(".").pop() || "jpg").toLowerCase();
         const fileName = `post-${post.id}-${Date.now()}.${ext}`;
-        const up = await supa.storage.from("images").upload(fileName, file, { upsert: true });
+        const up = await supa.storage.from("images").upload(fileName, readyFile, { upsert: true });
         if (up.error) throw up.error;
         const pub = supa.storage.from("images").getPublicUrl(fileName);
         newImageUrl = pub.data.publicUrl;
