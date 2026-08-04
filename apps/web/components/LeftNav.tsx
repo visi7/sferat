@@ -55,6 +55,7 @@ export default function LeftNav() {
           <a href="/?tab=new">New</a>
           <a href="/search">Search</a>
           <a href="/saved">Saved</a>
+          <a href="/leaderboard">🏆 Leaderboard</a>
           <a href="/notifications">Notifications</a>
         </nav>
       </section>
