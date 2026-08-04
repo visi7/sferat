@@ -204,6 +204,8 @@ Referencë vizioni: `docs/VISION.md`
   - **Zgjerim i `mod/panel`**: raportet e llojit "user" (pa Republikë, gjithmonë globale) tani shfaqen realisht te paneli — më parë do të kishin qenë të padukshme fare (kodi filtronte çdo raport pa `post_id`/`comment_id`). Shto: kolonë "User" me `@username`, link "Open profile", Accept/Reject (Accept mbyll raportin si "accepted" pa fshirë/pezulluar automatikisht llogarinë — s'ka ende funksion "ban", vetëm gjurmim), dhe Escalate (funksioni `escalate_report` u zgjerua të pranojë edhe tipin `'user'`).
   - **Kërkon migrime SQL manuale** (`20260804010000_reports_reported_user.sql`, `20260804020000_escalate_report_user_type.sql`) — dhënë në chat.
 
+- **Bug: fotot HEIC (iPhone) shfaqeshin "broken image" — u zgjidh**: gjetur nga një raport i mëparshëm real (postim i `@u1899721264` me ikonë imazhi të thyer në mobile). Shkaku: fotot e kamerës në iPhone ruhen si default në format HEIC/HEIF, që s'e deshifron dot asnjë shfletues brenda `<img>` përveç Safari-t; bucket-et "images"/"avatars" s'kishin kufizim mime-type, kështu që ngarkimi "kalonte" pa gabim, thjesht rezultati s'shfaqej. Zgjidhur me konvertim real HEIC→JPEG në browser (libraria `heic2any`, WASM) PARA ngarkimit, në `lib/imageUpload.ts` (helper i ri `prepareImageFile`), përdorur në të tria vendet e ngarkimit: kompozuesi kryesor (`app/page.tsx`), editimi i postimit (`PostEditModal.tsx`), dhe avatari (`profile/[username]/page.tsx`). S'kërkon migrim SQL — fikse vetëm në client.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Backup i databazës — kontrolluar, s'ka mbrojtje automatike sot
