@@ -218,6 +218,14 @@ Referencë vizioni: `docs/VISION.md`
   - **Leaderboard**: funksion i ri `top_convincers(p_days, p_limit)` (7 ditë/30 ditë/gjithë kohës), shfaqur në dy vende: widget kompakt te `RightAside` (i dukshëm në gjithë platformën — pikërisht qëllimi "magnet"), dhe faqe e plotë `/leaderboard` (top 50, me zgjedhje periudhe), me link te menyja majtas.
   - **Kërkon migrim SQL manual** (`20260804040000_convince_leaderboard.sql`) — dhënë në chat.
 
+- **Feed "For You" (personalizuar) — i ri**: leva e dytë e diskutuar strategjikisht ("Agora si magnet, si TikTok") — motori real i rritjes/kohëzgjatjes së vizitës, jo shpërblimet.
+  - Tab i tretë (vetëm për të kyçur) pranë Top/New. Rirenditje **100% në client** mbi një pool të vetëm postimesh (14 ditët e fundit, top 150 sipas `hot_score` ekzistues) — jo funksion i madh SQL, qëllimisht, që peshat e formulës të jenë të lehta për t'u kalibruar pa migrime të reja çdo herë.
+  - **Formula (transparente):** `hot_score` + bonus nëse Republika ndiqet (+4) + bonus nëse autori ndiqet (+3) + `log(1+aktivitet_i_mëparshëm_në_atë_Republikë)` × 2.
+  - E vetmja pjesë server-side: `my_republic_affinity()`, funksion i vogël RPC që numëron aktivitetin e mëparshëm (postime/komente/vota/"Convinced me"/ruajtje) të vetë përdoruesit për Republikë — i kufizuar rreptësisht te `p_user_id = auth.uid()` (jo për të tjerë), sepse votat/ruajtjet janë të dhëna private dhe s'duhet të nxjerrim "sa aktiv është X te Republika Y" për dikë tjetër.
+  - Filtri i Republikës (repFilter) nuk zbatohet te "For You" — është një përzierje ndër-Republika me qëllim.
+  - **Limitim i njohur (i pranueshëm në këtë fazë):** "Load more" zbulon më shumë nga i njëjti pool 150-postimesh, pa thirrje shtesë DB — mjaftueshëm për vëllimin aktual të postimeve; do të rishikohet (kalim te funksion SQL i shkallëzueshëm) kur platforma të ketë vëllim real.
+  - **Kërkon migrim SQL manual** (`20260804050000_for_you_affinity.sql`) — dhënë në chat.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Backup i databazës — kontrolluar, s'ka mbrojtje automatike sot
