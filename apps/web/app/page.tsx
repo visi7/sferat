@@ -446,9 +446,9 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
   return (
     <Shell left={<LeftNav />} right={<RightAside />}>
       {/* Tabs */}
-      <div className="mb-3 flex items-center gap-2">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
         <button
-          className={`px-3 py-1.5 rounded-full border ${tab === "top" ? "bg-black text-white" : "bg-white"}`}
+          className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-full border ${tab === "top" ? "bg-black text-white" : "bg-white"}`}
           onClick={() => {
             setTab("top");
             setPage(0);
@@ -458,7 +458,7 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
           Top (7 days)
         </button>
         <button
-          className={`px-3 py-1.5 rounded-full border ${tab === "new" ? "bg-black text-white" : "bg-white"}`}
+          className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-full border ${tab === "new" ? "bg-black text-white" : "bg-white"}`}
           onClick={() => {
             setTab("new");
             setPage(0);
@@ -469,7 +469,7 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
         </button>
         {session && (
           <button
-            className={`px-3 py-1.5 rounded-full border ${tab === "for_you" ? "bg-black text-white" : "bg-white"}`}
+            className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-full border ${tab === "for_you" ? "bg-black text-white" : "bg-white"}`}
             onClick={() => {
               setTab("for_you");
               setPage(0);
