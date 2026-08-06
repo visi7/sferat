@@ -226,6 +226,10 @@ Referencë vizioni: `docs/VISION.md`
   - **Limitim i njohur (i pranueshëm në këtë fazë):** "Load more" zbulon më shumë nga i njëjti pool 150-postimesh, pa thirrje shtesë DB — mjaftueshëm për vëllimin aktual të postimeve; do të rishikohet (kalim te funksion SQL i shkallëzueshëm) kur platforma të ketë vëllim real.
   - **Kërkon migrim SQL manual** (`20260804050000_for_you_affinity.sql`) — dhënë në chat.
 
+- **Auditim i tretë (siguri/RLS) — nisi**: kalim sistematik nëpër politikat RLS të krijuara/ndryshuara këtë sesion (role hierarkia, marketing mod, debate arenas, blocked/muted users, agora-media bucket) — asnjë vrimë e re privilegji e gjetur, gjithçka e skorpuar saktë.
+  - **Gjetje reale, e vërtetuar**: "Fshi njoftimin" (🗑 individual, "Clear all", dhe dropdown-i 🔔) s'ka funksionuar KURRË realisht — `notifications` s'kishte asnjë politikë RLS për DELETE (vetëm select/update), që kur u krijua tabela. RLS-ja e refuzonte fshirjen në heshtje (0 rreshta të fshirë, pa gabim), dhe klienti (kontrollon vetëm `if (!error)`) e hiqte nga ekrani duke besuar se u fshi — rreshti mbetej real dhe rishfaqej pas rifreskimit. Rregulluar me politikë e re `notifications_delete_own`.
+  - **Kërkon migrim SQL manual** (`20260804070000_notifications_delete_policy.sql`) — dhënë në chat.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Backup i databazës — kontrolluar, s'ka mbrojtje automatike sot
