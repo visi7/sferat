@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supa } from "@/lib/supabase";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 type Noti = {
   id: string;
@@ -16,6 +17,7 @@ export default function NotificationsPage() {
   const [me, setMe] = useState<string | null>(null);
   const [commentPostMap, setCommentPostMap] = useState<Record<string, string>>({});
   const [tab, setTab] = useState<"all" | "unread">("all");
+  const [showClearAllConfirm, setShowClearAllConfirm] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -81,8 +83,8 @@ export default function NotificationsPage() {
 
   async function clearAll() {
     if (!me) return;
-    if (!confirm("Delete all notifications? This can't be undone.")) return;
     const { error } = await supa.from("notifications").delete().eq("user_id", me);
+    setShowClearAllConfirm(false);
     if (!error) setRows([]);
   }
 
@@ -176,7 +178,7 @@ export default function NotificationsPage() {
             <button onClick={markAllRead} className="text-blue-600 hover:underline">
               Mark all read
             </button>
-            <button onClick={clearAll} className="text-red-600 hover:underline">
+            <button onClick={() => setShowClearAllConfirm(true)} className="text-red-600 hover:underline">
               Clear all
             </button>
           </div>
@@ -231,6 +233,16 @@ export default function NotificationsPage() {
           );
         })
       )}
+
+      <ConfirmDialog
+        open={showClearAllConfirm}
+        title="Delete all notifications?"
+        message="This can't be undone."
+        confirmLabel="Delete all"
+        danger
+        onConfirm={clearAll}
+        onCancel={() => setShowClearAllConfirm(false)}
+      />
     </main>
   );
 }

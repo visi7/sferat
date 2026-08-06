@@ -8,6 +8,7 @@ import PostEditModal from "@/components/PostEditModal";
 import Avatar from "./Avatar";
 import CommentItem from "@/components/comments/CommentItem";
 import SignInPrompt from "@/components/SignInPrompt";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import { useEffect, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
 
@@ -67,6 +68,7 @@ const [editing, setEditing] = useState(false);
 
   // Kebab menu
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null); 
   const [saved, setSaved] = useState(false);
   const [reportingPost, setReportingPost] = useState(false);
@@ -436,9 +438,8 @@ if (error) throw error;
       setBusy(false);
     }
   }
-async function removePost() {
-  if (!me) return alert("You must be logged in.");
-  if (!confirm("Delete this post?")) return;
+async function confirmDeletePost() {
+  setShowDeleteConfirm(false);
   const { error } = await supa.from("posts").delete().eq("id", p.id);
   if (error) return alert(error.message);
   p.onChanged?.();
@@ -547,10 +548,8 @@ async function removePost() {
   onDelete={
     isMine
       ? async () => {
-          if (!confirm("Delete this post?")) return;
-          const { error } = await supa.from("posts").delete().eq("id", p.id);
-          if (error) return alert(error.message);
-          p.onChanged?.();
+          setMenuOpen(false);
+          setShowDeleteConfirm(true);
         }
       : undefined
   }
@@ -771,6 +770,16 @@ async function removePost() {
 />
 
 <SignInPrompt open={!!signInMsg} message={signInMsg ?? undefined} onClose={() => setSignInMsg(null)} />
+
+<ConfirmDialog
+  open={showDeleteConfirm}
+  title="Delete this post?"
+  message="This can't be undone."
+  confirmLabel="Delete"
+  danger
+  onConfirm={confirmDeletePost}
+  onCancel={() => setShowDeleteConfirm(false)}
+/>
 
     </article>
   );
