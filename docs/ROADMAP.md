@@ -230,6 +230,10 @@ Referencë vizioni: `docs/VISION.md`
   - **Gjetje reale, e vërtetuar**: "Fshi njoftimin" (🗑 individual, "Clear all", dhe dropdown-i 🔔) s'ka funksionuar KURRË realisht — `notifications` s'kishte asnjë politikë RLS për DELETE (vetëm select/update), që kur u krijua tabela. RLS-ja e refuzonte fshirjen në heshtje (0 rreshta të fshirë, pa gabim), dhe klienti (kontrollon vetëm `if (!error)`) e hiqte nga ekrani duke besuar se u fshi — rreshti mbetej real dhe rishfaqej pas rifreskimit. Rregulluar me politikë e re `notifications_delete_own`.
   - **Kërkon migrim SQL manual** (`20260804070000_notifications_delete_policy.sql`) — dhënë në chat.
 
+- **Auditim — pjesa 2/3 (UX): 2 `confirm()`-at destruktivë të zëvendësuar**: "Delete this post?" (`postCard.tsx`, të dyja shtigjet) dhe "Delete all notifications?" (`notifications/page.tsx`) tani përdorin `ConfirmDialog` ekzistuese, jo dialogun native. Hequr edhe `removePost()`, funksion i vdekur (dublikonte të njëjtin `confirm()` por s'thirrej kurrë).
+  - **Ende e mbetur, e vlerësuar por e shtyrë me qëllim**: ~20+ vende të tjera me `alert()` (mesazhe gabimi, jo veprime destruktive) nëpër `postCard.tsx`, `ProfileHeader.tsx`, `page.tsx`, `sign-in`/`sign-up`, `republic/[slug]`, `ProfileRight.tsx`, `PostEditModal.tsx` — ndikim më i vogël se `confirm()`-at, punë e veçantë kur të duhet.
+  - **Bug-u i butonave "ovalë"** (Top/New/For You) u konfirmua i izoluar — kontrolluar çdo vend tjetër me `rounded-full`, të gjitha kishin tashmë `whitespace-nowrap`.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Backup i databazës — kontrolluar, s'ka mbrojtje automatike sot
