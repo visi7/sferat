@@ -234,6 +234,9 @@ Referencë vizioni: `docs/VISION.md`
   - **Ende e mbetur, e vlerësuar por e shtyrë me qëllim**: ~20+ vende të tjera me `alert()` (mesazhe gabimi, jo veprime destruktive) nëpër `postCard.tsx`, `ProfileHeader.tsx`, `page.tsx`, `sign-in`/`sign-up`, `republic/[slug]`, `ProfileRight.tsx`, `PostEditModal.tsx` — ndikim më i vogël se `confirm()`-at, punë e veçantë kur të duhet.
   - **Bug-u i butonave "ovalë"** (Top/New/For You) u konfirmua i izoluar — kontrolluar çdo vend tjetër me `rounded-full`, të gjitha kishin tashmë `whitespace-nowrap`.
 
+- **Auditim — pjesa 3/3 (UX): ~25 `alert()`-at e mbetur u zëvendësuan**: komponent i ri i përbashkët `Toast.tsx` (variant error/success, i mbyllshëm, jo bllokues, `z-[9999]` që të mos fshihet pas modaleve) — zëvendëson çdo `alert()` të mbetur nëpër `postCard.tsx`, `ProfileHeader.tsx`, `ProfileRight.tsx`, kompozuesin (`page.tsx`), `sign-in`/`sign-up`, `republic/[slug]`, `PostEditModal.tsx`. Disa raste "must be logged in" u kaluan te `SignInPrompt` ekzistuese (jo Toast) për konsistencë, kur ai model ishte tashmë në përdorim aty afër. Asnjë ndryshim sjelljeje përtej vetë dialogut — të njëjtat mesazhe, të njëjtat kushte nxitëse.
+  - Kjo mbyll auditimin e planifikuar (siguri/RLS → 2 `confirm()`-at destruktivë → `alert()`-at e mbetur). S'kërkon migrim SQL.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Backup i databazës — kontrolluar, s'ka mbrojtje automatike sot
