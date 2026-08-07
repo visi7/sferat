@@ -9,6 +9,7 @@ import Avatar from "./Avatar";
 import CommentItem from "@/components/comments/CommentItem";
 import SignInPrompt from "@/components/SignInPrompt";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import Toast from "@/components/Toast";
 import { useEffect, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
 
@@ -69,6 +70,8 @@ const [editing, setEditing] = useState(false);
   // Kebab menu
   const [menuOpen, setMenuOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null); 
   const [saved, setSaved] = useState(false);
   const [reportingPost, setReportingPost] = useState(false);
@@ -188,7 +191,7 @@ useEffect(() => {
     });
 
     if (error) {
-      alert(error.message);
+      setErrorMsg(error.message);
       // opc: mund të bëjmë një refresh nga DB nëse do
       return;
     }
@@ -251,7 +254,7 @@ if (error) throw error;
       if (m) {
         setCommentCooldown(parseInt(m[1], 10));
       } else {
-        alert(e.message);
+        setErrorMsg(e.message);
       }
     } finally {
       setBusy(false);
@@ -385,7 +388,7 @@ if (error) throw error;
       // rollback
       setCUserVotes((m) => ({ ...m, [commentId]: prev }));
       setCScores((m) => ({ ...m, [commentId]: (m[commentId] ?? 0) - delta }));
-      alert(e.message);
+      setErrorMsg(e.message);
     }
   }
 
@@ -416,7 +419,7 @@ if (error) throw error;
       // rollback
       setCMyConvinced((m) => ({ ...m, [commentId]: wasConvinced }));
       setCConvinced((m) => ({ ...m, [commentId]: (m[commentId] ?? 0) + (wasConvinced ? 1 : -1) }));
-      alert(e.message);
+      setErrorMsg(e.message);
     }
   }
 
@@ -441,7 +444,7 @@ if (error) throw error;
 async function confirmDeletePost() {
   setShowDeleteConfirm(false);
   const { error } = await supa.from("posts").delete().eq("id", p.id);
-  if (error) return alert(error.message);
+  if (error) return setErrorMsg(error.message);
   p.onChanged?.();
 }
 
@@ -500,7 +503,7 @@ async function confirmDeletePost() {
       }
     } catch (e: any) {
       setSaved(wasSaved); // nëse dështoi, ktheje siç ishte
-      alert(e.message);
+      setErrorMsg(e.message);
     }
   }
 
@@ -514,13 +517,13 @@ async function confirmDeletePost() {
     reason: clean,
   });
 
-  if (error) alert(error.message);
+  if (error) setErrorMsg(error.message);
 }
 
   function copyShare() {
     const url = `${window.location.origin}/post/${p.id}`;
     navigator.clipboard.writeText(url);
-    alert("Link copied.");
+    setSuccessMsg("Link copied.");
   }
 
   return (
@@ -655,7 +658,7 @@ async function confirmDeletePost() {
           });
 
           if (error) {
-            alert(error.message);
+            setErrorMsg(error.message);
             return;
           }
 
@@ -728,7 +731,7 @@ async function confirmDeletePost() {
 
       onDelete={async (id) => {
         const { error } = await supa.from("comments").delete().eq("id", id);
-        if (error) return alert(error.message);
+        if (error) return setErrorMsg(error.message);
         setComments((prev) => (prev ?? []).filter((x) => x.id !== id));
         setCommentCount((n) => Math.max(0, (n ?? 1) - 1));
       }}
@@ -737,7 +740,7 @@ async function confirmDeletePost() {
           .from("comments")
           .update({ body: newBody })
           .eq("id", id);
-        if (error) return alert(error.message);
+        if (error) return setErrorMsg(error.message);
         setComments((prev) =>
           (prev ?? []).map((x) => (x.id === id ? { ...x, body: newBody } : x))
         );
@@ -780,6 +783,9 @@ async function confirmDeletePost() {
   onConfirm={confirmDeletePost}
   onCancel={() => setShowDeleteConfirm(false)}
 />
+
+<Toast message={errorMsg} onClose={() => setErrorMsg(null)} />
+<Toast message={successMsg} variant="success" onClose={() => setSuccessMsg(null)} />
 
     </article>
   );

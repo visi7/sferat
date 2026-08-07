@@ -4,6 +4,7 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { supa } from "@/lib/supabase";
 import PostCard from "@/components/postCard";
 import SignInPrompt from "@/components/SignInPrompt";
+import Toast from "@/components/Toast";
 import { followRepublic, unfollowRepublic } from "@/app/actions";
 type Section = { slug: string; label: string; position: number };
 
@@ -26,6 +27,7 @@ export default function RepublicPage() {
   const [myId, setMyId] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [signInMsg, setSignInMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [muteBusy, setMuteBusy] = useState(false);
 
   // 1) Load republic + sections
@@ -150,7 +152,7 @@ setPosts(data ?? []);
         setIsFollowing(true);
       }
     } catch (e: any) {
-      alert(e.message ?? "Something went wrong");
+      setErrorMsg(e.message ?? "Something went wrong");
     } finally {
       setFollowBusy(false);
     }
@@ -176,7 +178,7 @@ setPosts(data ?? []);
         setIsMuted(true);
       }
     } catch (e: any) {
-      alert(e.message ?? "Something went wrong");
+      setErrorMsg(e.message ?? "Something went wrong");
     } finally {
       setMuteBusy(false);
     }
@@ -247,6 +249,7 @@ setPosts(data ?? []);
       </div>
 
       <SignInPrompt open={!!signInMsg} message={signInMsg ?? undefined} onClose={() => setSignInMsg(null)} />
+      <Toast message={errorMsg} onClose={() => setErrorMsg(null)} />
     </div>
   );
 }

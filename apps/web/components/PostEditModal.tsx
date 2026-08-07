@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { supa } from "@/lib/supabase";
 import { prepareImageFile } from "@/lib/imageUpload";
+import Toast from "@/components/Toast";
 
 type Props = {
   open: boolean;
@@ -16,6 +17,7 @@ export default function PostEditModal({ open, post, onClose, onSaved }: Props) {
   const [link, setLink] = useState(post.url ?? "");
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   if (!open) return null;
 
@@ -46,7 +48,7 @@ export default function PostEditModal({ open, post, onClose, onSaved }: Props) {
 
       onSaved(); // rifresko feed
     } catch (e: any) {
-      alert(e.message || "Failed to save");
+      setErrorMsg(e.message || "Failed to save");
     } finally {
       setBusy(false);
     }
@@ -96,6 +98,8 @@ export default function PostEditModal({ open, post, onClose, onSaved }: Props) {
           </button>
         </div>
       </div>
+
+      <Toast message={errorMsg} onClose={() => setErrorMsg(null)} />
     </div>
   );
 }

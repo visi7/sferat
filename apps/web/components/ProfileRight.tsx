@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supa } from "@/lib/supabase";
+import Toast from "./Toast";
 import ProfileCredentialsCard from "./profile/ProfileCredentialsCard";
 import ProfileTopicsCard from "./profile/ProfileTopicsCard";
 import ProfileStatsCard from "./profile/ProfileStatsCard";
@@ -32,6 +33,7 @@ type Props = {
 
 export default function ProfileRight({ profile, isMe, stats, viewerLoggedIn }: Props) {
   const [, setSaving] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   async function updateProfile(patch: Partial<ProfileInfo>): Promise<void> {
     setSaving(true);
@@ -39,7 +41,7 @@ export default function ProfileRight({ profile, isMe, stats, viewerLoggedIn }: P
     setSaving(false);
 
     if (error) {
-      alert(error.message);
+      setErrorMsg(error.message);
       throw error;
     }
   }
@@ -57,6 +59,7 @@ export default function ProfileRight({ profile, isMe, stats, viewerLoggedIn }: P
       )}
       <ProfileCredentialsCard profile={profile} isMe={isMe} onUpdate={updateProfile} />
       <ProfileTopicsCard profile={profile} isMe={isMe} onUpdate={updateProfile} />
+      <Toast message={errorMsg} onClose={() => setErrorMsg(null)} />
     </div>
   );
 }

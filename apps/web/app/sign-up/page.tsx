@@ -4,6 +4,7 @@ import { useState } from "react";
 import { supa } from "@/lib/supabase";
 import Turnstile from "@/components/Turnstile";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
+import Toast from "@/components/Toast";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -12,6 +13,7 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -32,11 +34,11 @@ export default function SignUpPage() {
       });
 
       if (error) {
-        alert(error.message);
+        setErr(error.message);
         return;
       }
 
-      alert("Account created. Check your email to confirm it.");
+      setSuccessMsg("Account created. Check your email to confirm it.");
     } finally {
       setLoading(false);
     }
@@ -98,6 +100,8 @@ export default function SignUpPage() {
           {loading ? "Creating..." : "Create account"}
         </button>
       </form>
+
+      <Toast message={successMsg} variant="success" onClose={() => setSuccessMsg(null)} />
     </main>
   );
 }

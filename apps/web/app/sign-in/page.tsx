@@ -3,12 +3,14 @@ import { useState } from "react";
 import { supa } from "@/lib/supabase";
 import Turnstile from "@/components/Turnstile";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
+import Toast from "@/components/Toast";
 
 export default function EmailSignIn() {
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [loading, setLoading] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -20,7 +22,7 @@ export default function EmailSignIn() {
     });
     if (error) {
       setLoading(false);
-      return alert(error.message);
+      return setErrorMsg(error.message);
     }
     window.location.href = "/";
   }
@@ -71,6 +73,8 @@ export default function EmailSignIn() {
         {" · "}
         <a href="/forgot-password" className="text-blue-600 underline">Forgot password?</a>
       </p>
+
+      <Toast message={errorMsg} onClose={() => setErrorMsg(null)} />
     </main>
   );
 }

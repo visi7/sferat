@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
 import SignInPrompt from "@/components/SignInPrompt";
+import Toast from "@/components/Toast";
 
 type Props = {
   profile: {
@@ -40,6 +41,7 @@ export default function ProfileHeader({
   const [isFollowing, setIsFollowing] = useState(false);
   const [followBusy, setFollowBusy] = useState(false);
   const [signInMsg, setSignInMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -98,7 +100,7 @@ export default function ProfileHeader({
         setIsFollowing(true);
       }
     } catch (e: any) {
-      alert(e.message ?? "Something went wrong");
+      setErrorMsg(e.message ?? "Something went wrong");
     } finally {
       setFollowBusy(false);
     }
@@ -106,7 +108,7 @@ export default function ProfileHeader({
 
   function onBlockClick() {
     setMenuOpen(false);
-    if (!myId) return alert("You must be logged in.");
+    if (!myId) return setSignInMsg("Sign in to block this user.");
     if (blocked) {
       toggleBlock();
     } else {
@@ -136,7 +138,7 @@ export default function ProfileHeader({
       if (error) throw error;
       setReportSent(true);
     } catch (e: any) {
-      alert(e.message ?? "Something went wrong");
+      setErrorMsg(e.message ?? "Something went wrong");
     } finally {
       setReportBusy(false);
     }
@@ -187,7 +189,7 @@ export default function ProfileHeader({
         setBlocked(true);
       }
     } catch (e: any) {
-      alert(e.message ?? "Something went wrong");
+      setErrorMsg(e.message ?? "Something went wrong");
     } finally {
       setBlockBusy(false);
     }
@@ -495,6 +497,7 @@ export default function ProfileHeader({
       )}
 
       <SignInPrompt open={!!signInMsg} message={signInMsg ?? undefined} onClose={() => setSignInMsg(null)} />
+      <Toast message={errorMsg} onClose={() => setErrorMsg(null)} />
     </header>
   );
 }

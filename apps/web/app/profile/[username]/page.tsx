@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supa } from "@/lib/supabase";
 import { prepareImageFile } from "@/lib/imageUpload";
+import Toast from "@/components/Toast";
 import Shell from "@/components/shell";
 import LeftNav from "@/components/LeftNav";
 import ProfileHeader from "@/components/ProfileHeader";
@@ -28,6 +29,7 @@ export default function ProfilePage() {
   const [editingBio, setEditingBio] = useState(false);
   const [bioValue, setBioValue] = useState("");
   const [savingBio, setSavingBio] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (!username) return;
@@ -170,7 +172,7 @@ async function saveBio() {
     setProfile((p) => (p ? { ...p, bio: clean || null } : p));
     setEditingBio(false);
   } catch (err: any) {
-    alert(err.message ?? "Saving failed");
+    setErrorMsg(err.message ?? "Saving failed");
   } finally {
     setSavingBio(false);
   }
@@ -334,6 +336,7 @@ return (
         </>
       )}
     </div>
+    <Toast message={errorMsg} onClose={() => setErrorMsg(null)} />
   </Shell>
 );
 

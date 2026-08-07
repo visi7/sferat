@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
 import { prepareImageFile } from "@/lib/imageUpload";
+import Toast from "@/components/Toast";
 import Shell from "@/components/shell";
 import LeftNav from "@/components/LeftNav";
 import RightAside from "@/components/RightAside";
@@ -81,6 +82,7 @@ const [imageFile, setImageFile] = useState<File | null>(null);
 const [duration, setDuration] = useState<1 | 3 | 7>(7);
 const [uploadingImage, setUploadingImage] = useState(false);
 const [postCooldown, setPostCooldown] = useState(0);
+const [composerError, setComposerError] = useState<string | null>(null);
 
 useEffect(() => {
   if (postCooldown <= 0) return;
@@ -383,14 +385,14 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
 
   // ---- Create post ----
  async function createPost() {
-  if (!session) return alert("You must be logged in.");
-  if (!repId) return alert("Please choose a republic.");
+  if (!session) return setComposerError("You must be logged in.");
+  if (!repId) return setComposerError("Please choose a republic.");
 
   const hasText = !!body.trim();
   const hasImage = !!imageFile;
 
   if (!hasText && !hasImage) {
-    return alert("Write something or attach an image.");
+    return setComposerError("Write something or attach an image.");
   }
 
   const userId = session.user.id;
@@ -436,7 +438,7 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
     if (m) {
       setPostCooldown(parseInt(m[1], 10));
     } else {
-      alert(e.message);
+      setComposerError(e.message);
     }
   } finally {
     setUploadingImage(false);
@@ -679,6 +681,7 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
       </div>
 
       <LoadMore onVisible={() => refreshCurrentTab(false)} loading={loadingMore} />
+      <Toast message={composerError} onClose={() => setComposerError(null)} />
     </Shell>
   );
 }
