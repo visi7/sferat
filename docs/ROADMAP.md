@@ -237,6 +237,11 @@ Referencë vizioni: `docs/VISION.md`
 - **Auditim — pjesa 3/3 (UX): ~25 `alert()`-at e mbetur u zëvendësuan**: komponent i ri i përbashkët `Toast.tsx` (variant error/success, i mbyllshëm, jo bllokues, `z-[9999]` që të mos fshihet pas modaleve) — zëvendëson çdo `alert()` të mbetur nëpër `postCard.tsx`, `ProfileHeader.tsx`, `ProfileRight.tsx`, kompozuesin (`page.tsx`), `sign-in`/`sign-up`, `republic/[slug]`, `PostEditModal.tsx`. Disa raste "must be logged in" u kaluan te `SignInPrompt` ekzistuese (jo Toast) për konsistencë, kur ai model ishte tashmë në përdorim aty afër. Asnjë ndryshim sjelljeje përtej vetë dialogut — të njëjtat mesazhe, të njëjtat kushte nxitëse.
   - Kjo mbyll auditimin e planifikuar (siguri/RLS → 2 `confirm()`-at destruktivë → `alert()`-at e mbetur). S'kërkon migrim SQL.
 
+- **Checklist ligjor-praktik për reklamat e sponsorizuara (Agora) — i ri**: lindi nga pyetja "çfarë reklamash mund të postoj tek Agora pa probleme ligjore". 3 konfirmime të detyrueshme para se një reklamë (veçanërisht me video) të bëhet publike: (1) sponsori zotëron/ka licencuar të drejtat mbi përmbajtjen (video/muzikë/imazhe — rreziku #1 real me video-reklama), (2) pa pretendime të pavërtetuara, (3) jo kategori e kufizuar (bixhoz, ilaçe, financa/kripto, alkool/duhan, të mitur). **Shënim i qartë:** kjo s'është mbrojtje ligjore vetë — është regjistrim i dokumentuar i kujdesit të duhur; para se Agora të marrë para reale nga sponsorë të jashtëm, rekomandohet kontratë sponsorizimi e shkruar nga jurist.
+  - **Zbatuar realisht në DB**, jo vetëm UI: `CHECK` constraint mbi `sponsored_posts` — s'mund të jetë `is_active=true` pa i treja të konfirmuara. Reklamat aktive ekzistuese u "grandfather"-uan (u shqyrtuan tashmë manualisht para këtij checklist-i).
+  - Reklamë e re pa checklist të plotë ruhet si draft joaktiv (jo e bllokuar plotësisht); nëse hiqet një konfirmim gjatë editimit të një reklame aktive, çaktivizohet automatikisht.
+  - **Kërkon migrim SQL manual** (`20260804080000_sponsored_posts_compliance_checklist.sql`) — dhënë në chat.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Backup i databazës — kontrolluar, s'ka mbrojtje automatike sot
