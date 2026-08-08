@@ -17,7 +17,12 @@ type SponsoredPost = {
   is_active: boolean;
   expires_at: string | null;
   created_at: string;
+  compliance_rights: boolean;
+  compliance_claims: boolean;
+  compliance_category: boolean;
 };
+
+const emptyCompliance = { rights: false, claims: false, category: false };
 
 // Buton i shpejtë -> sa ditë t'i shtohen datës së sotme.
 const DURATION_PRESETS: { label: string; days: number | null }[] = [
@@ -70,6 +75,7 @@ async function uploadToAgoraMedia(file: File): Promise<string> {
 
 export default function ModAgoraPage() {
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [myId, setMyId] = useState<string | null>(null);
   const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
   const [isMarketingMod, setIsMarketingMod] = useState(false);
   const canManage = isGlobalAdmin || isMarketingMod;
@@ -83,6 +89,7 @@ export default function ModAgoraPage() {
   const [sortBy, setSortBy] = useState<"newest" | "expiring">("newest");
 
   const [form, setForm] = useState(emptyForm);
+  const [compliance, setCompliance] = useState(emptyCompliance);
   const [expiresAtInput, setExpiresAtInput] = useState(""); // yyyy-mm-dd, "" = no expiry
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -97,6 +104,7 @@ export default function ModAgoraPage() {
     (async () => {
       const s = (await supa.auth.getSession()).data.session;
       const uid = s?.user?.id;
+      setMyId(uid ?? null);
       if (!uid) {
         setCheckingAuth(false);
         return;
@@ -126,7 +134,9 @@ export default function ModAgoraPage() {
     setLoading(true);
     const { data } = await supa
       .from("sponsored_posts")
-      .select("id,sponsor_name,title,body,image_url,video_url,cta_label,cta_url,is_active,expires_at,created_at")
+      .select(
+        "id,sponsor_name,title,body,image_url,video_url,cta_label,cta_url,is_active,expires_at,created_at,compliance_rights,compliance_claims,compliance_category"
+      )
       .order("created_at", { ascending: false });
     setAds(data ?? []);
     setLoading(false);
@@ -171,6 +181,11 @@ export default function ModAgoraPage() {
       cta_label: ad.cta_label ?? "",
       cta_url: ad.cta_url ?? "",
     });
+    setCompliance({
+      rights: ad.compliance_rights,
+      claims: ad.compliance_claims,
+      category: ad.compliance_category,
+    });
     setExpiresAtInput(ad.expires_at ? ad.expires_at.slice(0, 10) : "");
     resetMediaInputs();
     setFormError(null);
@@ -188,6 +203,9 @@ export default function ModAgoraPage() {
       cta_label: ad.cta_label ?? "",
       cta_url: ad.cta_url ?? "",
     });
+    // Kopja fillon pa checklist të konfirmuar -- është "reklamë" tjetër,
+    // meriton rishqyrtimin e vet, jo ta trashëgojë atë të origjinalit.
+    setCompliance(emptyCompliance);
     setExpiresAtInput(ad.expires_at ? ad.expires_at.slice(0, 10) : "");
     resetMediaInputs();
     setFormError(null);
@@ -197,6 +215,7 @@ export default function ModAgoraPage() {
   function cancelEdit() {
     setEditingId(null);
     setForm(emptyForm);
+    setCompliance(emptyCompliance);
     setExpiresAtInput("");
     resetMediaInputs();
     setFormError(null);
@@ -228,6 +247,8 @@ export default function ModAgoraPage() {
       }
       setUploadStage(null);
 
+      const allChecked = compliance.rights && compliance.claims && compliance.category;
+
       const payload = {
         sponsor_name,
         title,
@@ -237,13 +258,31 @@ export default function ModAgoraPage() {
         cta_label: form.cta_label.trim() || null,
         cta_url: form.cta_url.trim() || null,
         expires_at: expiresAtInput ? new Date(`${expiresAtInput}T23:59:59`).toISOString() : null,
+        compliance_rights: compliance.rights,
+        compliance_claims: compliance.claims,
+        compliance_category: compliance.category,
+        compliance_checked_by: allChecked ? myId : null,
+        compliance_checked_at: allChecked ? new Date().toISOString() : null,
       };
 
       if (editingId) {
-        const { error } = await supa.from("sponsored_posts").update(payload).eq("id", editingId);
+        // Nëse checklist-i s'është më i plotë (dikush hoqi një konfirmim)
+        // dhe reklama ishte aktive, çaktivizoje automatikisht -- kështu
+        // s'e godasim kurrë constraint-in e DB-së me një gabim befasues,
+        // dhe sjellja mbetet e qartë: checklist jo i plotë = jo publike.
+        const currentAd = ads.find((a) => a.id === editingId);
+        const nextIsActive = allChecked ? currentAd?.is_active ?? false : false;
+        const { error } = await supa
+          .from("sponsored_posts")
+          .update({ ...payload, is_active: nextIsActive })
+          .eq("id", editingId);
         if (error) throw error;
       } else {
-        const { error } = await supa.from("sponsored_posts").insert({ ...payload, is_active: true });
+        // Pa checklist të plotësuar, ruaje si draft (jo publike) në vend që
+        // ta bllokojmë fare ruajtjen -- constraint-i në DB do ta refuzonte
+        // gjithsesi is_active=true pa checklist, kjo thjesht e parandalon
+        // që të mos e shohë si gabim befasues.
+        const { error } = await supa.from("sponsored_posts").insert({ ...payload, is_active: allChecked });
         if (error) throw error;
       }
       setForm(emptyForm);
@@ -261,6 +300,10 @@ export default function ModAgoraPage() {
 
   async function toggleActive(ad: SponsoredPost) {
     setActionError(null);
+    const turningOn = !ad.is_active;
+    if (turningOn && !(ad.compliance_rights && ad.compliance_claims && ad.compliance_category)) {
+      return setActionError("Complete the compliance checklist (Edit → Compliance) before activating this ad.");
+    }
     const { error } = await supa
       .from("sponsored_posts")
       .update({ is_active: !ad.is_active })
@@ -496,6 +539,39 @@ export default function ModAgoraPage() {
             </div>
           </div>
 
+          <div className="border rounded-md p-3 space-y-2 bg-amber-50/50 border-amber-200">
+            <label className="block text-xs font-medium text-gray-700">
+              Compliance checklist — required before this ad goes live
+            </label>
+            <label className="flex items-start gap-2 text-xs text-gray-700">
+              <input
+                type="checkbox"
+                className="mt-0.5"
+                checked={compliance.rights}
+                onChange={(e) => setCompliance((c) => ({ ...c, rights: e.target.checked }))}
+              />
+              I've verified the sponsor owns/has licensed all rights to this content (video, music, images).
+            </label>
+            <label className="flex items-start gap-2 text-xs text-gray-700">
+              <input
+                type="checkbox"
+                className="mt-0.5"
+                checked={compliance.claims}
+                onChange={(e) => setCompliance((c) => ({ ...c, claims: e.target.checked }))}
+              />
+              No false or unverified claims in this ad.
+            </label>
+            <label className="flex items-start gap-2 text-xs text-gray-700">
+              <input
+                type="checkbox"
+                className="mt-0.5"
+                checked={compliance.category}
+                onChange={(e) => setCompliance((c) => ({ ...c, category: e.target.checked }))}
+              />
+              Not a restricted category (gambling, medical claims, financial/crypto products, alcohol/tobacco, ads targeting minors).
+            </label>
+          </div>
+
           {formError && <p className="text-red-600 text-xs">{formError}</p>}
 
           <button
@@ -503,8 +579,22 @@ export default function ModAgoraPage() {
             disabled={saving}
             className="px-4 py-2 bg-black text-white rounded-md text-sm disabled:opacity-60"
           >
-            {uploadStage ?? (saving ? "Saving…" : editingId ? "Save changes" : "Publish")}
+            {uploadStage
+              ? uploadStage
+              : saving
+              ? "Saving…"
+              : editingId
+              ? "Save changes"
+              : compliance.rights && compliance.claims && compliance.category
+              ? "Publish"
+              : "Save as draft (inactive)"}
           </button>
+          {!editingId && !(compliance.rights && compliance.claims && compliance.category) && (
+            <p className="text-xs text-gray-500">
+              Complete the checklist above to publish immediately — otherwise this saves as inactive and you can
+              activate it later from the list below.
+            </p>
+          )}
         </form>
 
         {/* Paraprijë e gjallë — saktësisht si do dukej te /agora */}
@@ -619,6 +709,14 @@ export default function ModAgoraPage() {
                     >
                       {ad.is_active ? "Active" : "Inactive"}
                     </span>
+                    {!(ad.compliance_rights && ad.compliance_claims && ad.compliance_category) && (
+                      <span
+                        className="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-100 text-amber-700"
+                        title="Compliance checklist incomplete"
+                      >
+                        ⚠️ Compliance incomplete
+                      </span>
+                    )}
                     {ad.expires_at && (() => {
                       const d = daysUntil(ad.expires_at!);
                       const label = d < 0 ? "Expired" : d === 0 ? "Expires today" : `Expires in ${d}d`;
