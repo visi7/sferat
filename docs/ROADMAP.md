@@ -242,6 +242,10 @@ Referencë vizioni: `docs/VISION.md`
   - Reklamë e re pa checklist të plotë ruhet si draft joaktiv (jo e bllokuar plotësisht); nëse hiqet një konfirmim gjatë editimit të një reklame aktive, çaktivizohet automatikisht.
   - **Kërkon migrim SQL manual** (`20260804080000_sponsored_posts_compliance_checklist.sql`) — dhënë në chat.
 
+- **Rimodelim vizual i `/sign-in` — kartë e errët "premium" me animacion**: lindi nga një video referencë (formular hyrjeje me llambë ilustrim, kartë e errët, buton ari) që ndau — u përshtat në identitetin e SFERAT-it (🏛️, ari/amber), jo kopjuar fjalë për fjalë. Kartë xhami e turbullt (`backdrop-blur`) mbi sfond të errët me dy "blob" ngjyra të animuara butësisht, animacion hyrjeje (fade+slide) i kartës. `GoogleSignInButton`/`Turnstile` morën prop opsional `dark`/`theme` — s'ndikojnë në përdorimet e tjera (sign-up, formulari i kyçjes në ballinë, ende të bardha).
+  - **Kufizuar qëllimisht vetëm te `/sign-in`** — sign-up mbetet i pandryshuar, e lëmë si vazhdim i mundshëm nëse duam konsistencë.
+  - S'kërkon migrim SQL — fikse vetëm client-side.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Backup i databazës — kontrolluar, s'ka mbrojtje automatike sot
