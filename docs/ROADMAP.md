@@ -249,6 +249,11 @@ Referencë vizioni: `docs/VISION.md`
   - Ikonat (mail/lock/eye/eye-off) u nxorën në `components/FormIcons.tsx` të përbashkët, jo të dyfishuara mes dy formularëve.
   - S'kërkon migrim SQL — fikse vetëm client-side.
 
+- **Mbyllje e dy pikave të mbetura nga puna e sotme**:
+  - **Konfirmim para fshirjes së komentit** — mungonte fare (një klik dhe fshihej), ndryshe nga postimet që tashmë kishin `ConfirmDialog`. Tani e njëjta kuti konfirmimi.
+  - **`/sign-up` u përshtat me dizajnin e ri të errët të `/sign-in`** — kartë xhami, rrjetë pikash + "blob" sfondi, ikona, sy për fjalëkalimin, ruajti checkbox-in ToS/Privacy dhe kërkesën "8 karaktere minimumi". Tani të dyja faqet e auth-it janë konsistente.
+  - Backup-i i databazës mbetet i shtyrë me qëllim (diskutuar, jo urgjent — jo ende në lançim publik).
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Backup i databazës — kontrolluar, s'ka mbrojtje automatike sot
