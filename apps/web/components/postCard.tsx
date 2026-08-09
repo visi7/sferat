@@ -70,6 +70,7 @@ const [editing, setEditing] = useState(false);
   // Kebab menu
   const [menuOpen, setMenuOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [pendingDeleteCommentId, setPendingDeleteCommentId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null); 
@@ -448,6 +449,16 @@ async function confirmDeletePost() {
   p.onChanged?.();
 }
 
+async function confirmDeleteComment() {
+  const id = pendingDeleteCommentId;
+  setPendingDeleteCommentId(null);
+  if (!id) return;
+  const { error } = await supa.from("comments").delete().eq("id", id);
+  if (error) return setErrorMsg(error.message);
+  setComments((prev) => (prev ?? []).filter((x) => x.id !== id));
+  setCommentCount((n) => Math.max(0, (n ?? 1) - 1));
+}
+
   async function unfollow() {
     if (!me) return;
     setBusy(true);
@@ -730,10 +741,7 @@ async function confirmDeletePost() {
       onReport={(reason) => reportComment(c.id, reason)}
 
       onDelete={async (id) => {
-        const { error } = await supa.from("comments").delete().eq("id", id);
-        if (error) return setErrorMsg(error.message);
-        setComments((prev) => (prev ?? []).filter((x) => x.id !== id));
-        setCommentCount((n) => Math.max(0, (n ?? 1) - 1));
+        setPendingDeleteCommentId(id);
       }}
       onUpdate={async (id, newBody) => {
         const { error } = await supa
@@ -782,6 +790,16 @@ async function confirmDeletePost() {
   danger
   onConfirm={confirmDeletePost}
   onCancel={() => setShowDeleteConfirm(false)}
+/>
+
+<ConfirmDialog
+  open={!!pendingDeleteCommentId}
+  title="Delete this comment?"
+  message="This can't be undone."
+  confirmLabel="Delete"
+  danger
+  onConfirm={confirmDeleteComment}
+  onCancel={() => setPendingDeleteCommentId(null)}
 />
 
 <Toast message={errorMsg} onClose={() => setErrorMsg(null)} />
