@@ -10,6 +10,7 @@ import RightAside from "@/components/RightAside";
 import PostCard from "@/components/postCard";
 import Turnstile from "@/components/Turnstile";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
+import { MailIcon, LockIcon, EyeIcon, EyeOffIcon } from "@/components/FormIcons";
 
 type Post = {
   id: string;
@@ -52,6 +53,7 @@ export default function Home() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [showPw, setShowPw] = useState(false);
 
   // Data
   const [republics, setRepublics] = useState<Republic[]>([]);
@@ -511,50 +513,80 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
       </div>
 
       {/* Composer */}
-     <section className="bg-white border rounded-xl p-4 mb-4 w-full mt-3">
+     <section className="bg-white border rounded-xl p-5 mb-4 w-full mt-3">
   {!session ? (
-          <div className="flex flex-col gap-1">
+          <div className="max-w-sm mx-auto flex flex-col gap-1">
+  <div className="text-center mb-3">
+    <div className="text-2xl mb-1">🏛️</div>
+    <h2 className="text-base font-semibold text-gray-900">Welcome to SFERAT</h2>
+    <p className="text-xs text-gray-500 mt-0.5">Sign in to join the discussion</p>
+  </div>
+
   <GoogleSignInButton />
 
-  <div className="flex items-center gap-3 my-2">
+  <div className="flex items-center gap-3 my-3">
     <div className="flex-1 border-t" />
-    <span className="text-xs text-gray-400">or</span>
+    <span className="text-xs uppercase tracking-wider text-gray-400">or</span>
     <div className="flex-1 border-t" />
   </div>
 
-  <div className="flex flex-wrap items-center gap-2">
-    <input
-      type="email"
-      value={email}
-      onChange={(e) => setEmail(e.target.value)}
-      placeholder="Email"
-      className="border p-2 rounded flex-1 min-w-[140px]"
-    />
-    <input
-      type="password"
-      value={password}
-      onChange={(e) => setPassword(e.target.value)}
-      placeholder="Password"
-      className="border p-2 rounded flex-1 min-w-[140px]"
-    />
+  <form
+    onSubmit={(e) => {
+      e.preventDefault();
+      signIn();
+    }}
+    className="flex flex-col gap-2.5"
+  >
+    <div className="relative">
+      <MailIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Email"
+        className="w-full border rounded-lg pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:border-gray-900 transition-colors"
+        required
+      />
+    </div>
+    <div className="relative">
+      <LockIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+      <input
+        type={showPw ? "text" : "password"}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Password"
+        className="w-full border rounded-lg pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:border-gray-900 transition-colors"
+        required
+      />
+      <button
+        type="button"
+        onClick={() => setShowPw((v) => !v)}
+        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors p-1"
+        aria-label={showPw ? "Hide password" : "Show password"}
+        title={showPw ? "Hide password" : "Show password"}
+      >
+        {showPw ? <EyeOffIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
+      </button>
+    </div>
+
+    {authError && (
+      <p className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-800">
+        {authError}
+      </p>
+    )}
+
+    <Turnstile onVerify={setCaptchaToken} />
+
     <button
+      type="submit"
       disabled={authLoading || !captchaToken}
-      onClick={signIn}
-      className="px-3 py-2 rounded bg-black text-white disabled:opacity-50"
+      className="mt-1 px-3 py-2.5 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
     >
-      {authLoading ? "..." : "Sign in"}
+      {authLoading ? "Signing in…" : "Sign in"}
     </button>
-  </div>
+  </form>
 
-  {authError && (
-    <p className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-800">
-      {authError}
-    </p>
-  )}
-
-  <Turnstile onVerify={setCaptchaToken} />
-
-  <p className="text-xs text-gray-600">
+  <p className="text-xs text-gray-600 text-center mt-3">
     Don't have an account?{" "}
     <a href="/sign-up" className="underline text-blue-600">
       Create one
