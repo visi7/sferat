@@ -242,8 +242,11 @@ Referencë vizioni: `docs/VISION.md`
   - Reklamë e re pa checklist të plotë ruhet si draft joaktiv (jo e bllokuar plotësisht); nëse hiqet një konfirmim gjatë editimit të një reklame aktive, çaktivizohet automatikisht.
   - **Kërkon migrim SQL manual** (`20260804080000_sponsored_posts_compliance_checklist.sql`) — dhënë në chat.
 
-- **Rimodelim vizual i `/sign-in` — kartë e errët "premium" me animacion**: lindi nga një video referencë (formular hyrjeje me llambë ilustrim, kartë e errët, buton ari) që ndau — u përshtat në identitetin e SFERAT-it (🏛️, ari/amber), jo kopjuar fjalë për fjalë. Kartë xhami e turbullt (`backdrop-blur`) mbi sfond të errët me dy "blob" ngjyra të animuara butësisht, animacion hyrjeje (fade+slide) i kartës. `GoogleSignInButton`/`Turnstile` morën prop opsional `dark`/`theme` — s'ndikojnë në përdorimet e tjera (sign-up, formulari i kyçjes në ballinë, ende të bardha).
-  - **Kufizuar qëllimisht vetëm te `/sign-in`** — sign-up mbetet i pandryshuar, e lëmë si vazhdim i mundshëm nëse duam konsistencë.
+- **Rimodelim vizual i `/sign-in` — kartë e errët "premium" me animacion**: lindi nga një video referencë (formular hyrjeje me llambë ilustrim, kartë e errët, buton ari) që ndau — u përshtat në identitetin e SFERAT-it (🏛️, ari/amber), jo kopjuar fjalë për fjalë. Kartë xhami e turbullt (`backdrop-blur`) mbi sfond të errët me dy "blob" ngjyra të animuara butësisht, rrjetë pikash e imët, emblemë 🏛️ me shkëlqim, ikona email/kyç brenda fushave, animacion hyrjeje (fade+slide) i kartës. `GoogleSignInButton`/`Turnstile` morën prop opsional `dark`/`theme` — s'ndikojnë në përdorimet e tjera.
+  - **Pas kritikës "shumë i varfër"**: rimodelim i dytë, dukshëm më i pasur (ikona, shkëlqim, hije) — jo vetëm tema e errët, por edhe detaje reale dizajni.
+  - **Sy për fjalëkalimin** (show/hide password) — shtuar këtu DHE te formulari inline i kyçjes në ballinë (kërkesë e veçantë, e vlefshme kudo ku ka fushë password-i).
+  - Formulari inline i ballinës (`app/page.tsx`, i ndarë nga `/sign-in`) u rimodelua gjithashtu — dukej i ngjeshur/i vjetër në një screenshot real gjatë kësaj pune (fusha anë-për-anë, pa ikona, pa "sy"). Mbeti me temën e bardhë ekzistuese (është brenda faqes së feed-it, jo faqe e veçantë) por me të njëjtin nivel poliment: ikona, fusha të plota, "sy" për password-in.
+  - Ikonat (mail/lock/eye/eye-off) u nxorën në `components/FormIcons.tsx` të përbashkët, jo të dyfishuara mes dy formularëve.
   - S'kërkon migrim SQL — fikse vetëm client-side.
 
 ## 🔜 Shtyrë me qëllim — mos harro
