@@ -260,6 +260,18 @@ Referencë vizioni: `docs/VISION.md`
   - **`GlowBackground`**: komponent i ripërdorshëm (sfera drite të turbullta, lëvizin ngadalë) — ripërdor animacionin `blob-pulse` të krijuar për `/sign-in`/`/sign-up`, aplikuar butësisht (opacitet i ulët) te ballina.
   - S'kërkon migrim SQL — fikse vetëm client-side (leximi i `expires_at` ekziston tashmë si kolonë).
 
+### Faqe shitjeje për sponsorë (Agora) — "për më vonë", specifikuar plotësisht
+**Kërkesa e plotë (fjalë për fjalë nga biseda):** faqe e re, e thjeshtë dhe e pastër, dizajn profesional/modern/minimalist, në frymën e një "platforme elitare mendimi" — synohet t'u shitet bizneseve reklamim te Agora. Përmban:
+- Titull i fortë që tregon vlerën e reklamimit te SFERAT.
+- 3 karta statistikash: Shikime/muaj, Përdorues Aktivë, Klikime.
+- 2 paketa çmimesh: Sponsorizim javor dhe mujor, me buton "Kontakto"/"Bli Tani".
+
+**Dy pika të hapura, për t'u vendosur para zbatimit:**
+1. **URL-ja**: `sferat.com` (rrënja) është zënë nga feed-i kryesor — propozuar `/advertise` (ose `/sponsors`) si faqe e veçantë, jo zëvendësim i ballinës. Pa përgjigje ende nga pronari.
+2. **Statistikat**: s'ka ende përdorues realë — vendosja e shifrave të shpikura te një faqe shitjeje do të ishte reklamë mashtruese. Propozuar: fillo me mesazh cilësor ("Ende në rritje — bashkohu herët") në vend të numrave, ose prit shifra reale (leaderboard/analytics ekzistues japin bazën për t'i nxjerrë kur të ketë trafik).
+
+**Kur ta rimarrim:** kur pronari të japë sinjal të qartë "tani", ose kur të ketë përgjigje për 2 pikat më sipër.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Backup i databazës — kontrolluar, s'ka mbrojtje automatike sot
