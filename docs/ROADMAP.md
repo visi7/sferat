@@ -254,6 +254,12 @@ Referencë vizioni: `docs/VISION.md`
   - **`/sign-up` u përshtat me dizajnin e ri të errët të `/sign-in`** — kartë xhami, rrjetë pikash + "blob" sfondi, ikona, sy për fjalëkalimin, ruajti checkbox-in ToS/Privacy dhe kërkesën "8 karaktere minimumi". Tani të dyja faqet e auth-it janë konsistente.
   - Backup-i i databazës mbetet i shtyrë me qëllim (diskutuar, jo urgjent — jo ende në lançim publik).
 
+- **Elemente psikologjike FOMO/kuriozitet (kërkesë e drejtpërdrejtë) — 3 shtesa**:
+  - **Timer vizual skadimi**: shirit progresi me ngjyra (jeshile→amber→e kuqe) + "Xh Ym left" te çdo postim. **Bug real i gjetur gjatë ndërtimit**: `timeLeft()` supozonte gjithmonë "krijuar + 7 ditë", edhe pse postimet mund të kenë 1/3/7 ditë (zgjedhje në kompozues) — një postim 1-ditor shfaqte gabimisht "~6 ditë të mbetura" deri në çastin që zhdukej. Rregulluar duke lexuar `posts.expires_at` të vërtetë, shtuar tani te çdo query postimesh (ballina, For You, faqja e Republikës, kërkimi, të ruajturat, postimi i vetëm).
+  - **"Sistemi i Misterit" për vizitorë pa llogari**: postimet e gjata (>220 karaktere) turbullohen (`blur`) pas fjalisë së parë për këdo pa sesion, me overlay gradient + "Sign in to keep reading" + buton Google. Postimet e shkurtra s'preken kurrë. **Shënim:** ky është "gate" i deklaruar hapur (si Medium/Quora), jo dark pattern mashtrues — s'fsheh/gënjen asgjë, thjesht kërkon llogari për të vazhduar leximin.
+  - **`GlowBackground`**: komponent i ripërdorshëm (sfera drite të turbullta, lëvizin ngadalë) — ripërdor animacionin `blob-pulse` të krijuar për `/sign-in`/`/sign-up`, aplikuar butësisht (opacitet i ulët) te ballina.
+  - S'kërkon migrim SQL — fikse vetëm client-side (leximi i `expires_at` ekziston tashmë si kolonë).
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Backup i databazës — kontrolluar, s'ka mbrojtje automatike sot
