@@ -25,21 +25,29 @@ function timeSince(date: Date) {
   return "just now";
 }
 
-function timeLeft(createdAt: string | Date) {
+// Zbulim gjatë ndërtimit të timer-it vizual: kjo funksiononte gjithmonë me
+// supozimin "krijuar + 7 ditë", edhe pse postimet mund të kenë 1/3/7 ditë
+// jetë (zgjedhje në kompozues) -- pra për një postim 1-ditor do të shfaqej
+// "edhe ~6 ditë" kur në fakt skadonte të nesërmen. Tani përdor expires_at
+// e vërtetë (shtuar te çdo query e postimeve); rezervë te +7 ditë vetëm
+// nëse ndonjë rresht i vjetër s'e ka fare (s'duhet të ndodhë më).
+function timeLeft(createdAt: string | Date, expiresAt?: string | null) {
   const created = new Date(createdAt);
-  const expiry = new Date(created.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const expiry = expiresAt ? new Date(expiresAt) : new Date(created.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const totalMs = expiry.getTime() - created.getTime();
   const ms = expiry.getTime() - Date.now();
 
-  if (ms <= 0) return { label: "Expired", urgent: true };
+  if (ms <= 0) return { label: "Expired", urgent: true, pct: 0 };
 
+  const pct = Math.max(0, Math.min(100, (ms / totalMs) * 100));
   const totalMin = Math.floor(ms / 60000);
   if (totalMin < 24 * 60) {
     const h = Math.floor(totalMin / 60);
     const m = totalMin % 60;
-    return { label: `${h}h ${m}m`, urgent: true };
+    return { label: `${h}h ${m}m`, urgent: true, pct };
   }
   const days = Math.ceil(totalMin / (60 * 24));
-  return { label: `${days} day${days > 1 ? "s" : ""}`, urgent: false };
+  return { label: `${days} day${days > 1 ? "s" : ""}`, urgent: false, pct };
 }
 
 export default function PostCard(p: PostCardProps) {
@@ -605,14 +613,21 @@ async function confirmDeleteComment() {
 
 {(() => {
   const posted = timeSince(new Date(p.created_at));
-  const left = timeLeft(p.created_at);
+  const left = timeLeft(p.created_at, p.expires_at);
+  const barColor =
+    left.label === "Expired" ? "bg-gray-300" : left.urgent ? "bg-red-500" : left.pct < 40 ? "bg-amber-500" : "bg-green-500";
   return (
-    <p className="text-xs text-gray-500 mt-1">
-      Posted {posted} ago ·{" "}
-      <span className={left.urgent ? "text-red-600 font-medium" : ""}>
-        Expires in {left.label}
-      </span>
-    </p>
+    <div className="mt-1.5">
+      <div className="h-1 w-full bg-gray-100 rounded-full overflow-hidden" aria-hidden="true">
+        <div className={`h-full rounded-full transition-all duration-500 ${barColor}`} style={{ width: `${left.pct}%` }} />
+      </div>
+      <p className="text-xs text-gray-500 mt-1">
+        Posted {posted} ago ·{" "}
+        <span className={left.urgent ? "text-red-600 font-medium" : ""}>
+          {left.label === "Expired" ? "Expired" : `${left.label} left`}
+        </span>
+      </p>
+    </div>
   );
 })()}
 
@@ -624,6 +639,7 @@ async function confirmDeleteComment() {
   url={p.url}
   image_url={p.image_url}
   onOpenImage={() => setImgOpen(true)}
+  locked={!me}
 />
 
 

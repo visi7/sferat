@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
 import { prepareImageFile } from "@/lib/imageUpload";
 import Toast from "@/components/Toast";
+import GlowBackground from "@/components/GlowBackground";
 import Shell from "@/components/shell";
 import LeftNav from "@/components/LeftNav";
 import RightAside from "@/components/RightAside";
@@ -25,6 +26,7 @@ type Post = {
   url?: string | null;
   image_url?: string | null;
   hot_score?: number | null;
+  expires_at?: string | null;
 };
 
 type Republic = { id: string; title: string; slug?: string };
@@ -231,7 +233,7 @@ useEffect(() => {
   .from("posts")
   .select(`
   id, title, body, section, created_at, author_id, republic_id, score,
-  image_url, post_type,
+  image_url, post_type, expires_at,
   profiles:profiles!posts_author_id_fkey ( id, username, avatar_url ),
   republics:republics!posts_republic_id_fkey ( id, title )
 `)
@@ -308,7 +310,7 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
               .from("posts")
               .select(`
                 id, title, body, section, created_at, author_id, republic_id, score, hot_score,
-                image_url, post_type,
+                image_url, post_type, expires_at,
                 profiles:profiles!posts_author_id_fkey ( id, username, avatar_url ),
                 republics:republics!posts_republic_id_fkey ( id, title )
               `)
@@ -448,7 +450,9 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
 }
 
   return (
-    <Shell left={<LeftNav />} right={<RightAside />}>
+    <>
+      <GlowBackground />
+      <Shell left={<LeftNav />} right={<RightAside />}>
       {/* Tabs */}
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <button
@@ -701,6 +705,7 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
   author_id={p.author_id}
   score={p.score ?? 0}
   created_at={p.created_at}
+  expires_at={p.expires_at ?? null}
   post_type={p.post_type ?? "text"}
   image_url={p.image_url ?? ""}
   url={p.url ?? ""}
@@ -715,6 +720,7 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
       <LoadMore onVisible={() => refreshCurrentTab(false)} loading={loadingMore} />
       <Toast message={composerError} onClose={() => setComposerError(null)} />
     </Shell>
+    </>
   );
 }
 

@@ -78,7 +78,7 @@ useEffect(() => {
   .from("posts")
   .select(`
   id, title, body, section, created_at, author_id, republic_id, score,
-  image_url, post_type,
+  image_url, post_type, expires_at,
   profiles:profiles!posts_author_id_fkey ( id, username, avatar_url )
 ` )
 

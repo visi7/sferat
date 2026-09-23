@@ -65,7 +65,7 @@ export default function SearchPage() {
           .limit(5),
         supa
           .from("posts")
-          .select("id,title,body,republic_id,author_id,score,created_at,post_type,url,image_url")
+          .select("id,title,body,republic_id,author_id,score,created_at,post_type,url,image_url,expires_at")
           .eq("status", "active")
           .or(`title.ilike.${like},body.ilike.${like}`)
           .order("created_at", { ascending: false })

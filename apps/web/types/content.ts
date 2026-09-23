@@ -23,6 +23,7 @@ export type PostCardProps = {
   author_id: string;
   score: number;
   created_at: string;
+  expires_at?: string | null;
   post_type?: "text" | "link" | "image" | "poll";
   url?: string | null;
   image_url?: string | null;

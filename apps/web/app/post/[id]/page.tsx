@@ -17,6 +17,7 @@ type Post = {
   post_type?: "text" | "link" | "image" | "poll";
   url?: string | null;
   image_url?: string | null;
+  expires_at?: string | null;
 };
 
 type Arena = {
@@ -56,7 +57,7 @@ export default function PostPage({
       const p = await supa
         .from("posts")
         .select(
-          "id,title,body,republic_id,author_id,score,created_at,status,post_type,url,image_url"
+          "id,title,body,republic_id,author_id,score,created_at,status,post_type,url,image_url,expires_at"
         )
         .eq("id", id)
         .single();

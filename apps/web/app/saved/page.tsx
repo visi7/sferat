@@ -21,6 +21,7 @@ type Row = {
     author_id: string;
     score: number | null;
     created_at: string;
+    expires_at?: string | null;
     profiles?: { id: string; username: string | null; avatar_url: string | null } | null;
     republics?: { id: string; title: string } | null;
   };
@@ -64,7 +65,7 @@ export default function SavedPage() {
   post_id, created_at,
   posts (
     id, title, body, post_type, image_url, url,
-    republic_id, author_id, score, created_at,
+    republic_id, author_id, score, created_at, expires_at,
     profiles:profiles!posts_author_id_fkey ( id, username, avatar_url ),
     republics:republics!posts_republic_id_fkey ( id, title )
   )
@@ -118,6 +119,7 @@ export default function SavedPage() {
   author_id={r.posts.author_id}
   score={r.posts.score ?? 0}
   created_at={r.posts.created_at}
+  expires_at={r.posts.expires_at ?? null}
   post_type={(r.posts.post_type ?? "text") as any}
   image_url={r.posts.image_url ?? null}
   url={r.posts.url ?? null}
