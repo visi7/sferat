@@ -270,7 +270,7 @@ Referencë vizioni: `docs/VISION.md`
 1. **URL-ja**: `sferat.com` (rrënja) është zënë nga feed-i kryesor — propozuar `/advertise` (ose `/sponsors`) si faqe e veçantë, jo zëvendësim i ballinës. Pa përgjigje ende nga pronari.
 2. **Statistikat**: s'ka ende përdorues realë — vendosja e shifrave të shpikura te një faqe shitjeje do të ishte reklamë mashtruese. Propozuar: fillo me mesazh cilësor ("Ende në rritje — bashkohu herët") në vend të numrave, ose prit shifra reale (leaderboard/analytics ekzistues japin bazën për t'i nxjerrë kur të ketë trafik).
 
-**Kur ta rimarrim:** kur pronari të japë sinjal të qartë "tani", ose kur të ketë përgjigje për 2 pikat më sipër.
+**Kur ta rimarrim:** kur platforma të ketë përdorues realë (pronari e konfirmoi shprehimisht — jo më herët, meqë numrat dhe vlera e ofertës varen nga kjo).
 
 ## 🔜 Shtyrë me qëllim — mos harro
 
