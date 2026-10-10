@@ -279,9 +279,11 @@ Referencë vizioni: `docs/VISION.md`
 
 **Vendimi:** s'e shohim urgjente ngritja në Pro (~$25/muaj, jep 7 ditë backup + PITR) përderisa platforma është ende në fazë testimi (kryesisht llogari test). **Rekomandohet fort para lançimit publik real**, kur të ketë të dhëna përdoruesish reale.
 
-**Ndërkohë:** backup manual falas nga kompjuteri i pronarit, herë pas here (`supabase db dump --db-url "..." -f backup.sql`) — pronari konfirmoi do bëjë njërin menjëherë.
+**✅ Backup-i i parë manual u krye (10 tetor 2026):** dy skedarë — strukturë (`supabase db dump`) + të dhëna reale (`supabase db dump --data-only --use-copy`), verifikuar me `Select-String` që përmbajnë vërtet rreshta `COPY` (jo bosh). Ruajtur në 2 vende cloud (email personal + OneDrive) + lokalisht. Procesi kërkoi disa rregullime rrugës (fjalëkalim me simbole të veçanta → ri-gjenerim; lidhja "Direct" dështoi për IPv6 → u kalua te "Session pooler"; `supabase db dump` pa `--data-only` nxjerr vetëm skemën, jo të dhënat — gjetje e dobishme për herën tjetër). **Shënim për herën tjetër:** fjalëkalimi i databazës u shfaq disa herë në ekran gjatë procesit — pronari duhet ta resetojë edhe një herë kur të ketë kohë (jo urgjente).
 
-**Kur ta rimarrim:** para se të fillojë marketing/lançim publik.
+**Ndërkohë:** backup manual falas nga kompjuteri i pronarit, herë pas here (dy komandat më sipër) — procesi tani është dëshmuar dhe i dokumentuar, kështu që herën tjetër duhet të jetë më i shpejtë.
+
+**Kur ta rimarrim (për Pro/PITR):** para se të fillojë marketing/lançim publik.
 
 ### Bug UX: Republika e para-zgjedhur automatikisht te kompozuesi i ballinës — U MBYLL
 **Problemi:** te `app/page.tsx`, dropdown-i i Republikës në kompozues zgjidhte vetë të parën alfabetikisht si parazgjedhje. Nëse një përdorues s'e vinte re/ndryshonte dropdown-in para se të postonte, postimi i tij shkonte aksidentalisht te Republika e gabuar.
