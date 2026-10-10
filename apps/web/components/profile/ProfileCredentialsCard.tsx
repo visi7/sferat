@@ -82,8 +82,11 @@ export default function ProfileCredentialsCard({ profile, isMe, onUpdate }: Prop
           {/* MODE EDITIMI — VETËM AUTORI */}
           <div className="space-y-3 text-sm">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">💼 Employment</label>
+              <label htmlFor="profile-employment" className="block text-xs text-gray-500 mb-1">💼 Employment</label>
               <input
+                id="profile-employment"
+                name="employment"
+                autoComplete="organization-title"
                 className="w-full border rounded-md px-3 py-2 text-sm"
                 placeholder="e.g. Software Engineer at Acme"
                 value={employment}
@@ -91,8 +94,11 @@ export default function ProfileCredentialsCard({ profile, isMe, onUpdate }: Prop
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">🎓 Education</label>
+              <label htmlFor="profile-education" className="block text-xs text-gray-500 mb-1">🎓 Education</label>
               <input
+                id="profile-education"
+                name="education"
+                autoComplete="off"
                 className="w-full border rounded-md px-3 py-2 text-sm"
                 placeholder="e.g. BSc Computer Science"
                 value={education}
@@ -100,8 +106,11 @@ export default function ProfileCredentialsCard({ profile, isMe, onUpdate }: Prop
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">📍 Location</label>
+              <label htmlFor="profile-location" className="block text-xs text-gray-500 mb-1">📍 Location</label>
               <input
+                id="profile-location"
+                name="location"
+                autoComplete="address-level2"
                 className="w-full border rounded-md px-3 py-2 text-sm"
                 placeholder="e.g. Tirana, Albania"
                 value={location}

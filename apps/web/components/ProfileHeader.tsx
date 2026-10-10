@@ -238,8 +238,11 @@ export default function ProfileHeader({
             <>
               <input
                 ref={fileRef}
+                id="profile-avatar-file"
+                name="avatar"
                 type="file"
                 accept="image/*"
+                aria-label="Change avatar"
                 className="hidden"
                 onChange={(e) => handleFileSelected(e.target.files?.[0] ?? null)}
               />
@@ -263,6 +266,10 @@ export default function ProfileHeader({
             <div className="flex items-center gap-2">
               <input
                 autoFocus
+                id="profile-display-name"
+                name="display_name"
+                aria-label="Display name"
+                autoComplete="name"
                 className="border rounded-md px-2 py-1 text-sm"
                 value={nameValue}
                 onChange={(e) => setNameValue(e.target.value)}
@@ -470,6 +477,9 @@ export default function ProfileHeader({
                 </p>
                 <textarea
                   autoFocus
+                  id="profile-report-reason"
+                  name="report_reason"
+                  aria-label="Reason for report"
                   className="w-full border rounded-md px-3 py-2 text-sm min-h-[90px]"
                   placeholder="Reason for report (harassment, spam, impersonation, etc.)"
                   value={reportReason}

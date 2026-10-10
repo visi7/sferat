@@ -560,8 +560,10 @@ export default function ModPanel() {
               follow until the suspension is lifted.
             </p>
 
-            <label className="block text-xs font-medium text-gray-600">Duration</label>
+            <label htmlFor="suspend-duration" className="block text-xs font-medium text-gray-600">Duration</label>
             <select
+              id="suspend-duration"
+              name="duration"
               className="w-full border rounded-md px-2 py-1.5 text-sm"
               value={suspendHours === null ? 'permanent' : String(suspendHours)}
               onChange={(e) =>
@@ -575,9 +577,11 @@ export default function ModPanel() {
               ))}
             </select>
 
-            <label className="block text-xs font-medium text-gray-600">Reason (required)</label>
+            <label htmlFor="suspend-reason" className="block text-xs font-medium text-gray-600">Reason (required)</label>
             <textarea
               autoFocus
+              id="suspend-reason"
+              name="reason"
               className="w-full border rounded-md px-3 py-2 text-sm min-h-[80px]"
               value={suspendReason}
               onChange={(e) => setSuspendReason(e.target.value)}

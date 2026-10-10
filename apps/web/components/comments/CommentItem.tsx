@@ -197,6 +197,9 @@ export default function CommentItem({
             Reason for report (spam, abuse, etc.)
           </div>
           <textarea
+            id={`comment-report-${c.id}`}
+            name={`comment-report-${c.id}`}
+            aria-label="Reason for report"
             className="w-full border rounded px-2 py-1 text-xs min-h-[60px]"
             value={reportText}
             onChange={(e) => setReportText(e.target.value)}

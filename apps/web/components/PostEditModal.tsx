@@ -62,16 +62,21 @@ export default function PostEditModal({ open, post, onClose, onSaved }: Props) {
           <button className="h-8 px-3 rounded border" onClick={onClose}>✕</button>
         </div>
 
-        <label className="block text-sm text-gray-600 mb-1">Text</label>
+        <label htmlFor="post-edit-body" className="block text-sm text-gray-600 mb-1">Text</label>
         <textarea
+          id="post-edit-body"
+          name="body"
           className="w-full border rounded px-3 py-2 min-h-[120px]"
           value={body}
           onChange={(e) => setBody(e.target.value)}
         />
 
         <div className="mt-3">
-          <label className="block text-sm text-gray-600 mb-1">Link (optional)</label>
+          <label htmlFor="post-edit-link" className="block text-sm text-gray-600 mb-1">Link (optional)</label>
           <input
+            id="post-edit-link"
+            name="link"
+            autoComplete="url"
             className="w-full border rounded px-3 py-2"
             placeholder="https://example.com"
             value={link}
@@ -80,8 +85,14 @@ export default function PostEditModal({ open, post, onClose, onSaved }: Props) {
         </div>
 
         <div className="mt-3">
-          <label className="block text-sm text-gray-600 mb-1">Replace image (optional)</label>
-          <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <label htmlFor="post-edit-image" className="block text-sm text-gray-600 mb-1">Replace image (optional)</label>
+          <input
+            id="post-edit-image"
+            name="image"
+            type="file"
+            accept="image/*"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          />
           {post.image_url && (
             <p className="text-xs text-gray-500 mt-1">Current image is kept unless you upload a new one.</p>
           )}

@@ -190,16 +190,20 @@ export default function ArenaManager() {
 
         <div className="flex gap-3">
           <div className="flex-1">
-            <label className="block text-xs text-gray-500 mb-1">Sponsor name</label>
+            <label htmlFor="arena-sponsor-name" className="block text-xs text-gray-500 mb-1">Sponsor name</label>
             <input
+              id="arena-sponsor-name"
+              name="sponsor_name"
               className="w-full border rounded-md px-3 py-2 text-sm"
               value={form.sponsor_name}
               onChange={(e) => setForm((f) => ({ ...f, sponsor_name: e.target.value }))}
             />
           </div>
           <div className="flex-1">
-            <label className="block text-xs text-gray-500 mb-1">Republic</label>
+            <label htmlFor="arena-republic" className="block text-xs text-gray-500 mb-1">Republic</label>
             <select
+              id="arena-republic"
+              name="republic_id"
               className="w-full border rounded-md px-3 py-2 text-sm"
               value={form.republic_id}
               onChange={(e) => setForm((f) => ({ ...f, republic_id: e.target.value }))}
@@ -213,8 +217,10 @@ export default function ArenaManager() {
         </div>
 
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Debate topic</label>
+          <label htmlFor="arena-title" className="block text-xs text-gray-500 mb-1">Debate topic</label>
           <input
+            id="arena-title"
+            name="title"
             className="w-full border rounded-md px-3 py-2 text-sm"
             placeholder="e.g. Should social media verify real identities?"
             value={form.title}
@@ -223,8 +229,10 @@ export default function ArenaManager() {
         </div>
 
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Context / rules (optional)</label>
+          <label htmlFor="arena-description" className="block text-xs text-gray-500 mb-1">Context / rules (optional)</label>
           <textarea
+            id="arena-description"
+            name="description"
             className="w-full border rounded-md px-3 py-2 text-sm min-h-[70px]"
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
@@ -232,8 +240,10 @@ export default function ArenaManager() {
         </div>
 
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Prize</label>
+          <label htmlFor="arena-prize" className="block text-xs text-gray-500 mb-1">Prize</label>
           <input
+            id="arena-prize"
+            name="prize_description"
             className="w-full border rounded-md px-3 py-2 text-sm"
             placeholder="e.g. $100 gift card"
             value={form.prize_description}
@@ -242,7 +252,7 @@ export default function ArenaManager() {
         </div>
 
         <div className="border rounded-md p-3 space-y-2">
-          <label className="block text-xs font-medium text-gray-600">Debate ends</label>
+          <label htmlFor="arena-ends-at" className="block text-xs font-medium text-gray-600">Debate ends</label>
           <div className="flex flex-wrap gap-1.5">
             {ARENA_DURATION_PRESETS.map((p) => (
               <button
@@ -256,6 +266,8 @@ export default function ArenaManager() {
             ))}
           </div>
           <input
+            id="arena-ends-at"
+            name="ends_at"
             type="date"
             className="border rounded-md px-3 py-2 text-sm"
             value={endsAtInput}

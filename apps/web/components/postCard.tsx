@@ -660,11 +660,13 @@ async function confirmDeleteComment() {
 />
 {reportingPost && !isMine && (
   <div className="mt-3 border rounded-lg p-3 bg-red-50/40">
-    <label className="block text-xs font-medium text-gray-700 mb-1">
+    <label htmlFor={`post-report-${p.id}`} className="block text-xs font-medium text-gray-700 mb-1">
       Reason for report (spam, abuse, etc.)
     </label>
 
     <textarea
+      id={`post-report-${p.id}`}
+      name={`post-report-${p.id}`}
       className="w-full border rounded-md px-2 py-1 text-sm min-h-[60px]"
       value={postReportText}
       onChange={(e) => setPostReportText(e.target.value)}

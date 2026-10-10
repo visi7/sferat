@@ -68,8 +68,10 @@ export default function ProfileTopicsCard({ profile, isMe, onUpdate }: Props) {
         </>
       ) : isMe ? (
         <>
-          <label className="block text-xs text-gray-500 mb-1">Topics (separate with commas)</label>
+          <label htmlFor="profile-topics" className="block text-xs text-gray-500 mb-1">Topics (separate with commas)</label>
           <textarea
+            id="profile-topics"
+            name="topics"
             className="w-full border rounded-md px-3 py-2 text-sm min-h-[70px]"
             placeholder="e.g. philosophy, economics, machine learning"
             value={value}
