@@ -277,6 +277,7 @@ Referencë vizioni: `docs/VISION.md`
   - S'kërkon migrim SQL — vetëm lexim nga tabelat ekzistuese.
 
 - **Pastrim DevTools: `id`/`name`/`autocomplete` te gjitha fushat e formularëve** — gjetur nga paneli "Issues" i browser-it gjatë testimit real. Shtuar `id`/`name` unike (për fusha që përsëriten shumë herë në faqe, si input-i i komentit, bazuar te ID e postimit/komentit) dhe `autoComplete` të saktë (`email`, `current-password`, `new-password`) te çdo fushë email/fjalëkalim: `/sign-in`, `/sign-up`, formulari inline i ballinës, `/forgot-password`, `/reset-password`, `/settings` (ndrysho email + ndrysho fjalëkalim), plus kutia e kërkimit (`/search`, `autoComplete="off"`, s'është fushë për autofill).
+  - **Vazhdim (10 tetor 2026) — panelet e moderimit**: i njëjti rregullim u shtri te `/mod/roles` (Username, Role, Scope, kërkimi i listës së roleve) dhe `/mod/agora` (Sponsor name, Title, Body, URL/file imazhi dhe videos, data e skadencës, Button label/link, 3 checkbox-et e checklist-it të pajtueshmërisë, kërkimi dhe renditja e listës së reklamave) — shtuar `id`/`name` te çdo fushë + `htmlFor` te etiketat përkatëse (ose `aria-label` kur s'ka etiketë të dukshme, si input-et `type="file"` ose kërkimi/renditja). Etiketa grupi e checklist-it të pajtueshmërisë u kthye nga `<label>` në `<span>`, pasi mbulonte 3 checkbox-e njëherësh dhe s'mund të lidhej saktë me `htmlFor` në një të vetëm.
   - S'kërkon migrim SQL — fikse vetëm client-side.
 
 ## 🔜 Shtyrë me qëllim — mos harro
