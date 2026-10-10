@@ -404,16 +404,20 @@ export default function ModAgoraPage() {
 
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="block text-xs text-gray-500 mb-1">Sponsor name</label>
+              <label htmlFor="agora-sponsor-name" className="block text-xs text-gray-500 mb-1">Sponsor name</label>
               <input
+                id="agora-sponsor-name"
+                name="sponsor_name"
                 className="w-full border rounded-md px-3 py-2 text-sm"
                 value={form.sponsor_name}
                 onChange={(e) => setForm((f) => ({ ...f, sponsor_name: e.target.value }))}
               />
             </div>
             <div className="flex-1">
-              <label className="block text-xs text-gray-500 mb-1">Title</label>
+              <label htmlFor="agora-title" className="block text-xs text-gray-500 mb-1">Title</label>
               <input
+                id="agora-title"
+                name="title"
                 className="w-full border rounded-md px-3 py-2 text-sm"
                 value={form.title}
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
@@ -422,8 +426,10 @@ export default function ModAgoraPage() {
           </div>
 
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Body</label>
+            <label htmlFor="agora-body" className="block text-xs text-gray-500 mb-1">Body</label>
             <textarea
+              id="agora-body"
+              name="body"
               className="w-full border rounded-md px-3 py-2 text-sm min-h-[80px]"
               value={form.body}
               onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
@@ -432,8 +438,10 @@ export default function ModAgoraPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="border rounded-md p-3 space-y-2">
-              <label className="block text-xs font-medium text-gray-600">Image</label>
+              <label htmlFor="agora-image-url" className="block text-xs font-medium text-gray-600">Image</label>
               <input
+                id="agora-image-url"
+                name="image_url"
                 className="w-full border rounded-md px-3 py-2 text-sm"
                 placeholder="Paste an image URL…"
                 value={form.image_url}
@@ -442,8 +450,11 @@ export default function ModAgoraPage() {
               />
               <div className="text-xs text-gray-400 text-center">— or —</div>
               <input
+                id="agora-image-file"
+                name="image_file"
                 type="file"
                 accept="image/*"
+                aria-label="Upload image file"
                 onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
                 className="w-full text-xs"
               />
@@ -459,8 +470,10 @@ export default function ModAgoraPage() {
             </div>
 
             <div className="border rounded-md p-3 space-y-2">
-              <label className="block text-xs font-medium text-gray-600">Video</label>
+              <label htmlFor="agora-video-url" className="block text-xs font-medium text-gray-600">Video</label>
               <input
+                id="agora-video-url"
+                name="video_url"
                 className="w-full border rounded-md px-3 py-2 text-sm"
                 placeholder="Paste a YouTube/Vimeo/.mp4 URL…"
                 value={form.video_url}
@@ -469,8 +482,11 @@ export default function ModAgoraPage() {
               />
               <div className="text-xs text-gray-400 text-center">— or —</div>
               <input
+                id="agora-video-file"
+                name="video_file"
                 type="file"
                 accept="video/*"
+                aria-label="Upload video file"
                 onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)}
                 className="w-full text-xs"
               />
@@ -506,7 +522,10 @@ export default function ModAgoraPage() {
               ))}
             </div>
             <input
+              id="agora-expires-at"
+              name="expires_at"
               type="date"
+              aria-label="Runs until"
               className="border rounded-md px-3 py-2 text-sm"
               value={expiresAtInput}
               onChange={(e) => setExpiresAtInput(e.target.value)}
@@ -520,8 +539,10 @@ export default function ModAgoraPage() {
 
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="block text-xs text-gray-500 mb-1">Button label (optional)</label>
+              <label htmlFor="agora-cta-label" className="block text-xs text-gray-500 mb-1">Button label (optional)</label>
               <input
+                id="agora-cta-label"
+                name="cta_label"
                 className="w-full border rounded-md px-3 py-2 text-sm"
                 placeholder="e.g. Learn more"
                 value={form.cta_label}
@@ -529,8 +550,10 @@ export default function ModAgoraPage() {
               />
             </div>
             <div className="flex-1">
-              <label className="block text-xs text-gray-500 mb-1">Button link (optional)</label>
+              <label htmlFor="agora-cta-url" className="block text-xs text-gray-500 mb-1">Button link (optional)</label>
               <input
+                id="agora-cta-url"
+                name="cta_url"
                 className="w-full border rounded-md px-3 py-2 text-sm"
                 placeholder="https://…"
                 value={form.cta_url}
@@ -540,11 +563,13 @@ export default function ModAgoraPage() {
           </div>
 
           <div className="border rounded-md p-3 space-y-2 bg-amber-50/50 border-amber-200">
-            <label className="block text-xs font-medium text-gray-700">
+            <span className="block text-xs font-medium text-gray-700">
               Compliance checklist — required before this ad goes live
-            </label>
+            </span>
             <label className="flex items-start gap-2 text-xs text-gray-700">
               <input
+                id="agora-compliance-rights"
+                name="compliance_rights"
                 type="checkbox"
                 className="mt-0.5"
                 checked={compliance.rights}
@@ -554,6 +579,8 @@ export default function ModAgoraPage() {
             </label>
             <label className="flex items-start gap-2 text-xs text-gray-700">
               <input
+                id="agora-compliance-claims"
+                name="compliance_claims"
                 type="checkbox"
                 className="mt-0.5"
                 checked={compliance.claims}
@@ -563,6 +590,8 @@ export default function ModAgoraPage() {
             </label>
             <label className="flex items-start gap-2 text-xs text-gray-700">
               <input
+                id="agora-compliance-category"
+                name="compliance_category"
                 type="checkbox"
                 className="mt-0.5"
                 checked={compliance.category}
@@ -650,13 +679,20 @@ export default function ModAgoraPage() {
           <h2 className="text-sm font-semibold">All sponsored posts</h2>
           <div className="flex flex-wrap items-center gap-2">
             <input
+              id="agora-search"
+              name="search"
               type="text"
+              aria-label="Search sponsor or title"
               placeholder="Search sponsor or title…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              autoComplete="off"
               className="border rounded-md px-2 py-1 text-xs w-48"
             />
             <select
+              id="agora-sort"
+              name="sort"
+              aria-label="Sort"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as "newest" | "expiring")}
               className="border rounded-md px-2 py-1 text-xs"
