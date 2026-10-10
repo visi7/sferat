@@ -106,6 +106,7 @@ export default function SearchPage() {
         <input
           id="search-query"
           name="q"
+          autoComplete="off"
           autoFocus
           className="w-full border rounded-xl px-4 py-3 text-sm"
           placeholder="Search posts, Republics, or users…"

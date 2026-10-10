@@ -63,7 +63,10 @@ export default function ForgotPasswordPage() {
             Enter your email and we'll send you a link to reset your password.
           </p>
           <input
+            id="forgot-email"
+            name="email"
             type="email"
+            autoComplete="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}

@@ -547,6 +547,7 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
         id="sign-in-email"
         name="email"
         type="email"
+        autoComplete="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="Email"
@@ -560,6 +561,7 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
         id="sign-in-password"
         name="password"
         type={showPw ? "text" : "password"}
+        autoComplete="current-password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         placeholder="Password"

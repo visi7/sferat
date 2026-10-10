@@ -77,7 +77,10 @@ export default function ResetPasswordPage() {
       <h1 className="text-xl font-semibold mb-4">Set a new password</h1>
       <form onSubmit={submit} className="flex flex-col gap-3">
         <input
+          id="reset-password-new"
+          name="new-password"
           type="password"
+          autoComplete="new-password"
           placeholder="New password"
           value={pw}
           onChange={(e) => setPw(e.target.value)}
@@ -85,7 +88,10 @@ export default function ResetPasswordPage() {
           required
         />
         <input
+          id="reset-password-confirm"
+          name="confirm-password"
           type="password"
+          autoComplete="new-password"
           placeholder="Confirm new password"
           value={pw2}
           onChange={(e) => setPw2(e.target.value)}

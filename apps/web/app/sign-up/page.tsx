@@ -120,7 +120,10 @@ export default function SignUpPage() {
             <div className="relative">
               <MailIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/35" />
               <input
+                id="sign-up-email"
+                name="email"
                 type="email"
+                autoComplete="email"
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -133,7 +136,10 @@ export default function SignUpPage() {
               <div className="relative">
                 <LockIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/35" />
                 <input
+                  id="sign-up-password"
+                  name="password"
                   type={showPw ? "text" : "password"}
+                  autoComplete="new-password"
                   placeholder="Password"
                   value={pw}
                   onChange={(e) => setPw(e.target.value)}

@@ -84,7 +84,10 @@ export default function EmailSignIn() {
             <div className="relative">
               <MailIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/35" />
               <input
+                id="sign-in-email"
+                name="email"
                 type="email"
+                autoComplete="email"
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -96,7 +99,10 @@ export default function EmailSignIn() {
             <div className="relative">
               <LockIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/35" />
               <input
+                id="sign-in-password"
+                name="password"
                 type={showPw ? "text" : "password"}
+                autoComplete="current-password"
                 placeholder="Password"
                 value={pw}
                 onChange={(e) => setPw(e.target.value)}

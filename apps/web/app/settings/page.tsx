@@ -288,7 +288,10 @@ export default function SettingsPage() {
         <h2 className="text-sm font-semibold">Change email</h2>
         <form onSubmit={changeEmail} className="space-y-3">
           <input
+            id="settings-new-email"
+            name="new-email"
             type="email"
+            autoComplete="email"
             placeholder="New email address"
             value={newEmail}
             onChange={(e) => setNewEmail(e.target.value)}
@@ -311,7 +314,10 @@ export default function SettingsPage() {
         <h2 className="text-sm font-semibold">Change password</h2>
         <form onSubmit={changePassword} className="space-y-3">
           <input
+            id="settings-new-password"
+            name="new-password"
             type="password"
+            autoComplete="new-password"
             placeholder="New password"
             value={pw}
             onChange={(e) => setPw(e.target.value)}
@@ -319,7 +325,10 @@ export default function SettingsPage() {
             required
           />
           <input
+            id="settings-confirm-password"
+            name="confirm-password"
             type="password"
+            autoComplete="new-password"
             placeholder="Confirm new password"
             value={pw2}
             onChange={(e) => setPw2(e.target.value)}
