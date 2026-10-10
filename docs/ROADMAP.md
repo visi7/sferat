@@ -276,6 +276,9 @@ Referencë vizioni: `docs/VISION.md`
 - **"Hall of Fame" (`/agora/winners`) — i ri**: faqe publike arkiv i debateve të fituara (Debate Arenas me `status='awarded'`), me argumentin fitues, autorin, sponsorin dhe çmimin — material i ndashëm jashtë platformës. Lidhur nga `/agora` me **buton të stilizuar** (jo link i thjeshtë tekst, me kërkesë eksplicite — "jo shabllon që t'i trembi përdoruesit").
   - S'kërkon migrim SQL — vetëm lexim nga tabelat ekzistuese.
 
+- **Pastrim DevTools: `id`/`name`/`autocomplete` te gjitha fushat e formularëve** — gjetur nga paneli "Issues" i browser-it gjatë testimit real. Shtuar `id`/`name` unike (për fusha që përsëriten shumë herë në faqe, si input-i i komentit, bazuar te ID e postimit/komentit) dhe `autoComplete` të saktë (`email`, `current-password`, `new-password`) te çdo fushë email/fjalëkalim: `/sign-in`, `/sign-up`, formulari inline i ballinës, `/forgot-password`, `/reset-password`, `/settings` (ndrysho email + ndrysho fjalëkalim), plus kutia e kërkimit (`/search`, `autoComplete="off"`, s'është fushë për autofill).
+  - S'kërkon migrim SQL — fikse vetëm client-side.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Backup i databazës — kontrolluar, s'ka mbrojtje automatike sot
