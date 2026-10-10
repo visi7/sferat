@@ -79,7 +79,15 @@ export default function AgoraPage() {
 
         {!loading && arenas.length > 0 && (
           <div className="space-y-2">
-            <h2 className="text-sm font-semibold text-gray-600">🏆 Debate Arenas</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-gray-600">🏆 Debate Arenas</h2>
+              <a
+                href="/agora/winners"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition-colors shadow-sm"
+              >
+                🏆 Hall of Fame
+              </a>
+            </div>
             {arenas.map((arena) => {
               const d = daysUntil(arena.ends_at);
               return (
