@@ -292,8 +292,10 @@ export default function ModRolesPage() {
         )}
 
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Username</label>
+          <label htmlFor="role-username" className="block text-xs text-gray-500 mb-1">Username</label>
           <input
+            id="role-username"
+            name="username"
             className="w-full border rounded-md px-3 py-2 text-sm"
             placeholder="e.g. test"
             value={username}
@@ -303,9 +305,11 @@ export default function ModRolesPage() {
 
         <div className="flex gap-3">
           <div className="flex-1">
-            <label className="block text-xs text-gray-500 mb-1">Role</label>
+            <label htmlFor="role-role" className="block text-xs text-gray-500 mb-1">Role</label>
             {isGlobalAdmin ? (
               <select
+                id="role-role"
+                name="role"
                 className="w-full border rounded-md px-3 py-2 text-sm"
                 value={role}
                 onChange={(e) => setRole(e.target.value as RoleName)}
@@ -319,6 +323,8 @@ export default function ModRolesPage() {
               </select>
             ) : isDirector ? (
               <select
+                id="role-role"
+                name="role"
                 className="w-full border rounded-md px-3 py-2 text-sm"
                 value={role}
                 onChange={(e) => setRole(e.target.value as RoleName)}
@@ -334,13 +340,15 @@ export default function ModRolesPage() {
             )}
           </div>
           <div className="flex-1">
-            <label className="block text-xs text-gray-500 mb-1">Scope</label>
+            <label htmlFor="role-scope" className="block text-xs text-gray-500 mb-1">Scope</label>
             {isGlobalAdmin && (role === "marketing" || role === "director") ? (
               <div className="w-full border rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-600">
                 Global (no Republic)
               </div>
             ) : isGlobalAdmin || isDirector || !managerScope?.republicId ? (
               <select
+                id="role-scope"
+                name="scope"
                 className="w-full border rounded-md px-3 py-2 text-sm"
                 value={republicId}
                 onChange={(e) => setRepublicId(e.target.value)}
@@ -375,7 +383,10 @@ export default function ModRolesPage() {
           <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
             <h2 className="text-sm font-semibold">Current roles</h2>
             <input
+              id="role-search"
+              name="search"
               type="text"
+              aria-label="Search username or role"
               placeholder="Search username or role…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
