@@ -272,6 +272,10 @@ Referencë vizioni: `docs/VISION.md`
 
 **Kur ta rimarrim:** kur platforma të ketë përdorues realë (pronari e konfirmoi shprehimisht — jo më herët, meqë numrat dhe vlera e ofertës varen nga kjo).
 
+- **Bug real: "For You"/leaderboard thyeshin në produksion** — migrimi `20260804040000_convince_leaderboard.sql` (funksioni `top_convincers`) rezultoi kurrë s'ishte ekzekutuar në databazën reale (404/`PGRST202` në konsolë). Ri-dhënë dhe ekzekutuar — u zgjidh.
+- **"Hall of Fame" (`/agora/winners`) — i ri**: faqe publike arkiv i debateve të fituara (Debate Arenas me `status='awarded'`), me argumentin fitues, autorin, sponsorin dhe çmimin — material i ndashëm jashtë platformës. Lidhur nga `/agora` me **buton të stilizuar** (jo link i thjeshtë tekst, me kërkesë eksplicite — "jo shabllon që t'i trembi përdoruesit").
+  - S'kërkon migrim SQL — vetëm lexim nga tabelat ekzistuese.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Backup i databazës — kontrolluar, s'ka mbrojtje automatike sot
