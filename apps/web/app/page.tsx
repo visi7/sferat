@@ -544,6 +544,8 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
     <div className="relative">
       <MailIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
       <input
+        id="sign-in-email"
+        name="email"
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
@@ -555,6 +557,8 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
     <div className="relative">
       <LockIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
       <input
+        id="sign-in-password"
+        name="password"
         type={showPw ? "text" : "password"}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
@@ -607,6 +611,8 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
       {/* Republika */}
       <div className="flex items-center gap-2">
         <select
+          id="composer-republic"
+          name="republic"
           className="border rounded-md px-3 py-2 text-sm min-w-[220px]"
           value={repId}
           onChange={(e) => setRepId(e.target.value)}
@@ -620,6 +626,8 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
       {/* KUTIA E TEKSTIT – titulli u hoq */}
       <div className="border rounded-xl">
         <textarea
+          id="composer-body"
+          name="body"
           className="w-full min-h-[120px] resize-y p-3 text-sm rounded-t-xl focus:outline-none"
           placeholder="Say something…"
           value={body}
@@ -633,6 +641,8 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
               {/* Add image */}
               <label className="inline-flex items-center gap-1 px-2 py-1 text-xs border rounded cursor-pointer bg-white hover:bg-gray-100">
                 <input
+                  id="composer-image"
+                  name="image"
                   type="file"
                   accept="image/*"
                   className="hidden"
@@ -655,6 +665,8 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
 
               {/* Post duration */}
               <select
+                id="composer-duration"
+                name="duration"
                 className="px-2 py-1 text-xs border rounded bg-white"
                 value={duration}
                 onChange={(e) => setDuration(Number(e.target.value) as 1 | 3 | 7)}

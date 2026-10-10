@@ -104,6 +104,8 @@ export default function SearchPage() {
     <Shell left={<LeftNav />} right={<RightAside />}>
       <div className="mb-4">
         <input
+          id="search-query"
+          name="q"
           autoFocus
           className="w-full border rounded-xl px-4 py-3 text-sm"
           placeholder="Search posts, Republics, or users…"

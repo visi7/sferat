@@ -718,6 +718,8 @@ async function confirmDeleteComment() {
           {/* input i përgjithshëm */}
           <div className="mb-3">
             <input
+              id={`comment-input-${p.id}`}
+              name={`comment-input-${p.id}`}
               className="border rounded-md w-full h-9 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 disabled:bg-gray-50 disabled:text-gray-400"
               placeholder={commentCooldown > 0 ? `Wait ${commentCooldown}s…` : "Write a comment… (Enter)"}
               disabled={commentCooldown > 0}

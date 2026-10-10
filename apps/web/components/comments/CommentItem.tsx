@@ -113,6 +113,8 @@ export default function CommentItem({
       {editing ? (
         <div className="mt-1 space-x-2">
           <input
+            id={`edit-comment-${c.id}`}
+            name={`edit-comment-${c.id}`}
             className="border rounded h-8 px-2 text-sm w-full max-w-[520px]"
             value={val}
             onChange={(e) => setVal(e.target.value)}
