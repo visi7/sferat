@@ -338,9 +338,9 @@ Referencë vizioni: `docs/VISION.md`
 **Kur ta rimarrim:** kur të kesh vendosur si duhet ta peshosh kohën krahasuar me kontributin real (që të mos favorizohet dikush që thjesht lë tab-in hapur).
 
 ### Share i Republic Card në rrjete sociale
-**Ideja:** buton "Share" te `RepublicCard` që lejon ndarjen e kartës jashtë platformës. Dy shkallë:
-1. **Share i thjeshtë** (Web Share API — hap menynë native të pajisjes, ndan linkun e profilit `/profile/username`; në desktop bie mbrapa te "kopjo linkun"). ~30 min punë, mbulon shumicën e rasteve pasi karta shfaqet e gjallë kur hapet linku.
-2. **Share si imazh** (si "Spotify Wrapped") — gjeneron një PNG real të kartës për t'u shkarkuar/ndarë direkt si imazh (më mbresëlënëse për Instagram/X, por kërkon më shumë punë — ~2-3 orë, ose librari client-side "screenshot", ose route i posaçëm server-side për gjenerim imazhi).
+**Shkalla 1 (Web Share API) — U MBYLL (11 tetor 2026):** buton i ri ikonë te cepi lart-djathtas i `RepublicCard.tsx`, pranë emoji-t të nivelit, i ndarë nga "flip"-i i kartës (`stopPropagation`). Hap menynë native të pajisjes për ndarje (Web Share API) kur është e mundur, ose kopjon linkun e profilit (`/profile/username`) në clipboard si rezervë (njësoj si "Share profile" te `ProfileHeader.tsx`) — feedback vizual "Link copied" për 1.5s. S'kërkon migrim SQL.
+
+**Shkalla 2 (ende e pazbatuar):** **Share si imazh** (si "Spotify Wrapped") — gjeneron një PNG real të kartës për t'u shkarkuar/ndarë direkt si imazh (më mbresëlënëse për Instagram/X, por kërkon më shumë punë — ~2-3 orë, ose librari client-side "screenshot", ose route i posaçëm server-side për gjenerim imazhi).
 
 ### Promovim automatik në "Assistant" sipas pikëve (vazhdim i hierarkisë së roleve)
 **Status:** Hierarkia e 4 niveleve (assistant/moderator/manager/admin) tashmë ekziston, por sot **të gjitha rolet caktohen manualisht** nga admini te `/mod/roles`. Ideja e mbetur: kur pikët e dikujt **brenda një Republike specifike** kalojnë një prag, të bëhet automatikisht "Assistant" i asaj Republike (vetëm-shqyrtues), me buton/panel që i shfaqet vetë.
