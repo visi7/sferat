@@ -30,8 +30,59 @@ function memberNumber(id: string) {
   return `${clean.slice(0, 4)}-${clean.slice(4, 8)}`;
 }
 
+function ShareIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M12 3v12" />
+      <path d="M8 7l4-4 4 4" />
+      <path d="M4 14v4a2 2 0 002 2h12a2 2 0 002-2v-4" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M20 6L9 17l-5-5" />
+    </svg>
+  );
+}
+
 export default function RepublicCard({ profile, stats }: Props) {
   const [flipped, setFlipped] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  async function handleShare(e: React.MouseEvent) {
+    e.stopPropagation();
+    const url = `${window.location.origin}/profile/${profile.username}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `@${profile.username} on SFERAT`, url });
+      } catch {
+        // anuluar nga vetë përdoruesi — s'ka nevojë për mesazh gabimi
+      }
+    } else {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
+  }
 
   const points = useMemo(
     () => stats.karma + stats.postsCount * 5 + stats.commentsCount * 2,
@@ -66,7 +117,18 @@ export default function RepublicCard({ profile, stats }: Props) {
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold tracking-wide opacity-90">SFERAT · REPUBLIC CARD</span>
-              <span className="text-lg">{level.emoji}</span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="w-6 h-6 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+                  aria-label={copied ? "Link copied" : "Share Republic Card"}
+                  title={copied ? "Link copied!" : "Share"}
+                >
+                  {copied ? <CheckIcon className="w-3.5 h-3.5" /> : <ShareIcon className="w-3.5 h-3.5" />}
+                </button>
+                <span className="text-lg">{level.emoji}</span>
+              </div>
             </div>
 
             <div className="flex items-center gap-3">
