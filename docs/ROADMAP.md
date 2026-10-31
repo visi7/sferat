@@ -383,7 +383,7 @@ Referencë vizioni: `docs/VISION.md`
 **Pse ishte i padëmshëm, por i rrezikshëm si trashëgimi:** Postgres i ekzekuton trigger-at e të njëjtit event sipas renditjes alfabetike të emrit (`trg_votes_recalc` para `votes_after_upsert`) — për vota mbi postime të të tjerëve, RLS e bllokonte në heshtje shkrimin e trigger-it të vjetër (score-i i saktë i trigger-it të parë mbetej); për vota mbi postimin e vet, `sum(value)` jepte numerikisht të njëjtën vlerë si `upvotes-downvotes`, mbishkrim i kotë. **Rreziku:** nëse dikush në të ardhmen do të kishte fshirë/ndryshuar trigger-in e saktë pa ditur për të vjetrin, ky i fundit do të "zgjohej" dhe do të shkruante `score` të gabuar (pa `wilson`/`hot_score`).
 
 **Zgjidhja:** hequr fare `votes_after_upsert` (trigger) dhe funksionet mbështetëse `after_vote_upsert()`/`recompute_post_score(uuid)` — verifikuar paraprakisht se asnjë vend tjetër (migrime, kod app-i) s'i referon.
-- **Kërkon migrim SQL manual** (`20261011000000_drop_redundant_votes_trigger.sql`) — dhënë në chat.
+- **Migrimi SQL u ekzekutua në prodhim** (`20261011000000_drop_redundant_votes_trigger.sql`) — testuar: votat dhe leaderboard-i vazhdojnë të funksionojnë normalisht.
 
 ### Email javor përmbledhës (digest) — PROPOZUAR, REFUZUAR (11 tetor 2026)
 **Propozimi im:** email javor (përmes Resend, tashmë i konfiguruar) me "Top 3 postime", argumentin fitues të fundit të arenës së debatit, ndjekës të rinj — si levë e lirë për të rikthyer përdorues pasivë.
