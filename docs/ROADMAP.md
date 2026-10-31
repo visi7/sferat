@@ -74,6 +74,20 @@ Referencë vizioni: `docs/VISION.md`
 
 **Testim i kryer:** `npm run build` lokal — i pastër, 21 rrugët kompiluar (vetëm një paralajmërim beninj nga integrimi Sentry+Edge Runtime, jo gabim); `next start` lokal — `/`, `/privacy`, `/sign-in` përgjigjen me `200`.
 
+### Auditim i dytë i sigurisë (npm audit) — U MBYLL (11 tetor 2026)
+**Problemi:** `npm install` zbuloi **16 dobësi të reja** (2 critical, 7 high, 7 moderate) — CVE të zbuluara që prej auditimit të parë (koha kishte kaluar). 3 ishin varësi direkte: `next`, `@sentry/nextjs`, `zod`; pjesa tjetër (13) ishin transitive, kryesisht mjete build-i.
+
+**Analizë para ndryshimit (çfarë na prekte realisht):**
+- `next` (critical — disa RCE/SSRF/cache-poisoning): platforma **s'përdor `next/image`** fare (vetëm `<img>` i thjeshtë kudo), kështu që RCE-të specifike te "Image Optimization API" s'na preknin drejtpërdrejt; pjesa tjetër (cache poisoning SSG/ISR, DoS te Server Actions) ishte më e përgjithshme. Ngritur `16.2.12 → 16.4.3` (brenda intervalit ekzistues `^16.2.12`, pa ndryshim API-sh të prekshëm).
+- `@sentry/nextjs` (critical — "Middleware Bypass via Tunnel route"): kontrolluar `next.config.ts` — s'kemi aktivizuar fare `tunnelRoute`, kështu që pjesa e cenueshme s'ekzekutohej në kodin tonë. Ngritur `10.69.0 → 10.78.0` gjithsesi (brenda `^10.69.0`).
+- `zod` (high — konsumim memorjeje): **s'përdoret askund në kod** (0 importe) — rrezik real zero, ngritur `4.1.13 → 4.6.7` gjithsesi.
+- `sharp`: override-i ekzistues (`^0.35.3`) linte akoma versione të cenueshme (`<0.35.5`) — ngritur në `^0.35.5`.
+- `glob`/`minimatch` (5 moderate të mbetura pas `npm audit fix`): zinxhir i thellë brenda `@sentry/bundler-plugins` (mjet build-i për "source maps", ekzekutohet vetëm gjatë `npm run build`, jo kundrejt kërkesave reale të përdoruesve) — mbyllur me overrides të reja (`glob ^14.0.2`, `minimatch ^11.0.1`), i njëjti model si `postcss`/`sharp`/`ws`.
+
+`npm audit` tani raporton përsëri **0 dobësi**. **Testim i kryer:** `npm run build` lokal — i pastër, 26 rrugët; `next start` lokal — `/`, `/privacy`, `/sign-in`, `/agora`, `/terms` përgjigjen të gjitha me `200`.
+
+**Shënim i vogël, jo urgjent:** build-i tregon një paralajmërim të ri deprekimi — `withSentryConfig` nga `@sentry/nextjs` do të ndryshojë import-in te v11 (`@sentry/nextjs/config`). Thjesht paralajmërim, s'thyen asgjë sot; mund të rregullohet në një rast tjetër pastrimi.
+
 - **SMTP i vërtetë për prodhim — u konfigurua (Resend)**: Supabase u lidh me Resend si "custom SMTP" (Host `smtp.resend.com`, Port `465`, Username `resend`, Password = API key i Resend), duke zëvendësuar shërbimin parazgjedhje të Supabase-it (limite shumë të ulëta dërgimi, jo i përshtatshëm për prodhim real).
   - **Gabim i gjetur dhe rregulluar:** testimi i parë dështoi me `"Error sending confirmation email"`; Supabase Auth Logs tregoi saktësisht `535 "Invalid username"` — fusha **Username** te SMTP settings s'ishte vendosur saktë si `resend` (fjalë literale, jo email). Pas korrigjimit, email-et u dërguan me sukses.
   - Llogaria e testimit (`sferatapp@gmail.com`) është e regjistruar te vetë Resend/Sentry — jo domosdoshmërisht llogari SFERAT ende.
