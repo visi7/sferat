@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { toPng } from "html-to-image";
 
 type Props = {
   profile: {
@@ -64,9 +65,46 @@ function CheckIcon({ className }: { className?: string }) {
   );
 }
 
+function ImageIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <path d="M21 15l-5-5L5 21" />
+    </svg>
+  );
+}
+
+function SpinnerIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <circle
+        cx="12"
+        cy="12"
+        r="9"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeOpacity={0.25}
+      />
+      <path d="M21 12a9 9 0 00-9-9" stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export default function RepublicCard({ profile, stats }: Props) {
   const [flipped, setFlipped] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [imageSaved, setImageSaved] = useState(false);
+  const frontRef = useRef<HTMLDivElement>(null);
 
   async function handleShare(e: React.MouseEvent) {
     e.stopPropagation();
@@ -81,6 +119,53 @@ export default function RepublicCard({ profile, stats }: Props) {
       await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
+    }
+  }
+
+  async function handleShareImage(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!frontRef.current || exporting) return;
+
+    setExporting(true);
+    const wasFlipped = flipped;
+    if (wasFlipped) {
+      // karta duhet të shfaqë faqen e përparme (jo "Points breakdown") për imazhin e eksportuar —
+      // presim të mbarojë animacioni i "flip"-it (500ms, i njëjtë me transition-duration) para kapjes.
+      setFlipped(false);
+      await new Promise((resolve) => setTimeout(resolve, 550));
+    }
+
+    try {
+      const dataUrl = await toPng(frontRef.current, {
+        pixelRatio: 3,
+        cacheBust: true,
+        filter: (node) => !(node instanceof HTMLElement && node.dataset.exportIgnore === "true"),
+      });
+      const fileName = `sferat-republic-card-${profile.username}.png`;
+
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], fileName, { type: "image/png" });
+
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `@${profile.username}'s Republic Card`,
+          text: "Check out my Republic Card on SFERAT",
+        });
+      } else {
+        const link = document.createElement("a");
+        link.href = dataUrl;
+        link.download = fileName;
+        link.click();
+      }
+
+      setImageSaved(true);
+      setTimeout(() => setImageSaved(false), 1500);
+    } catch {
+      // anuluar nga vetë përdoruesi (share sheet), ose dështim gjenerimi — s'është kritike për alarm
+    } finally {
+      if (wasFlipped) setFlipped(true);
+      setExporting(false);
     }
   }
 
@@ -102,9 +187,17 @@ export default function RepublicCard({ profile, stats }: Props) {
 
   return (
     <div className="[perspective:1000px]">
-      <button
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setFlipped((f) => !f)}
-        className="w-full text-left"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setFlipped((f) => !f);
+          }
+        }}
+        className="w-full text-left cursor-pointer"
         aria-label="Flip Republic Card"
       >
         <div
@@ -113,6 +206,7 @@ export default function RepublicCard({ profile, stats }: Props) {
         >
           {/* Front */}
           <div
+            ref={frontRef}
             className={`absolute inset-0 rounded-2xl p-4 text-white bg-gradient-to-br ${level.gradient} shadow-lg flex flex-col justify-between [backface-visibility:hidden]`}
           >
             <div className="flex items-center justify-between">
@@ -120,10 +214,28 @@ export default function RepublicCard({ profile, stats }: Props) {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
+                  data-export-ignore="true"
+                  onClick={handleShareImage}
+                  disabled={exporting}
+                  className="w-6 h-6 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors disabled:opacity-50"
+                  aria-label={imageSaved ? "Image saved" : "Share as image"}
+                  title={imageSaved ? "Saved!" : exporting ? "Generating…" : "Share as image"}
+                >
+                  {imageSaved ? (
+                    <CheckIcon className="w-3.5 h-3.5" />
+                  ) : exporting ? (
+                    <SpinnerIcon className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <ImageIcon className="w-3.5 h-3.5" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  data-export-ignore="true"
                   onClick={handleShare}
                   className="w-6 h-6 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
-                  aria-label={copied ? "Link copied" : "Share Republic Card"}
-                  title={copied ? "Link copied!" : "Share"}
+                  aria-label={copied ? "Link copied" : "Share Republic Card link"}
+                  title={copied ? "Link copied!" : "Share link"}
                 >
                   {copied ? <CheckIcon className="w-3.5 h-3.5" /> : <ShareIcon className="w-3.5 h-3.5" />}
                 </button>
@@ -198,7 +310,7 @@ export default function RepublicCard({ profile, stats }: Props) {
             </div>
           </div>
         </div>
-      </button>
+      </div>
     </div>
   );
 }
