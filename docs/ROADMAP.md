@@ -382,6 +382,11 @@ Referencë vizioni: `docs/VISION.md`
 
 **Kur ta rimarrim:** si pastrim i qetë, i veçantë, kur të mos jetë nën presion kohe (kërkon verifikim me kujdes të radhës së ekzekutimit të trigger-ave para se të hiqet ndonjëri).
 
+### Email javor përmbledhës (digest) — PROPOZUAR, REFUZUAR (11 tetor 2026)
+**Propozimi im:** email javor (përmes Resend, tashmë i konfiguruar) me "Top 3 postime", argumentin fitues të fundit të arenës së debatit, ndjekës të rinj — si levë e lirë për të rikthyer përdorues pasivë.
+
+**Vendimi i pronarit:** jo — duket si diçka bezdisshme për përdoruesit. **Mos e ripropozo** në të ardhmen pa kërkesë eksplicite.
+
 ## 📋 P1 — mbetur
 
 _(asgjë e mbetur nga P1 aktuale — të gjitha pikat u mbyllën)_
