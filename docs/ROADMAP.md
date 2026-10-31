@@ -377,10 +377,13 @@ Referencë vizioni: `docs/VISION.md`
 
 **Kur ta rimarrim:** kur platforma të jetë gati teknikisht për përdorues të vërtetë (bug-e kryesore të mbyllura, UX e qëndrueshme) dhe të fillojmë të mendojmë për lançimin. Do ta sjell vetë këtë temë sërish kur të arrijmë atë pikë — nuk duhet ta kesh në mendje ndërkohë.
 
-### Trigger i dyfishtë mbi `votes` (pastrim delikat, jo urgjent)
-**Status:** ekzistojnë DY trigger-a mbi `votes` (INSERT/UPDATE/DELETE) që bëjnë pjesërisht të njëjtën punë: `trg_votes_recalc` (i saktë, `SECURITY DEFINER`, e rregulluam këtë sesion) dhe një i dytë më i vjetër, `votes_after_upsert` → `recompute_post_score()`, që **nuk** është `SECURITY DEFINER`. Sot është i padëmshëm (dështon në heshtje për vota mbi postime të të tjerëve, por trigger-i tjetër tashmë e ka bërë punën saktë para tij) — por është rrezik i fshehur nëse dikush në të ardhmen fshin/prek trigger-in e parë pa e ditur për të dytin.
+### Trigger i dyfishtë mbi `votes` — U MBYLL (11 tetor 2026)
+**Problemi:** ekzistonin DY trigger-a mbi `votes` (INSERT/UPDATE/DELETE) që bënin pjesërisht të njëjtën punë: `trg_votes_recalc` (i saktë, `SECURITY DEFINER`, llogarit `upvotes`/`downvotes`/`score`/`wilson`/`hot_score`) dhe një i dytë më i vjetër, `votes_after_upsert` → `after_vote_upsert()` → `recompute_post_score()` (vendoste vetëm `score = sum(value)`, **jo** `SECURITY DEFINER`).
 
-**Kur ta rimarrim:** si pastrim i qetë, i veçantë, kur të mos jetë nën presion kohe (kërkon verifikim me kujdes të radhës së ekzekutimit të trigger-ave para se të hiqet ndonjëri).
+**Pse ishte i padëmshëm, por i rrezikshëm si trashëgimi:** Postgres i ekzekuton trigger-at e të njëjtit event sipas renditjes alfabetike të emrit (`trg_votes_recalc` para `votes_after_upsert`) — për vota mbi postime të të tjerëve, RLS e bllokonte në heshtje shkrimin e trigger-it të vjetër (score-i i saktë i trigger-it të parë mbetej); për vota mbi postimin e vet, `sum(value)` jepte numerikisht të njëjtën vlerë si `upvotes-downvotes`, mbishkrim i kotë. **Rreziku:** nëse dikush në të ardhmen do të kishte fshirë/ndryshuar trigger-in e saktë pa ditur për të vjetrin, ky i fundit do të "zgjohej" dhe do të shkruante `score` të gabuar (pa `wilson`/`hot_score`).
+
+**Zgjidhja:** hequr fare `votes_after_upsert` (trigger) dhe funksionet mbështetëse `after_vote_upsert()`/`recompute_post_score(uuid)` — verifikuar paraprakisht se asnjë vend tjetër (migrime, kod app-i) s'i referon.
+- **Kërkon migrim SQL manual** (`20261011000000_drop_redundant_votes_trigger.sql`) — dhënë në chat.
 
 ### Email javor përmbledhës (digest) — PROPOZUAR, REFUZUAR (11 tetor 2026)
 **Propozimi im:** email javor (përmes Resend, tashmë i konfiguruar) me "Top 3 postime", argumentin fitues të fundit të arenës së debatit, ndjekës të rinj — si levë e lirë për të rikthyer përdorues pasivë.
