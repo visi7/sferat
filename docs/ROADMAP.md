@@ -86,7 +86,7 @@ Referencë vizioni: `docs/VISION.md`
 
 `npm audit` tani raporton përsëri **0 dobësi**. **Testim i kryer:** `npm run build` lokal — i pastër, 26 rrugët; `next start` lokal — `/`, `/privacy`, `/sign-in`, `/agora`, `/terms` përgjigjen të gjitha me `200`.
 
-**Shënim i vogël, jo urgjent:** build-i tregon një paralajmërim të ri deprekimi — `withSentryConfig` nga `@sentry/nextjs` do të ndryshojë import-in te v11 (`@sentry/nextjs/config`). Thjesht paralajmërim, s'thyen asgjë sot; mund të rregullohet në një rast tjetër pastrimi.
+**Shënim i vogël, jo urgjent:** ~~build-i tregon një paralajmërim të ri deprekimi — `withSentryConfig` nga `@sentry/nextjs` do të ndryshojë import-in te v11 (`@sentry/nextjs/config`). Thjesht paralajmërim, s'thyen asgjë sot; mund të rregullohet në një rast tjetër pastrimi.~~ **U rregullua (11 tetor 2026)**: `next.config.ts` tani importon `withSentryConfig` nga `@sentry/nextjs/config` — paralajmërimi u zhduk, build i pastër.
 
 - **SMTP i vërtetë për prodhim — u konfigurua (Resend)**: Supabase u lidh me Resend si "custom SMTP" (Host `smtp.resend.com`, Port `465`, Username `resend`, Password = API key i Resend), duke zëvendësuar shërbimin parazgjedhje të Supabase-it (limite shumë të ulëta dërgimi, jo i përshtatshëm për prodhim real).
   - **Gabim i gjetur dhe rregulluar:** testimi i parë dështoi me `"Error sending confirmation email"`; Supabase Auth Logs tregoi saktësisht `535 "Invalid username"` — fusha **Username** te SMTP settings s'ishte vendosur saktë si `resend` (fjalë literale, jo email). Pas korrigjimit, email-et u dërguan me sukses.
