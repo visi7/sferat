@@ -307,8 +307,16 @@ Referencë vizioni: `docs/VISION.md`
   - Konvertuar sistematikisht në **24 skedarë** (`shell.tsx`, `LeftNav.tsx`, `RightAside.tsx`, `NotificationBell.tsx`, `SignInPrompt.tsx`, `ProfileHeader.tsx`, `post/PostHeader.tsx`, `comments/CommentItem.tsx`, + çdo faqe nën `app/`) çdo `<a href="/...">` (lidhje e brendshme) → `<Link href="/...">`.
   - **E lënë qëllimisht `<a>`** (s'ka përfitim nga `Link`): lidhje të jashtme me `target="_blank"` (Terms/Privacy nga sign-up, preview postesh te `ArenaManager`), `mailto:`, dhe `ad.cta_url` (URL arbitrare sponsori, mund të jetë i jashtëm).
   - **Testuar me Playwright**: build i pastër (26 rrugë, zero gabime TypeScript/JSX), dhe **konfirmuar teknikisht** (jo vetëm vizualisht) që klikimi i një `Link` tani është navigim SPA i vërtetë — një marker i vendosur te `window` para klikimit **mbijetoi** pas klikimit (provë që s'ndodhi ringarkim real faqeje), URL-ja ndryshoi saktë, zero gabime konsole.
-  - **Gjetje dytësore, më të vogla, të pazbatuara ende**: "Loading…" tekst i thjeshtë (15 vende) në vend të "skeleton" fantazmë; gjendje bosh ("No posts.", "—") shumë të thata, mund të përmirësohen me mesazh miqësor.
   - S'kërkon migrim SQL — fikse vetëm client-side, s'ndryshon sjellje funksionale (vetëm performancë/UX e navigimit).
+
+- **Auditim komoditeti (11 nëntor 2026) — "skeleton" loaders + gjendje bosh miqësore, U MBYLL**: vazhdim i gjetjes dytësore nga pika e mësipërme. Zëvendësuar tekstin e thjeshtë "Loading…" dhe placeholder-at e thata ("No posts.", "Nothing here.", "—") me një përvojë më koherente.
+  - **`Skeleton.tsx` (i ri)**: forma gri që pulsojnë (`Skeleton`/`PostCardSkeleton`/`FeedSkeleton`/`ListRowSkeleton`/`ListSkeleton`) — sugjerojnë paraprakisht formën e përmbajtjes që po vjen.
+  - **`EmptyState.tsx` (i ri)**: ikonë e zbehtë në rreth + titull + përshkrim opsional, me variant `compact` për hapësira të vogla (sidebar, dropdown njoftimesh).
+  - **Aplikuar në**: feed-in kryesor, `/saved`, `/leaderboard`, `/notifications`, dropdown-i i ziles (`NotificationBell`), `RightAside` (Trending/Top convincers/Who to follow), `/republic/[slug]`, `/agora` + `/agora/winners`, `/post/[id]`, komentet brenda `postCard`, tab-et e profilit (posts/comments/activity), `/mod/panel`, `/mod/roles`, `/mod/agora`, `ArenaManager`.
+  - **Gjetje reale gjatë kësaj pune**: disa komponentë (`RightAside`, `notifications/page.tsx`, `profile/[username]/page.tsx`) s'kishin fare gjendje "loading" të gjurmuar — tregonin direkt mesazhin "bosh" **para** se fetch-i i të dhënave të kishte përfunduar realisht (rrezik real konfuzioni: dukej sikur s'ka asgjë, jo që po ngarkohet). Shtuar `loading` state në secilin, e gjurmuar deri në fund të zinxhirit të fetch-ve.
+  - **Emoji tjetër i harruar u gjet dhe hoq**: 📝 (pikë aktiviteti "Posted" te `profile/[username]/page.tsx`) → `PencilIcon`.
+  - **Testuar me Playwright**: build i pastër (26 rrugë), zero gabime JS, "skeleton"-at e `RightAside`-it dhe gjendjet bosh të ballinës/leaderboard/saved u panë drejtpërdrejt — konsistente, me ikona, pa tekst të thatë.
+  - S'kërkon migrim SQL — fikse vetëm client-side.
 
 ## 🔜 Shtyrë me qëllim — mos harro
 
