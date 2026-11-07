@@ -335,6 +335,12 @@ Referencë vizioni: `docs/VISION.md`
   - **Testuar me Playwright**: build i pastër, zero gabime JS, numrat dhe modali (gjendje bosh "No followers yet" me ikonë) u panë drejtpërdrejt duke përdorur një faqe testimi të përkohshme me të dhëna fiktive.
   - S'kërkon migrim SQL.
 
+- **SEO: metadata reale për postim/profil/republikë + sitemap i plotë (7 nëntor 2026)** — gjetje nga auditimi para-lançimit: çdo faqe (`post/[id]`, `profile/[username]`, `republic/[slug]`) shfaqej në Google (dhe kur ndahej te WhatsApp/Facebook/X) me të njëjtin titull/përshkrim gjenerik të sajtit, sepse faqet ishin krejt `"use client"` dhe Next.js s'lejon `generateMetadata` nga komponentë client.
+  - **Të treja faqet u ndanë** në wrapper server (vetëm `page.tsx`, lexon titull/përshkrim real nga databaza për `generateMetadata` + `openGraph`) + i njëjti komponent client i mëparshëm, i riemërtuar (`PostPageClient.tsx`/`ProfilePageClient.tsx`/`RepublicPageClient.tsx`) — sjellja e faqeve mbetet identike, ndryshon vetëm çfarë sheh Google/rrjetet sociale.
+  - **`sitemap.ts` u zgjerua**: më parë listonte vetëm ballinën + 5 Republikat. Tani përfshin edhe postimet (vetëm `status="active"` — postimet e skaduara mbeten në databazë me `status="expired"` sipas `expire_posts()`, s'ka kuptim të indeksohen) dhe profilet (duke përjashtuar llogaritë e fshira, `deleted_at is null`).
+  - **Testuar**: build i pastër lokal — `post/[id]`, `profile/[username]`, `republic/[slug]` tani server-renditur (`ƒ`, jo statik) saktë si pritej për `generateMetadata` dinamik, `/sitemap.xml` ndërtohet pa gabim.
+  - S'kërkon migrim SQL.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Backup i databazës — kontrolluar, s'ka mbrojtje automatike sot
@@ -373,6 +379,13 @@ Referencë vizioni: `docs/VISION.md`
 - **Administratorë Republike me përfitim monetar nga të ardhurat e brendshme** — lidhet me hierarkinë e roleve (Assistant/Moderator/Manager) dhe idenë e promovimit automatik sipas pikëve (shih më poshtë) — por "përfitim monetar" do të thotë payout real drejt njerëzve: verifikim identiteti, tatime, strukturë biznesi/ligjore pas saj. Pika më ambicioze e gjithë vizionit.
 
 **Kur ta rimarrim:** procesori i pagesave (Stripe) + "Agora" funksionale (postim real, video, AI) si fazë e parë, kur të jesh gati të vendosësh çmime/rregulla; payout-et te administratorët si fazë shumë më e largët, kur platforma të ketë të ardhura reale që e justifikojnë.
+
+### Republika shtesë për përdorues me shumë pikë/followers (sqarim i qëllimshëm, jo gabim)
+**Sqarim i pronarit (7 nëntor 2026):** gjatë auditimit para-lançimit u shënua si "gjetje" fakti që asnjë përdorues s'mund të krijojë Republikë të re — pronari sqaroi se kjo **është e qëllimshme**, jo diçka për t'u "rregulluar": numri i 5 Republikave fillestare mbetet fiks siç është sot.
+
+**Ideja për të ardhmen (e dhënë nga pronari, në fjalët e tij):** një përdorues me vota (karma) dhe followers mbi një prag të caktuar të mund të krijojë vetë një Republikë — **por në një seksion të veçantë**, pa prekur fare 5 Republikat kryesore ekzistuese.
+
+**Kur ta rimarrim:** s'është prioritet tani — mbetet thjesht ide e dokumentuar, jo e zbatuar, derisa pronari të vendosë ta ngrejë. Do të kërkojë vendime shtesë (çfarë pragu pikësh/followers, si duket ai "seksion i veçantë" krahasuar me 5 Republikat kryesore, a kanë të njëjtat të drejta moderimi) para se të fillojë zbatimi.
 
 ### Seksioni "Announcements" per-Republikë (vazhdim i heqjes së dropdown-it "Feed")
 **Ideja:** ta bëjmë tabelën `republic_sections` realisht të dobishme duke shtuar një seksion të dytë, "Announcements" — postime zyrtare të dukshme veçmas nga diskutimi i lirë, të postueshme vetëm nga Moderator/Manager/Admin i asaj Republike (lidhet natyrshëm me hierarkinë e roleve që ekziston tashmë). Prek edhe tab-et te faqja e Republikës (`republic/[slug]/page.tsx`), sot me 1 tab të vetëm ("Feed"), gjithashtu pak të kotë aktualisht.
