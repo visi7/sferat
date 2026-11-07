@@ -6,7 +6,7 @@ import { supa } from "@/lib/supabase";
 import Shell from "@/components/shell";
 import LeftNav from "@/components/LeftNav";
 import RightAside from "@/components/RightAside";
-import { InboxIcon } from "@/components/Icons";
+import { BuildingIcon, InboxIcon, TrophyIcon } from "@/components/Icons";
 import { PostCardSkeleton } from "@/components/Skeleton";
 import EmptyState from "@/components/EmptyState";
 
@@ -74,7 +74,9 @@ export default function AgoraPage() {
     <Shell left={<LeftNav />} right={<RightAside />}>
       <div className="max-w-2xl mx-auto mt-6 space-y-4">
         <div className="text-center space-y-2">
-          <div className="text-3xl">🏛️</div>
+          <div className="flex justify-center">
+            <BuildingIcon className="w-8 h-8 text-gray-700" />
+          </div>
           <h1 className="text-xl font-bold">Agora</h1>
           <p className="text-gray-600 text-sm max-w-md mx-auto">
             A separate space for sponsored content — clearly labeled, never disguised as an ordinary post.
@@ -84,12 +86,14 @@ export default function AgoraPage() {
         {!loading && arenas.length > 0 && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-gray-600">🏆 Debate Arenas</h2>
+              <h2 className="text-sm font-semibold text-gray-600 flex items-center gap-1.5">
+                <TrophyIcon className="w-4 h-4" /> Debate Arenas
+              </h2>
               <Link
                 href="/agora/winners"
                 className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition-colors shadow-sm"
               >
-                🏆 Hall of Fame
+                <TrophyIcon className="w-3.5 h-3.5" /> Hall of Fame
               </Link>
             </div>
             {arenas.map((arena) => {
@@ -106,8 +110,8 @@ export default function AgoraPage() {
                     </span>
                     <span className="text-gray-500">{arena.sponsor_name}</span>
                     {arena.status === "awarded" ? (
-                      <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
-                        🏆 Winner announced
+                      <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium inline-flex items-center gap-1">
+                        <TrophyIcon className="w-3 h-3" /> Winner announced
                       </span>
                     ) : d < 0 ? (
                       <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium">

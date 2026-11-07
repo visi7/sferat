@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supa } from "@/lib/supabase";
 import ArenaManager from "@/components/agora/ArenaManager";
 import ConfirmDialog from "@/components/ConfirmDialog";
-import { InboxIcon } from "@/components/Icons";
+import { AlertTriangleIcon, BuildingIcon, FilmIcon, InboxIcon, MegaphoneIcon, TrophyIcon } from "@/components/Icons";
 import { ListSkeleton } from "@/components/Skeleton";
 import EmptyState from "@/components/EmptyState";
 
@@ -366,7 +366,9 @@ export default function ModAgoraPage() {
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">🏛️ Manage Agora</h1>
+        <h1 className="text-xl font-bold flex items-center gap-2">
+          <BuildingIcon className="w-5 h-5" /> Manage Agora
+        </h1>
         <Link href="/agora" className="px-3 py-1 border rounded text-sm hover:bg-gray-50">View Agora</Link>
       </div>
 
@@ -381,7 +383,9 @@ export default function ModAgoraPage() {
           onClick={() => setTab("arenas")}
           className={`px-3 py-1.5 rounded-full border ${tab === "arenas" ? "bg-black text-white border-black" : "hover:bg-gray-50"}`}
         >
-          🏆 Debate Arenas
+          <span className="inline-flex items-center gap-1">
+            <TrophyIcon className="w-3.5 h-3.5" /> Debate Arenas
+          </span>
         </button>
       </div>
 
@@ -728,14 +732,14 @@ export default function ModAgoraPage() {
             {filteredAds.map((ad) => (
               <div key={ad.id} className="flex items-start gap-3 border rounded-lg p-3">
                 {ad.video_url ? (
-                  <div className="w-14 h-14 shrink-0 rounded-md border bg-gray-50 flex items-center justify-center text-xl">
-                    🎬
+                  <div className="w-14 h-14 shrink-0 rounded-md border bg-gray-50 flex items-center justify-center">
+                    <FilmIcon className="w-5 h-5 text-gray-400" />
                   </div>
                 ) : ad.image_url ? (
                   <img src={ad.image_url} alt="" className="w-14 h-14 shrink-0 rounded-md border object-cover" />
                 ) : (
-                  <div className="w-14 h-14 shrink-0 rounded-md border bg-gray-50 flex items-center justify-center text-xl">
-                    📢
+                  <div className="w-14 h-14 shrink-0 rounded-md border bg-gray-50 flex items-center justify-center">
+                    <MegaphoneIcon className="w-5 h-5 text-gray-400" />
                   </div>
                 )}
 
@@ -751,10 +755,10 @@ export default function ModAgoraPage() {
                     </span>
                     {!(ad.compliance_rights && ad.compliance_claims && ad.compliance_category) && (
                       <span
-                        className="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-100 text-amber-700"
+                        className="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-100 text-amber-700 inline-flex items-center gap-1"
                         title="Compliance checklist incomplete"
                       >
-                        ⚠️ Compliance incomplete
+                        <AlertTriangleIcon className="w-3 h-3" /> Compliance incomplete
                       </span>
                     )}
                     {ad.expires_at && (() => {

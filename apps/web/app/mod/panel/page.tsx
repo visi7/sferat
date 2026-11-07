@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { supa } from '@/lib/supabase';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import { FlagIcon } from '@/components/Icons';
+import { BanIcon, FlagIcon } from '@/components/Icons';
 import { ListSkeleton } from '@/components/Skeleton';
 import EmptyState from '@/components/EmptyState';
 
@@ -424,8 +424,8 @@ export default function ModPanel() {
                 {new Date(r.firstReportedAt).toLocaleString()}
               </span>
               {r.escalatedAt && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">
-                  🚩 Escalated{r.escalatedByUsername ? ` by @${r.escalatedByUsername}` : ''}
+                <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium inline-flex items-center gap-1">
+                  <FlagIcon className="w-3 h-3" /> Escalated{r.escalatedByUsername ? ` by @${r.escalatedByUsername}` : ''}
                 </span>
               )}
             </div>
@@ -472,8 +472,8 @@ export default function ModPanel() {
                 {usersMap[r.targetId]?.suspended_at &&
                   (!usersMap[r.targetId].suspended_until ||
                     new Date(usersMap[r.targetId].suspended_until) > new Date()) && (
-                    <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-medium">
-                      ⛔ Suspended{usersMap[r.targetId].suspended_until
+                    <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-medium inline-flex items-center gap-1">
+                      <BanIcon className="w-3 h-3" /> Suspended{usersMap[r.targetId].suspended_until
                         ? ` until ${new Date(usersMap[r.targetId].suspended_until).toLocaleDateString()}`
                         : ' permanently'}
                     </span>
@@ -499,9 +499,9 @@ export default function ModPanel() {
               ) : (
                 <button
                   onClick={() => handleEscalate(r)}
-                  className="px-3 py-1 border border-red-300 text-red-700 rounded hover:bg-red-50"
+                  className="px-3 py-1 border border-red-300 text-red-700 rounded hover:bg-red-50 inline-flex items-center gap-1"
                 >
-                  🚩 Escalate to Manager
+                  <FlagIcon className="w-3.5 h-3.5" /> Escalate to Manager
                 </button>
               )}
 
@@ -529,9 +529,9 @@ export default function ModPanel() {
                 ) : (
                   <button
                     onClick={() => openSuspend(r)}
-                    className="px-3 py-1 border border-orange-300 text-orange-700 rounded hover:bg-orange-50"
+                    className="px-3 py-1 border border-orange-300 text-orange-700 rounded hover:bg-orange-50 inline-flex items-center gap-1"
                   >
-                    ⛔ Suspend
+                    <BanIcon className="w-3.5 h-3.5" /> Suspend
                   </button>
                 )
               )}

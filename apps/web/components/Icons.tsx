@@ -198,6 +198,35 @@ export function InboxIcon({ className }: IconProps) {
   );
 }
 
+export function FilmIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M3 9h18M3 15h18M8 4v16M16 4v16" />
+    </svg>
+  );
+}
+
+export function MegaphoneIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M4 10v4a1 1 0 0 0 1 1h2l4 4V5L7 9H5a1 1 0 0 0-1 1Z" />
+      <path d="M14 8a4 4 0 0 1 0 8" />
+      <path d="M18 5a8 8 0 0 1 0 14" />
+    </svg>
+  );
+}
+
+export function AlertTriangleIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M12 3 2 20h20L12 3Z" />
+      <path d="M12 10v4" />
+      <circle cx="12" cy="17.5" r="0.6" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 export function TrashIcon({ className }: IconProps) {
   return (
     <svg {...base} className={className}>

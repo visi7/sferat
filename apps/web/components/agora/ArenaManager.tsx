@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import ConfirmDialog from "@/components/ConfirmDialog";
-import { TrophyIcon } from "@/components/Icons";
+import { LightbulbIcon, TrophyIcon } from "@/components/Icons";
 import { ListSkeleton } from "@/components/Skeleton";
 import EmptyState from "@/components/EmptyState";
 
@@ -307,8 +307,8 @@ export default function ArenaManager() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium text-sm">{arena.title}</span>
                         {arena.status === "awarded" ? (
-                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-blue-100 text-blue-700">
-                            🏆 Awarded
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-blue-100 text-blue-700 inline-flex items-center gap-1">
+                            <TrophyIcon className="w-3 h-3" /> Awarded
                           </span>
                         ) : ended ? (
                           <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-100 text-amber-700">
@@ -364,9 +364,14 @@ export default function ArenaManager() {
                               }`}
                             >
                               <div className="min-w-0">
-                                <div className="text-gray-500">
-                                  #{i + 1} · @{row.username} · 💡 {row.convinced} Convinced me
-                                  {arena.winner_comment_id === row.id && " · 🏆 Winner"}
+                                <div className="text-gray-500 flex items-center gap-1 flex-wrap">
+                                  <span>#{i + 1} · @{row.username} ·</span>
+                                  <LightbulbIcon className="w-3 h-3" /> {row.convinced} Convinced me
+                                  {arena.winner_comment_id === row.id && (
+                                    <span className="inline-flex items-center gap-1">
+                                      · <TrophyIcon className="w-3 h-3" /> Winner
+                                    </span>
+                                  )}
                                 </div>
                                 <div className="text-gray-800 truncate">{row.body}</div>
                               </div>

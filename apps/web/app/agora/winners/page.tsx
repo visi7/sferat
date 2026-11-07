@@ -84,7 +84,9 @@ export default function HallOfFamePage() {
     <Shell left={<LeftNav />} right={<RightAside />}>
       <div className="max-w-2xl mx-auto mt-6 space-y-4">
         <div className="text-center space-y-2">
-          <div className="text-3xl">🏆</div>
+          <div className="flex justify-center">
+            <TrophyIcon className="w-8 h-8 text-gray-700" />
+          </div>
           <h1 className="text-xl font-bold">Hall of Fame</h1>
           <p className="text-gray-600 text-sm max-w-md mx-auto">
             The arguments that won real, sponsored debates — judged by the community, not by who paid the most.
@@ -112,8 +114,8 @@ export default function HallOfFamePage() {
                   Sponsored Debate
                 </span>
                 <span className="text-gray-500">{w.sponsor_name}</span>
-                <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
-                  🏆 Winner
+                <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium inline-flex items-center gap-1">
+                  <TrophyIcon className="w-3 h-3" /> Winner
                 </span>
               </div>
 
