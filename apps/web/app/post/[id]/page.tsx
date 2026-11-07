@@ -4,6 +4,7 @@
 import { use, useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import PostCard from "@/components/postCard";
+import { TrophyIcon } from "@/components/Icons";
 
 type Post = {
   id: string;
@@ -110,8 +111,8 @@ export default function PostPage({
       {arena && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-1">
           <div className="flex items-center gap-2 text-xs flex-wrap">
-            <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-medium">
-              🏆 Sponsored Debate Arena
+            <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-medium inline-flex items-center gap-1">
+              <TrophyIcon className="w-3.5 h-3.5" /> Sponsored Debate Arena
             </span>
             <span className="text-amber-800">{arena.sponsor_name}</span>
           </div>
@@ -128,7 +129,9 @@ export default function PostPage({
 
       {winnerComment && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-1">
-          <div className="text-xs font-medium text-blue-800">🏆 Winning argument — @{winnerComment.username}</div>
+          <div className="text-xs font-medium text-blue-800 flex items-center gap-1">
+            <TrophyIcon className="w-3.5 h-3.5" /> Winning argument — @{winnerComment.username}
+          </div>
           <p className="text-sm text-blue-900 whitespace-pre-wrap break-words">{winnerComment.body}</p>
         </div>
       )}

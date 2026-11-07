@@ -3,6 +3,7 @@
 import NotificationBell from "@/components/NotificationBell";
 import { ReactNode, useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
+import { HomeIcon, MenuIcon, SearchIcon, UserIcon, XIcon } from "@/components/Icons";
 
 type ShellProps = {
   left: ReactNode;
@@ -21,11 +22,11 @@ export default function Shell({ left, children, right, rightInDrawerOnMobile = t
       <header className="sticky top-0 z-40 border-b bg-white/70 backdrop-blur">
         <div className="mx-auto max-w-6xl px-3 sm:px-4 h-12 flex items-center gap-2 sm:gap-3">
           <button
-            className="md:hidden -ml-1 w-9 h-9 grid place-items-center rounded hover:bg-gray-100 text-lg"
+            className="md:hidden -ml-1 w-9 h-9 grid place-items-center rounded hover:bg-gray-100"
             onClick={() => setDrawerOpen(true)}
             aria-label="Open menu"
           >
-            ☰
+            <MenuIcon className="w-5 h-5 text-gray-700" />
           </button>
           <a href="/" className="font-bold shrink-0">SFERAT</a>
           <div className="flex-1" />
@@ -45,7 +46,7 @@ export default function Shell({ left, children, right, rightInDrawerOnMobile = t
                 onClick={() => setDrawerOpen(false)}
                 aria-label="Close menu"
               >
-                ✕
+                <XIcon className="w-4 h-4 text-gray-700" />
               </button>
             </div>
             <div className="space-y-4">
@@ -105,7 +106,7 @@ function TopNav() {
         title="Home"
         aria-label="Home"
       >
-        🏠
+        <HomeIcon className="w-5 h-5 text-gray-700" />
       </a>
 
       <a
@@ -114,7 +115,7 @@ function TopNav() {
         title="Search"
         aria-label="Search"
       >
-        🔍
+        <SearchIcon className="w-5 h-5 text-gray-700" />
       </a>
 
       {logged ? (
@@ -126,7 +127,7 @@ function TopNav() {
             title="Profile"
             aria-label="Profile"
           >
-            👤
+            <UserIcon className="w-5 h-5 text-gray-700" />
           </a>
         </>
       ) : (

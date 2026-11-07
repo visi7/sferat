@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { CommentRow } from "@/types/content";
 import CommentMenu from "./CommentMenu";
+import { ArrowDownIcon, ArrowUpIcon, FlagIcon, LightbulbIcon } from "@/components/Icons";
 
 type Props = {
   c: CommentRow;
@@ -153,7 +154,7 @@ export default function CommentItem({
           onClick={() => onVote(c.id, 1)}
           aria-pressed={myVote === 1}
         >
-          ▲ Upvote
+          <ArrowUpIcon className="w-3.5 h-3.5" /> Upvote
         </button>
         <button
           className={`inline-flex items-center justify-center gap-1 whitespace-nowrap leading-none h-7 px-2.5 rounded-full border bg-white hover:bg-gray-50 ${
@@ -162,7 +163,7 @@ export default function CommentItem({
           onClick={() => onVote(c.id, -1)}
           aria-pressed={myVote === -1}
         >
-          ▼ Downvote
+          <ArrowDownIcon className="w-3.5 h-3.5" /> Downvote
         </button>
         <span className="text-gray-500">Score: {score}</span>
 
@@ -175,7 +176,7 @@ export default function CommentItem({
             aria-pressed={myConvinced}
             title="This comment changed my mind"
           >
-            💡 Convinced me{convinced > 0 ? ` · ${convinced}` : ""}
+            <LightbulbIcon className="w-3.5 h-3.5" /> Convinced me{convinced > 0 ? ` · ${convinced}` : ""}
           </button>
         )}
 
@@ -186,7 +187,7 @@ export default function CommentItem({
           className="inline-flex items-center justify-center gap-1 whitespace-nowrap leading-none h-7 px-2.5 rounded-full border bg-white hover:bg-gray-50"
           onClick={() => setShowReport((v) => !v)}
         >
-          🚩 Report
+          <FlagIcon className="w-3.5 h-3.5" /> Report
         </button>
       </div>
 

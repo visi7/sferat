@@ -1,5 +1,7 @@
 "use client";
 
+import { BuildingIcon } from "@/components/Icons";
+
 type Props = {
   open: boolean;
   onClose: () => void;
@@ -18,7 +20,9 @@ export default function SignInPrompt({ open, onClose, message }: Props) {
         className="w-full max-w-sm bg-white rounded-xl border shadow-lg p-6 text-center space-y-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="text-3xl">🏛️</div>
+        <div className="flex justify-center">
+          <BuildingIcon className="w-8 h-8 text-gray-700" />
+        </div>
         <h3 className="text-lg font-semibold">Join the conversation</h3>
         <p className="text-sm text-gray-600">
           {message ?? "Sign in to take part — vote, comment, and follow what matters to you."}

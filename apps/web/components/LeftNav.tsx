@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
+import { TrophyIcon } from "@/components/Icons";
 
 export default function LeftNav() {
   const [reps, setReps] = useState<{ id: string; slug: string; title: string }[]>([]);
@@ -55,7 +56,10 @@ export default function LeftNav() {
           <a href="/?tab=new">New</a>
           <a href="/search">Search</a>
           <a href="/saved">Saved</a>
-          <a href="/leaderboard">🏆 Leaderboard</a>
+          <a href="/leaderboard" className="flex items-center gap-1.5">
+            <TrophyIcon className="w-4 h-4 text-gray-500" />
+            Leaderboard
+          </a>
           <a href="/notifications">Notifications</a>
         </nav>
       </section>

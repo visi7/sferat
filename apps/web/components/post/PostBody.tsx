@@ -1,6 +1,8 @@
 "use client";
 
 import GoogleSignInButton from "@/components/GoogleSignInButton";
+import { LinkIcon } from "@/components/Icons";
+import { LockIcon } from "@/components/FormIcons";
 
 type Props = {
   title: string;
@@ -56,7 +58,10 @@ export default function PostBody({
                 {rest}
               </div>
               <div className="absolute inset-0 flex flex-col items-center justify-end gap-2 pb-3 bg-gradient-to-t from-white via-white/85 to-transparent">
-                <p className="text-xs text-gray-600 font-medium">🔒 Sign in to keep reading</p>
+                <p className="text-xs text-gray-600 font-medium inline-flex items-center gap-1">
+                  <LockIcon className="w-3.5 h-3.5" />
+                  Sign in to keep reading
+                </p>
                 <GoogleSignInButton />
               </div>
             </div>
@@ -70,9 +75,10 @@ export default function PostBody({
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="block border rounded-md p-3 mt-2 hover:bg-gray-50 text-blue-600 truncate"
+          className="flex items-center gap-1.5 border rounded-md p-3 mt-2 hover:bg-gray-50 text-blue-600 truncate"
         >
-          🔗 {url}
+          <LinkIcon className="w-4 h-4 shrink-0" />
+          <span className="truncate">{url}</span>
         </a>
       ) : null}
 

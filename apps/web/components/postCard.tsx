@@ -10,6 +10,7 @@ import CommentItem from "@/components/comments/CommentItem";
 import SignInPrompt from "@/components/SignInPrompt";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import Toast from "@/components/Toast";
+import { MoreVerticalIcon, PencilIcon } from "@/components/Icons";
 import { useEffect, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
 
@@ -549,11 +550,11 @@ async function confirmDeleteComment() {
     <article className="relative bg-white border rounded-xl p-4">
       <div ref={menuRef} className="absolute right-2 top-2 z-20">
   <button
-    className="h-8 w-8 grid place-items-center rounded-md hover:bg-gray-50 border text-sm"
+    className="h-8 w-8 grid place-items-center rounded-md hover:bg-gray-50 border"
     onClick={() => setMenuOpen(s => !s)}
     aria-label="More"
   >
-    ⁝
+    <MoreVerticalIcon className="w-4 h-4 text-gray-600" />
   </button>
 
   {menuOpen && (
@@ -584,10 +585,10 @@ async function confirmDeleteComment() {
 >
   {isMine && (
     <button
-      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+      className="w-full flex items-center gap-1.5 text-left px-3 py-2 text-sm hover:bg-gray-50"
       onClick={() => setEditing(true)}
     >
-      ✎ Edit post
+      <PencilIcon className="w-3.5 h-3.5" /> Edit post
     </button>
   )}
 </PostKebab>

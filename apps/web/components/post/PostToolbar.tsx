@@ -1,5 +1,7 @@
 "use client";
 
+import { ArrowDownIcon, ArrowUpIcon, MessageCircleIcon } from "@/components/Icons";
+
 type Props = {
   userVote: 0 | 1 | -1;
   score: number;
@@ -31,7 +33,7 @@ export default function PostToolbar({
         onClick={onUpvote}
         aria-pressed={userVote === 1}
       >
-        ▲ Upvote
+        <ArrowUpIcon className="w-3.5 h-3.5" /> Upvote
       </button>
 
       <button
@@ -41,7 +43,7 @@ export default function PostToolbar({
         onClick={onDownvote}
         aria-pressed={userVote === -1}
       >
-        ▼ Downvote
+        <ArrowDownIcon className="w-3.5 h-3.5" /> Downvote
       </button>
 
       <span className="text-gray-500 ml-1">Score: {score}</span>
@@ -54,7 +56,7 @@ export default function PostToolbar({
         }`}
         onClick={onToggleComments}
       >
-        💬 {commentCount} Comments
+        <MessageCircleIcon className="w-3.5 h-3.5" /> {commentCount} Comments
       </button>
 
       

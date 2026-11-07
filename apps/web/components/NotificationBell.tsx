@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
+import { BellIcon } from "@/components/Icons";
 
 type Noti = {
   id: string;
@@ -30,13 +31,13 @@ function bellText(n: { type: string | null; payload: any | null }) {
     case "post_upvoted":     return `${actor} upvoted your post.`;
     case "comment_upvoted":  return `${actor} upvoted your comment.`;
     case "comment_convinced": return `${actor} said your comment convinced them.`;
-    case "debate_arena_won": return `🏆 Your argument won "${p.arena_title ?? "a debate arena"}"${p.prize_description ? ` — ${p.prize_description}` : ""}!`;
-    case "report_escalated": return `🚩 ${actor} escalated a ${p.target_type ?? "report"} for your review.`;
+    case "debate_arena_won": return `Your argument won "${p.arena_title ?? "a debate arena"}"${p.prize_description ? ` — ${p.prize_description}` : ""}!`;
+    case "report_escalated": return `${actor} escalated a ${p.target_type ?? "report"} for your review.`;
     case "report_result":    return `Your report was ${p.status ?? "processed"}.`;
     case "role_changed":     return roleChangeText(p);
     case "account_suspended": {
       const until = p.until ? ` until ${new Date(p.until).toLocaleDateString()}` : " permanently";
-      return `⛔ Your account has been suspended${until}. Reason: ${p.reason ?? "no reason given"}.`;
+      return `Your account has been suspended${until}. Reason: ${p.reason ?? "no reason given"}.`;
     }
     default:                 return "You have a new notification.";
   }
@@ -155,7 +156,7 @@ export default function NotificationBell() {
   return (
     <div className="relative" ref={boxRef}>
       <button
-        className="relative h-8 px-3 rounded-md border hover:bg-gray-50"
+        className="relative w-9 h-9 grid place-items-center rounded hover:bg-gray-100"
         onClick={async () => {
           const next = !open;
           setOpen(next);
@@ -165,7 +166,7 @@ export default function NotificationBell() {
         aria-expanded={open}
         title="Notifications"
       >
-        🔔
+        <BellIcon className="w-4 h-4 text-gray-700" />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-600 text-white text-[10px] leading-4 text-center">
             {unreadCount > 9 ? "9+" : unreadCount}

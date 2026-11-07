@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
 import { prepareImageFile } from "@/lib/imageUpload";
 import Toast from "@/components/Toast";
-import GlowBackground from "@/components/GlowBackground";
 import Shell from "@/components/shell";
 import LeftNav from "@/components/LeftNav";
 import RightAside from "@/components/RightAside";
@@ -12,6 +11,7 @@ import PostCard from "@/components/postCard";
 import Turnstile from "@/components/Turnstile";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { MailIcon, LockIcon, EyeIcon, EyeOffIcon } from "@/components/FormIcons";
+import { BuildingIcon, ImageIcon, SparklesIcon } from "@/components/Icons";
 
 type Post = {
   id: string;
@@ -451,7 +451,6 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
 
   return (
     <>
-      <GlowBackground />
       <Shell left={<LeftNav />} right={<RightAside />}>
       {/* Tabs */}
       <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -485,7 +484,9 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
             }}
             title="Ranked for you: republics/people you follow, plus your past activity"
           >
-            ✨ For You
+            <span className="inline-flex items-center gap-1">
+              <SparklesIcon className="w-3.5 h-3.5" /> For You
+            </span>
           </button>
         )}
 
@@ -521,7 +522,9 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
   {!session ? (
           <div className="max-w-sm mx-auto flex flex-col gap-1">
   <div className="text-center mb-3">
-    <div className="text-2xl mb-1">🏛️</div>
+    <div className="flex justify-center mb-1">
+      <BuildingIcon className="w-7 h-7 text-gray-700" />
+    </div>
     <h2 className="text-base font-semibold text-gray-900">Welcome to SFERAT</h2>
     <p className="text-xs text-gray-500 mt-0.5">Sign in to join the discussion</p>
   </div>
@@ -650,7 +653,7 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
                   className="hidden"
                   onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
                 />
-                🖼️ Add image
+                <ImageIcon className="w-3.5 h-3.5" /> Add image
               </label>
               {imageFile && (
                 <span className="text-xs text-gray-600">

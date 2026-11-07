@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supa } from "@/lib/supabase";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import { TrashIcon } from "@/components/Icons";
 
 type Noti = {
   id: string;
@@ -98,9 +99,9 @@ export default function NotificationsPage() {
       case "comment_convinced": return `${actor} said your comment convinced them.`;
       case "debate_arena_won": {
         const p = n.payload ?? {};
-        return `🏆 Your argument won "${p.arena_title ?? "a debate arena"}"${p.prize_description ? ` — ${p.prize_description}` : ""}!`;
+        return `Your argument won "${p.arena_title ?? "a debate arena"}"${p.prize_description ? ` — ${p.prize_description}` : ""}!`;
       }
-      case "report_escalated": return `🚩 ${actor} escalated a ${n.payload?.target_type ?? "report"} for your review.`;
+      case "report_escalated": return `${actor} escalated a ${n.payload?.target_type ?? "report"} for your review.`;
       case "report_result":    return `Your report was ${n.payload?.status ?? "processed"}.`;
       case "role_changed": {
         const p = n.payload ?? {};
@@ -113,7 +114,7 @@ export default function NotificationsPage() {
       case "account_suspended": {
         const p = n.payload ?? {};
         const until = p.until ? ` until ${new Date(p.until).toLocaleDateString()}` : " permanently";
-        return `⛔ Your account has been suspended${until}. Reason: ${p.reason ?? "no reason given"}.`;
+        return `Your account has been suspended${until}. Reason: ${p.reason ?? "no reason given"}.`;
       }
       default:                 return "You have a new notification.";
     }
@@ -226,7 +227,7 @@ export default function NotificationsPage() {
                   className="h-8 rounded border px-3 text-sm text-red-600 hover:bg-red-50"
                   aria-label="Delete notification"
                 >
-                  🗑
+                  <TrashIcon className="w-4 h-4" />
                 </button>
               </div>
             </article>

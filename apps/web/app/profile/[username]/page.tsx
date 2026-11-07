@@ -10,6 +10,7 @@ import LeftNav from "@/components/LeftNav";
 import ProfileHeader from "@/components/ProfileHeader";
 import PostCard from "@/components/postCard";
 import ProfileRight, { type ProfileInfo } from "@/components/ProfileRight";
+import { MessageCircleIcon } from "@/components/Icons";
 
 type Profile = { id:string; username:string; display_name:string|null; bio:string|null; avatar_url:string|null };
 type Post = { id:string; title:string; body:string; created_at:string; score:number; republic_id:string; author_id:string };
@@ -316,7 +317,7 @@ return (
                           </div>
                         ) : (
                           <div key={`c-${item.comment.id}`} className="flex items-start gap-2 text-sm">
-                            <span className="text-gray-400">💬</span>
+                            <MessageCircleIcon className="w-3.5 h-3.5 text-gray-400 mt-0.5" />
                             <div>
                               <span className="text-gray-600">Commented on</span>{" "}
                               <a className="underline" href={`/post/${item.comment.post_id}`}>

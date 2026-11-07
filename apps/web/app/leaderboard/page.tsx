@@ -4,6 +4,7 @@ import { supa } from "@/lib/supabase";
 import Shell from "@/components/shell";
 import LeftNav from "@/components/LeftNav";
 import RightAside from "@/components/RightAside";
+import { LightbulbIcon, TrophyIcon } from "@/components/Icons";
 
 type Convincer = {
   author_id: string;
@@ -38,7 +39,10 @@ export default function LeaderboardPage() {
     <Shell left={<LeftNav />} right={<RightAside />}>
       <div className="space-y-4">
         <div className="bg-white border rounded-xl p-4">
-          <h1 className="text-lg font-semibold">🏆 Top Convincers</h1>
+          <h1 className="text-lg font-semibold flex items-center gap-1.5">
+            <TrophyIcon className="w-5 h-5" />
+            Top Convincers
+          </h1>
           <p className="text-sm text-gray-500 mt-1">
             Ranked by "Convinced me" marks received from other people — a signal of genuinely persuasive
             arguments, not just popularity.
@@ -85,7 +89,10 @@ export default function LeaderboardPage() {
                       <div className="text-xs text-gray-500 truncate">@{r.username ?? r.author_id.slice(0, 8)}</div>
                     )}
                   </a>
-                  <span className="text-sm font-medium text-amber-700 shrink-0">💡 {r.convince_count}</span>
+                  <span className="text-sm font-medium text-amber-700 shrink-0 inline-flex items-center gap-1">
+                    <LightbulbIcon className="w-4 h-4" />
+                    {r.convince_count}
+                  </span>
                 </li>
               ))}
             </ol>
