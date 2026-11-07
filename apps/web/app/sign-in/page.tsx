@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import Turnstile from "@/components/Turnstile";
@@ -134,9 +135,9 @@ export default function EmailSignIn() {
 
         <p className="mt-5 text-sm text-white/45 text-center">
           Don't have an account?{" "}
-          <a href="/sign-up" className="text-amber-400 hover:text-amber-300 hover:underline">Create one</a>
+          <Link href="/sign-up" className="text-amber-400 hover:text-amber-300 hover:underline">Create one</Link>
           {" · "}
-          <a href="/forgot-password" className="text-amber-400 hover:text-amber-300 hover:underline">Forgot password?</a>
+          <Link href="/forgot-password" className="text-amber-400 hover:text-amber-300 hover:underline">Forgot password?</Link>
         </p>
       </div>
 

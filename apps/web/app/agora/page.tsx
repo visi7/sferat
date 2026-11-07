@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import Shell from "@/components/shell";
@@ -81,17 +82,17 @@ export default function AgoraPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-gray-600">🏆 Debate Arenas</h2>
-              <a
+              <Link
                 href="/agora/winners"
                 className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition-colors shadow-sm"
               >
                 🏆 Hall of Fame
-              </a>
+              </Link>
             </div>
             {arenas.map((arena) => {
               const d = daysUntil(arena.ends_at);
               return (
-                <a
+                <Link
                   key={arena.id}
                   href={`/post/${arena.post_id}`}
                   className="block bg-white border rounded-xl p-4 space-y-1 hover:border-amber-300"
@@ -120,7 +121,7 @@ export default function AgoraPage() {
                     <p className="text-sm text-gray-600">Prize: {arena.prize_description}</p>
                   )}
                   <p className="text-sm text-amber-700 font-medium">Join the debate →</p>
-                </a>
+                </Link>
               );
             })}
           </div>

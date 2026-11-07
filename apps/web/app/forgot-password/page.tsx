@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import Turnstile from "@/components/Turnstile";
@@ -95,7 +96,7 @@ export default function ForgotPasswordPage() {
       )}
 
       <p className="mt-4 text-sm">
-        <a href="/sign-in" className="text-blue-600 underline">Back to sign in</a>
+        <Link href="/sign-in" className="text-blue-600 underline">Back to sign in</Link>
       </p>
     </main>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import Turnstile from "@/components/Turnstile";
@@ -180,7 +181,7 @@ export default function SignUpPage() {
 
         <p className="mt-5 text-sm text-white/45 text-center">
           Already have an account?{" "}
-          <a href="/sign-in" className="text-amber-400 hover:text-amber-300 hover:underline">Sign in</a>
+          <Link href="/sign-in" className="text-amber-400 hover:text-amber-300 hover:underline">Sign in</Link>
         </p>
       </div>
 

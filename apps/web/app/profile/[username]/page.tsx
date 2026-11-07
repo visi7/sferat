@@ -11,6 +11,7 @@ import ProfileHeader from "@/components/ProfileHeader";
 import PostCard from "@/components/postCard";
 import ProfileRight, { type ProfileInfo } from "@/components/ProfileRight";
 import { MessageCircleIcon } from "@/components/Icons";
+import Link from "next/link";
 
 type Profile = { id:string; username:string; display_name:string|null; bio:string|null; avatar_url:string|null };
 type Post = { id:string; title:string; body:string; created_at:string; score:number; republic_id:string; author_id:string };
@@ -282,7 +283,7 @@ return (
 
                       <div className="text-xs text-gray-500">
                         {new Date(c.created_at).toLocaleString()} — on{" "}
-                        <a className="underline" href={`/post/${c.post_id}`}>{c.postTitle}</a>
+                        <Link className="underline" href={`/post/${c.post_id}`}>{c.postTitle}</Link>
                       </div>
                       <div className="mt-1 whitespace-pre-wrap break-words">{c.body}</div>
                     </article>
@@ -307,9 +308,9 @@ return (
                             <span className="text-gray-400">📝</span>
                             <div>
                               <span className="text-gray-600">Posted</span>{" "}
-                              <a className="underline" href={`/post/${item.post.id}`}>
+                              <Link className="underline" href={`/post/${item.post.id}`}>
                                 {item.post.title || item.post.body.slice(0, 60)}
-                              </a>
+                              </Link>
                               <div className="text-xs text-gray-500">
                                 {new Date(item.at).toLocaleString()}
                               </div>
@@ -320,9 +321,9 @@ return (
                             <MessageCircleIcon className="w-3.5 h-3.5 text-gray-400 mt-0.5" />
                             <div>
                               <span className="text-gray-600">Commented on</span>{" "}
-                              <a className="underline" href={`/post/${item.comment.post_id}`}>
+                              <Link className="underline" href={`/post/${item.comment.post_id}`}>
                                 {item.comment.postTitle}
-                              </a>
+                              </Link>
                               <div className="text-gray-700">{item.comment.body}</div>
                               <div className="text-xs text-gray-500">
                                 {new Date(item.at).toLocaleString()}

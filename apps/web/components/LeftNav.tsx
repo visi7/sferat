@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import { TrophyIcon } from "@/components/Icons";
@@ -52,15 +53,15 @@ export default function LeftNav() {
       <section className="bg-white border rounded-xl p-3">
         <h3 className="text-sm font-semibold text-gray-500 mb-2">HOME</h3>
         <nav className="flex flex-col gap-1 text-sm">
-          <a href="/">Top (7 days)</a>
-          <a href="/?tab=new">New</a>
-          <a href="/search">Search</a>
-          <a href="/saved">Saved</a>
-          <a href="/leaderboard" className="flex items-center gap-1.5">
+          <Link href="/">Top (7 days)</Link>
+          <Link href="/?tab=new">New</Link>
+          <Link href="/search">Search</Link>
+          <Link href="/saved">Saved</Link>
+          <Link href="/leaderboard" className="flex items-center gap-1.5">
             <TrophyIcon className="w-4 h-4 text-gray-500" />
             Leaderboard
-          </a>
-          <a href="/notifications">Notifications</a>
+          </Link>
+          <Link href="/notifications">Notifications</Link>
         </nav>
       </section>
 
@@ -68,9 +69,9 @@ export default function LeftNav() {
         <h3 className="text-sm font-semibold text-gray-500 mb-2">REPUBLICS</h3>
         <nav className="flex flex-col gap-1 text-sm">
           {reps.map((r) => (
-            <a key={r.id} href={`/republic/${r.slug}`} className="hover:underline">
+            <Link key={r.id} href={`/republic/${r.slug}`} className="hover:underline">
               {r.title}
-            </a>
+            </Link>
           ))}
         </nav>
       </section>
@@ -78,7 +79,7 @@ export default function LeftNav() {
       <section className="bg-white border rounded-xl p-3">
         <h3 className="text-sm font-semibold text-gray-500 mb-2">AGORA</h3>
         <nav className="flex flex-col gap-1 text-sm">
-          <a href="/agora" className="hover:underline">Sponsored</a>
+          <Link href="/agora" className="hover:underline">Sponsored</Link>
         </nav>
       </section>
 
@@ -87,16 +88,16 @@ export default function LeftNav() {
         <nav className="flex flex-col gap-1 text-sm">
           {logged ? (
             <>
-              {isMod && <a href="/mod/panel">Moderator panel</a>}
-              {(isGlobalAdmin || isDirector || isManager) && <a href="/mod/roles">Manage roles</a>}
-              {(isGlobalAdmin || isMarketingMod) && <a href="/mod/agora">Manage Agora ads</a>}
-              <a href="/settings">Settings</a>
+              {isMod && <Link href="/mod/panel">Moderator panel</Link>}
+              {(isGlobalAdmin || isDirector || isManager) && <Link href="/mod/roles">Manage roles</Link>}
+              {(isGlobalAdmin || isMarketingMod) && <Link href="/mod/agora">Manage Agora ads</Link>}
+              <Link href="/settings">Settings</Link>
               <button onClick={signOut} className="text-left">Sign out</button>
             </>
           ) : (
             <>
-              <a href="/sign-in">Sign in</a>
-              <a href="/sign-up">Create account</a>
+              <Link href="/sign-in">Sign in</Link>
+              <Link href="/sign-up">Create account</Link>
             </>
           )}
         </nav>

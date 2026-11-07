@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export const metadata = { title: "Terms of Use — SFERAT" };
 
 export default function TermsPage() {
@@ -10,7 +12,7 @@ export default function TermsPage() {
 
       <p>
         By creating an account or using SFERAT, you agree to these terms. Please read them, along with
-        our <a href="/privacy" className="text-blue-600 underline">Privacy Policy</a>.
+        our <Link href="/privacy" className="text-blue-600 underline">Privacy Policy</Link>.
       </p>
 
       <section className="space-y-2">
@@ -47,7 +49,7 @@ export default function TermsPage() {
 
       <section className="space-y-2">
         <h2 className="text-base font-semibold text-gray-900">4. Post expiration</h2>
-        <p>Posts are visible in feeds for a limited time (up to 7 days, or a shorter duration you choose) before expiring. This is a core part of how SFERAT works, not a bug — see our <a href="/privacy" className="text-blue-600 underline">Privacy Policy</a> for how expired content is retained internally.</p>
+        <p>Posts are visible in feeds for a limited time (up to 7 days, or a shorter duration you choose) before expiring. This is a core part of how SFERAT works, not a bug — see our <Link href="/privacy" className="text-blue-600 underline">Privacy Policy</Link> for how expired content is retained internally.</p>
       </section>
 
       <section className="space-y-2">

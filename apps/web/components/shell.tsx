@@ -1,5 +1,6 @@
 // apps/web/components/Shell.tsx
 "use client";
+import Link from "next/link";
 import NotificationBell from "@/components/NotificationBell";
 import { ReactNode, useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
@@ -28,7 +29,7 @@ export default function Shell({ left, children, right, rightInDrawerOnMobile = t
           >
             <MenuIcon className="w-5 h-5 text-gray-700" />
           </button>
-          <a href="/" className="font-bold shrink-0">SFERAT</a>
+          <Link href="/" className="font-bold shrink-0">SFERAT</Link>
           <div className="flex-1" />
           <TopNav />
         </div>
@@ -69,9 +70,9 @@ export default function Shell({ left, children, right, rightInDrawerOnMobile = t
           <p className="italic">"Ideas deserve a Republic."</p>
           <p>© {new Date().getFullYear()} SFERAT — The Republic of Free Thoughts</p>
           <p>
-            <a href="/privacy" className="hover:underline">Privacy Policy</a>
+            <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
             {" · "}
-            <a href="/terms" className="hover:underline">Terms of Use</a>
+            <Link href="/terms" className="hover:underline">Terms of Use</Link>
           </p>
         </div>
       </footer>
@@ -100,40 +101,40 @@ function TopNav() {
 
   return (
     <nav className="flex items-center gap-1 sm:gap-2">
-      <a
+      <Link
         href="/"
         className="w-9 h-9 grid place-items-center rounded hover:bg-gray-100"
         title="Home"
         aria-label="Home"
       >
         <HomeIcon className="w-5 h-5 text-gray-700" />
-      </a>
+      </Link>
 
-      <a
+      <Link
         href="/search"
         className="w-9 h-9 grid place-items-center rounded hover:bg-gray-100"
         title="Search"
         aria-label="Search"
       >
         <SearchIcon className="w-5 h-5 text-gray-700" />
-      </a>
+      </Link>
 
       {logged ? (
         <>
           <NotificationBell />
-          <a
+          <Link
             href={profileHref}
             className="w-9 h-9 grid place-items-center rounded hover:bg-gray-100"
             title="Profile"
             aria-label="Profile"
           >
             <UserIcon className="w-5 h-5 text-gray-700" />
-          </a>
+          </Link>
         </>
       ) : (
         <>
-          <a className="hover:underline text-sm px-2" href="/sign-in">Sign in</a>
-          <a className="hover:underline text-sm px-2 hidden sm:inline" href="/sign-up">Create account</a>
+          <Link className="hover:underline text-sm px-2" href="/sign-in">Sign in</Link>
+          <Link className="hover:underline text-sm px-2 hidden sm:inline" href="/sign-up">Create account</Link>
         </>
       )}
     </nav>

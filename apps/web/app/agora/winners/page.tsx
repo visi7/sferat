@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import Shell from "@/components/shell";
@@ -85,12 +86,12 @@ export default function HallOfFamePage() {
           <p className="text-gray-600 text-sm max-w-md mx-auto">
             The arguments that won real, sponsored debates — judged by the community, not by who paid the most.
           </p>
-          <a
+          <Link
             href="/agora"
             className="inline-block mt-1 px-4 py-2 rounded-lg border text-sm font-medium hover:bg-gray-50"
           >
             ← Back to Agora
-          </a>
+          </Link>
         </div>
 
         {loading ? (
@@ -119,7 +120,7 @@ export default function HallOfFamePage() {
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-2">
                   <p className="text-sm text-gray-800 whitespace-pre-wrap break-words">{w.winnerBody}</p>
                   {w.winnerUsername && (
-                    <a
+                    <Link
                       href={`/profile/${w.winnerUsername}`}
                       className="flex items-center gap-2 text-xs text-gray-600 hover:underline"
                     >
@@ -129,14 +130,14 @@ export default function HallOfFamePage() {
                         className="w-5 h-5 rounded-full object-cover"
                       />
                       {w.winnerDisplayName || `@${w.winnerUsername}`}
-                    </a>
+                    </Link>
                   )}
                 </div>
               )}
 
-              <a href={`/post/${w.post_id}`} className="text-sm text-amber-700 font-medium hover:underline">
+              <Link href={`/post/${w.post_id}`} className="text-sm text-amber-700 font-medium hover:underline">
                 See the full debate →
-              </a>
+              </Link>
             </article>
           ))
         )}

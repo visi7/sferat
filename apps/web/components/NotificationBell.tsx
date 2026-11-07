@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
 import { BellIcon } from "@/components/Icons";
@@ -193,9 +194,9 @@ export default function NotificationBell() {
                   <li key={n.id} className="px-2 py-2 hover:bg-gray-50 rounded flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       {href ? (
-                        <a href={href} className="text-sm text-gray-800 hover:underline">
+                        <Link href={href} className="text-sm text-gray-800 hover:underline">
                           {bellText(n)}
-                        </a>
+                        </Link>
                       ) : (
                         <div className="text-sm text-gray-800">{bellText(n)}</div>
                       )}
@@ -214,12 +215,12 @@ export default function NotificationBell() {
             </ul>
           )}
           <div className="h-px bg-gray-100 my-1" />
-          <a
+          <Link
             href="/notifications"
             className="block text-center text-sm py-1 hover:underline"
           >
             View all
-          </a>
+          </Link>
         </div>
       )}
     </div>

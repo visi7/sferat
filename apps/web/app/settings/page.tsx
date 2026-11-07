@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supa } from "@/lib/supabase";
@@ -271,7 +272,7 @@ export default function SettingsPage() {
     <div className="max-w-2xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">Settings</h1>
-        <a href="/" className="px-3 py-1 border rounded text-sm">Home</a>
+        <Link href="/" className="px-3 py-1 border rounded text-sm">Home</Link>
       </div>
 
       <section className="bg-white border rounded-xl p-4 space-y-1">
@@ -279,7 +280,7 @@ export default function SettingsPage() {
         <p className="text-sm text-gray-600">Email: {email}</p>
         {username && (
           <p className="text-sm text-gray-600">
-            Profile: <a href={`/profile/${username}`} className="text-blue-600 underline">@{username}</a>
+            Profile: <Link href={`/profile/${username}`} className="text-blue-600 underline">@{username}</Link>
           </p>
         )}
       </section>

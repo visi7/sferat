@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { BuildingIcon } from "@/components/Icons";
 
 type Props = {
@@ -28,18 +29,18 @@ export default function SignInPrompt({ open, onClose, message }: Props) {
           {message ?? "Sign in to take part — vote, comment, and follow what matters to you."}
         </p>
         <div className="flex gap-2 justify-center pt-1">
-          <a
+          <Link
             href="/sign-up"
             className="px-4 py-2 bg-black text-white rounded-md text-sm hover:bg-gray-800"
           >
             Create account
-          </a>
-          <a
+          </Link>
+          <Link
             href="/sign-in"
             className="px-4 py-2 border rounded-md text-sm hover:bg-gray-50"
           >
             Sign in
-          </a>
+          </Link>
         </div>
         <button
           onClick={onClose}

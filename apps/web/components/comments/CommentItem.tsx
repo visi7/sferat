@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import type { CommentRow } from "@/types/content";
+import Link from "next/link";
 import CommentMenu from "./CommentMenu";
 import { ArrowDownIcon, ArrowUpIcon, FlagIcon, LightbulbIcon } from "@/components/Icons";
 
@@ -66,14 +67,14 @@ export default function CommentItem({
         ref={menuRef}
       >
         {c.profiles?.username ? (
-          <a href={`/profile/${c.profiles.username}`} className="flex items-center gap-2 hover:underline">
+          <Link href={`/profile/${c.profiles.username}`} className="flex items-center gap-2 hover:underline">
             <img
               src={c.profiles?.avatar_url || "/default-avatar.png"}
               className="w-5 h-5 rounded-full object-cover"
               alt=""
             />
             <span>@{c.profiles.username}</span>
-          </a>
+          </Link>
         ) : (
           <>
             <img

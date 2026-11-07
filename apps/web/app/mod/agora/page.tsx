@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supa } from "@/lib/supabase";
 import ArenaManager from "@/components/agora/ArenaManager";
@@ -363,7 +364,7 @@ export default function ModAgoraPage() {
     <div className="p-6 max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">🏛️ Manage Agora</h1>
-        <a href="/agora" className="px-3 py-1 border rounded text-sm hover:bg-gray-50">View Agora</a>
+        <Link href="/agora" className="px-3 py-1 border rounded text-sm hover:bg-gray-50">View Agora</Link>
       </div>
 
       <div className="flex gap-1 text-sm">

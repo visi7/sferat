@@ -1,6 +1,7 @@
 // apps/web/components/post/PostHeader.tsx
 "use client";
 
+import Link from "next/link";
 import type { Author, PostCardProps } from "@/types/content";
 
 type Props = {
@@ -19,7 +20,7 @@ export default function PostHeader({
   return (
     <>
       {/* avatar + username (gjithmonë nga fetch-i i vet-mjaftueshëm `author`) */}
-      <a
+      <Link
         href={author?.username ? `/profile/${author.username}` : "#"}
         className="flex items-center gap-2 hover:underline"
       >
@@ -31,7 +32,7 @@ export default function PostHeader({
         <div className="text-sm text-gray-600">
           @{author?.username ?? p.profiles?.username ?? author?.id?.slice(0, 8) ?? "user"}
         </div>
-      </a>
+      </Link>
 
       {/* Republic · Author · Follow */}
       <div className="text-xs text-gray-500 flex items-center gap-2 flex-wrap mt-1">
@@ -39,9 +40,9 @@ export default function PostHeader({
         <span>•</span>
 
         {author ? (
-          <a className="hover:underline" href={`/profile/${author.username ?? author.id}`}>
+          <Link className="hover:underline" href={`/profile/${author.username ?? author.id}`}>
             {author.display_name ?? `@${author.username ?? author.id.slice(0, 8)}`}
-          </a>
+          </Link>
         ) : (
           <span>Author</span>
         )}

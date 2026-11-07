@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import Shell from "@/components/shell";
@@ -128,13 +129,13 @@ export default function SearchPage() {
           <h2 className="text-xs uppercase tracking-wide text-gray-500 mb-2">Republics</h2>
           <div className="flex flex-wrap gap-2">
             {republics.map((r) => (
-              <a
+              <Link
                 key={r.id}
                 href={`/republic/${r.slug}`}
                 className="px-3 py-1.5 text-sm rounded-full border bg-white hover:bg-gray-50"
               >
                 {r.title}
-              </a>
+              </Link>
             ))}
           </div>
         </section>
@@ -145,13 +146,13 @@ export default function SearchPage() {
           <h2 className="text-xs uppercase tracking-wide text-gray-500 mb-2">Users</h2>
           <div className="flex flex-col gap-1">
             {people.map((p) => (
-              <a
+              <Link
                 key={p.id}
                 href={`/profile/${p.username}`}
                 className="px-3 py-2 text-sm rounded-lg border bg-white hover:bg-gray-50"
               >
                 @{p.username} {p.display_name ? `· ${p.display_name}` : ""}
-              </a>
+              </Link>
             ))}
           </div>
         </section>

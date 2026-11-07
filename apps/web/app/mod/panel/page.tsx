@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { supa } from '@/lib/supabase';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -394,9 +395,9 @@ export default function ModPanel() {
       <div className="p-4">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-bold">Moderator Panel</h1>
-          <a href="/" className="px-3 py-1 border rounded text-sm">
+          <Link href="/" className="px-3 py-1 border rounded text-sm">
             Home
-          </a>
+          </Link>
         </div>
         <p>No pending reports.</p>
       </div>
@@ -407,9 +408,9 @@ export default function ModPanel() {
     <div className="p-4">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-bold">Moderator Panel</h1>
-        <a href="/" className="px-3 py-1 border rounded text-sm">
+        <Link href="/" className="px-3 py-1 border rounded text-sm">
           Home
-        </a>
+        </Link>
       </div>
 
       <div className="space-y-3">
@@ -502,15 +503,15 @@ export default function ModPanel() {
               )}
 
               {r.type === 'post' && (
-                <a href={`/post/${r.targetId}`} className="px-3 py-1 border rounded">
+                <Link href={`/post/${r.targetId}`} className="px-3 py-1 border rounded">
                   Open post
-                </a>
+                </Link>
               )}
 
               {r.type === 'user' && usersMap[r.targetId] && (
-                <a href={`/profile/${usersMap[r.targetId].username}`} className="px-3 py-1 border rounded">
+                <Link href={`/profile/${usersMap[r.targetId].username}`} className="px-3 py-1 border rounded">
                   Open profile
-                </a>
+                </Link>
               )}
 
               {r.type === 'user' && canSuspend() && (

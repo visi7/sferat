@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { supa } from "@/lib/supabase";
@@ -219,7 +220,7 @@ setPosts(data ?? []);
               {isMuted ? "Muted · Unmute" : "Mute"}
             </button>
           )}
-          <a href="/" className="h-9 px-3 rounded border hover:bg-gray-50 flex items-center">Home</a>
+          <Link href="/" className="h-9 px-3 rounded border hover:bg-gray-50 flex items-center">Home</Link>
         </div>
       </div>
       <p className="text-gray-500 mb-4">{republic.description}</p>

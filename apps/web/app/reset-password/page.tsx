@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 
@@ -55,7 +56,7 @@ export default function ResetPasswordPage() {
       <main className="mx-auto max-w-sm p-6">
         <h1 className="text-xl font-semibold mb-4">Password updated</h1>
         <p className="text-sm text-gray-600 mb-4">You can now sign in with your new password.</p>
-        <a href="/sign-in" className="text-blue-600 underline text-sm">Go to sign in</a>
+        <Link href="/sign-in" className="text-blue-600 underline text-sm">Go to sign in</Link>
       </main>
     );
   }
@@ -66,7 +67,7 @@ export default function ResetPasswordPage() {
         <h1 className="text-xl font-semibold mb-4">Reset password</h1>
         <p className="text-sm text-gray-600">
           Open this page from the reset link in your email. If you didn't request one,{" "}
-          <a href="/forgot-password" className="text-blue-600 underline">request a new link</a>.
+          <Link href="/forgot-password" className="text-blue-600 underline">request a new link</Link>.
         </p>
       </main>
     );

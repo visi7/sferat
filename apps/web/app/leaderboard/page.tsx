@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import Shell from "@/components/shell";
@@ -78,7 +79,7 @@ export default function LeaderboardPage() {
                     alt=""
                     className="w-8 h-8 rounded-full object-cover shrink-0"
                   />
-                  <a
+                  <Link
                     href={`/profile/${r.username ?? r.author_id}`}
                     className="flex-1 min-w-0 hover:underline"
                   >
@@ -88,7 +89,7 @@ export default function LeaderboardPage() {
                     {r.display_name && (
                       <div className="text-xs text-gray-500 truncate">@{r.username ?? r.author_id.slice(0, 8)}</div>
                     )}
-                  </a>
+                  </Link>
                   <span className="text-sm font-medium text-amber-700 shrink-0 inline-flex items-center gap-1">
                     <LightbulbIcon className="w-4 h-4" />
                     {r.convince_count}

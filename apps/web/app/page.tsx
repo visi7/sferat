@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
 import { prepareImageFile } from "@/lib/imageUpload";
@@ -601,13 +602,13 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
 
   <p className="text-xs text-gray-600 text-center mt-3">
     Don't have an account?{" "}
-    <a href="/sign-up" className="underline text-blue-600">
+    <Link href="/sign-up" className="underline text-blue-600">
       Create one
-    </a>
+    </Link>
     {" · "}
-    <a href="/forgot-password" className="underline text-blue-600">
+    <Link href="/forgot-password" className="underline text-blue-600">
       Forgot password?
-    </a>
+    </Link>
   </p>
 </div>
 

@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
 import SignInPrompt from "@/components/SignInPrompt";
@@ -377,13 +378,13 @@ export default function ProfileHeader({
                 </button>
               )}
               {isMe && (
-                <a
+                <Link
                   href="/settings"
                   onClick={() => setMenuOpen(false)}
                   className="block w-full text-left px-3 py-2 hover:bg-gray-50"
                 >
                   Account settings
-                </a>
+                </Link>
               )}
               {!isMe && (
                 <>

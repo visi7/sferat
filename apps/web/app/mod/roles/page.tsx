@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -271,7 +272,7 @@ export default function ModRolesPage() {
     <div className="p-6 max-w-3xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">🛡️ Moderator Roles</h1>
-        <a href="/" className="px-3 py-1 border rounded text-sm hover:bg-gray-50">Home</a>
+        <Link href="/" className="px-3 py-1 border rounded text-sm hover:bg-gray-50">Home</Link>
       </div>
 
       <form onSubmit={assignRole} className="bg-white border border-l-4 border-l-teal-400 rounded-xl p-5 space-y-3">

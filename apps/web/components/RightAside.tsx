@@ -1,5 +1,6 @@
 // apps/web/components/RightAside.tsx
 "use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import { LightbulbIcon, TrophyIcon } from "@/components/Icons";
@@ -65,7 +66,7 @@ export default function RightAside() {
           <ul className="space-y-1">
             {trending.map(r => (
               <li key={r.id}>
-                <a href={`/#rep=${r.id}`} className="px-2 py-1 rounded hover:bg-gray-100 block">{r.title}</a>
+                <Link href={`/#rep=${r.id}`} className="px-2 py-1 rounded hover:bg-gray-100 block">{r.title}</Link>
               </li>
             ))}
           </ul>
@@ -78,16 +79,16 @@ export default function RightAside() {
             <TrophyIcon className="w-3.5 h-3.5" />
             Top convincers this week
           </div>
-          <a href="/leaderboard" className="text-xs underline text-gray-500 hover:text-gray-800">See all</a>
+          <Link href="/leaderboard" className="text-xs underline text-gray-500 hover:text-gray-800">See all</Link>
         </div>
         {convincers.length === 0 ? <p className="text-sm">—</p> : (
           <ul className="space-y-1">
             {convincers.map((c, i) => (
               <li key={c.author_id} className="flex items-center justify-between">
-                <a href={`/profile/${c.username ?? c.author_id}`} className="px-2 py-1 rounded hover:bg-gray-100 flex items-center gap-1">
+                <Link href={`/profile/${c.username ?? c.author_id}`} className="px-2 py-1 rounded hover:bg-gray-100 flex items-center gap-1">
                   <span className="text-gray-400 w-4 text-right">{i + 1}.</span>
                   @{c.username ?? c.author_id.slice(0, 8)} {c.display_name ? `· ${c.display_name}` : ""}
-                </a>
+                </Link>
                 <span className="text-xs text-amber-700 font-medium inline-flex items-center gap-0.5">
                   <LightbulbIcon className="w-3.5 h-3.5" />
                   {c.convince_count}
@@ -104,10 +105,10 @@ export default function RightAside() {
           <ul className="space-y-1">
             {people.map(p => (
               <li key={p.id} className="flex items-center justify-between">
-                <a href={`/profile/${p.username ?? p.id}`} className="px-2 py-1 rounded hover:bg-gray-100">
+                <Link href={`/profile/${p.username ?? p.id}`} className="px-2 py-1 rounded hover:bg-gray-100">
                   @{p.username ?? p.id.slice(0,8)} {p.display_name ? `· ${p.display_name}` : ""}
-                </a>
-                <a href={`/profile/${p.username ?? p.id}`} className="text-xs underline">View</a>
+                </Link>
+                <Link href={`/profile/${p.username ?? p.id}`} className="text-xs underline">View</Link>
               </li>
             ))}
           </ul>
