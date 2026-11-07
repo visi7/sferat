@@ -7,6 +7,8 @@ import PostCard from "@/components/postCard";
 import SignInPrompt from "@/components/SignInPrompt";
 import Toast from "@/components/Toast";
 import { followRepublic, unfollowRepublic } from "@/app/actions";
+import { InboxIcon } from "@/components/Icons";
+import EmptyState from "@/components/EmptyState";
 type Section = { slug: string; label: string; position: number };
 
 export default function RepublicPage() {
@@ -245,7 +247,11 @@ setPosts(data ?? []);
         {posts.length ? (
           posts.map((p) => <PostCard key={p.id} {...p} />)
         ) : (
-          <p className="text-gray-400">No posts in this section yet.</p>
+          <EmptyState
+            icon={InboxIcon}
+            title="No posts in this section yet"
+            description="Be the first to start a discussion here."
+          />
         )}
       </div>
 

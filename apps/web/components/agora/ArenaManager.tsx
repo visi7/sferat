@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import { TrophyIcon } from "@/components/Icons";
+import { ListSkeleton } from "@/components/Skeleton";
+import EmptyState from "@/components/EmptyState";
 
 type Republic = { id: string; title: string };
 
@@ -289,9 +292,9 @@ export default function ArenaManager() {
       <div className="bg-white border rounded-xl p-4">
         <h2 className="text-sm font-semibold mb-3">All debate arenas</h2>
         {loading ? (
-          <p className="text-sm text-gray-500">Loading…</p>
+          <ListSkeleton count={3} />
         ) : arenas.length === 0 ? (
-          <p className="text-sm text-gray-500">No arenas yet.</p>
+          <EmptyState icon={TrophyIcon} title="No arenas yet" compact />
         ) : (
           <div className="space-y-3">
             {arenas.map((arena) => {

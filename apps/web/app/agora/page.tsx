@@ -6,6 +6,9 @@ import { supa } from "@/lib/supabase";
 import Shell from "@/components/shell";
 import LeftNav from "@/components/LeftNav";
 import RightAside from "@/components/RightAside";
+import { InboxIcon } from "@/components/Icons";
+import { PostCardSkeleton } from "@/components/Skeleton";
+import EmptyState from "@/components/EmptyState";
 
 type SponsoredPost = {
   id: string;
@@ -128,9 +131,12 @@ export default function AgoraPage() {
         )}
 
         {loading ? (
-          <p className="text-sm text-gray-500 text-center">Loading…</p>
+          <div className="space-y-4">
+            <PostCardSkeleton />
+            <PostCardSkeleton />
+          </div>
         ) : ads.length === 0 && arenas.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center">Nothing sponsored right now.</p>
+          <EmptyState icon={InboxIcon} title="Nothing sponsored right now" />
         ) : (
           ads.map((ad) => (
             <article key={ad.id} className="bg-white border rounded-xl p-4 space-y-2">

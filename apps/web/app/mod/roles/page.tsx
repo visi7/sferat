@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import { UserIcon } from "@/components/Icons";
+import { ListSkeleton } from "@/components/Skeleton";
+import EmptyState from "@/components/EmptyState";
 
 type RoleName = "admin" | "director" | "manager" | "moderator" | "assistant" | "marketing";
 
@@ -395,9 +398,9 @@ export default function ModRolesPage() {
             />
           </div>
           {loading ? (
-            <p className="text-sm text-gray-500">Loading…</p>
+            <ListSkeleton count={4} />
           ) : visibleRoles.length === 0 ? (
-            <p className="text-sm text-gray-500">Nothing here.</p>
+            <EmptyState icon={UserIcon} title="Nothing here" compact />
           ) : (
             <div className="space-y-2">
               {visibleRoles.map((r) => (

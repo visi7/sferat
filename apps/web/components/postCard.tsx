@@ -10,7 +10,9 @@ import CommentItem from "@/components/comments/CommentItem";
 import SignInPrompt from "@/components/SignInPrompt";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import Toast from "@/components/Toast";
-import { MoreVerticalIcon, PencilIcon } from "@/components/Icons";
+import { MessageCircleIcon, MoreVerticalIcon, PencilIcon } from "@/components/Icons";
+import { ListSkeleton } from "@/components/Skeleton";
+import EmptyState from "@/components/EmptyState";
 import { useEffect, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
 
@@ -743,9 +745,9 @@ async function confirmDeleteComment() {
 
           {/* lista e komenteve */}
           {commentsLoading ? (
-            <p className="text-sm text-gray-500">Loading comments…</p>
+            <ListSkeleton count={3} />
           ) : comments.length === 0 ? (
-            <p className="text-sm text-gray-500">No comments yet.</p>
+            <EmptyState icon={MessageCircleIcon} title="No comments yet" compact />
           ) : (
             <ul className="space-y-2">
   {comments.map((c) => (

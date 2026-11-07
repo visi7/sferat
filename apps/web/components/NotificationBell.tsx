@@ -3,6 +3,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
 import { BellIcon } from "@/components/Icons";
+import { ListSkeleton } from "@/components/Skeleton";
+import EmptyState from "@/components/EmptyState";
 
 type Noti = {
   id: string;
@@ -183,9 +185,11 @@ export default function NotificationBell() {
           <div className="px-2 py-1 text-sm font-semibold">Notifications</div>
           <div className="h-px bg-gray-100 my-1" />
           {loading ? (
-            <div className="px-2 py-2 text-sm text-gray-500">Loading…</div>
+            <div className="px-2 py-1">
+              <ListSkeleton count={3} />
+            </div>
           ) : list.length === 0 ? (
-            <div className="px-2 py-2 text-sm text-gray-500">No notifications.</div>
+            <EmptyState icon={BellIcon} title="No notifications" compact />
           ) : (
             <ul className="max-h-80 overflow-auto">
               {list.map((n) => {

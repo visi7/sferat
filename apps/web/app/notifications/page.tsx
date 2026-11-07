@@ -3,7 +3,9 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supa } from "@/lib/supabase";
 import ConfirmDialog from "@/components/ConfirmDialog";
-import { TrashIcon } from "@/components/Icons";
+import { BellIcon, TrashIcon } from "@/components/Icons";
+import { ListSkeleton } from "@/components/Skeleton";
+import EmptyState from "@/components/EmptyState";
 
 type Noti = {
   id: string;
@@ -19,12 +21,16 @@ export default function NotificationsPage() {
   const [commentPostMap, setCommentPostMap] = useState<Record<string, string>>({});
   const [tab, setTab] = useState<"all" | "unread">("all");
   const [showClearAllConfirm, setShowClearAllConfirm] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       const sess = (await supa.auth.getSession()).data.session;
       setMe(sess?.user.id ?? null);
-      if (!sess) return;
+      if (!sess) {
+        setLoading(false);
+        return;
+      }
 
       const { data, error } = await supa
         .from("notifications")
@@ -33,9 +39,13 @@ export default function NotificationsPage() {
         .order("created_at", { ascending: false })
         .limit(100);
 
-      if (error) return;
+      if (error) {
+        setLoading(false);
+        return;
+      }
       const list = (data as Noti[]) ?? [];
       setRows(list);
+      setLoading(false);
 
       // comment_upvoted/comment_convinced s'e kanë post_id te payload — e marrim veçmas që linku të dijë ku të çojë
       const commentIds = Array.from(
@@ -186,10 +196,15 @@ export default function NotificationsPage() {
         </div>
       )}
 
-      {!me ? (
+      {loading ? (
+        <ListSkeleton count={5} />
+      ) : !me ? (
         <p>Sign in to view your notifications.</p>
       ) : visibleRows.length === 0 ? (
-        <p>{tab === "unread" ? "No unread notifications." : "No notifications yet."}</p>
+        <EmptyState
+          icon={BellIcon}
+          title={tab === "unread" ? "No unread notifications" : "No notifications yet"}
+        />
       ) : (
         visibleRows.map((n) => {
           const href = notificationHref(n);

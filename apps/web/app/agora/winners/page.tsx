@@ -6,6 +6,9 @@ import { supa } from "@/lib/supabase";
 import Shell from "@/components/shell";
 import LeftNav from "@/components/LeftNav";
 import RightAside from "@/components/RightAside";
+import { TrophyIcon } from "@/components/Icons";
+import { PostCardSkeleton } from "@/components/Skeleton";
+import EmptyState from "@/components/EmptyState";
 
 type Winner = {
   id: string;
@@ -95,9 +98,12 @@ export default function HallOfFamePage() {
         </div>
 
         {loading ? (
-          <p className="text-sm text-gray-500 text-center">Loading…</p>
+          <div className="space-y-4">
+            <PostCardSkeleton />
+            <PostCardSkeleton />
+          </div>
         ) : winners.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center">No debates have been awarded yet.</p>
+          <EmptyState icon={TrophyIcon} title="No debates have been awarded yet" />
         ) : (
           winners.map((w) => (
             <article key={w.id} className="bg-white border rounded-xl p-4 space-y-2">

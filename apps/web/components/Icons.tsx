@@ -180,6 +180,24 @@ export function ArrowUpIcon({ className }: IconProps) {
   );
 }
 
+export function BookmarkIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M6 4h12a1 1 0 0 1 1 1v16l-7-4-7 4V5a1 1 0 0 1 1-1Z" />
+    </svg>
+  );
+}
+
+export function InboxIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M4 13 7 4h10l3 9" />
+      <path d="M4 13v6a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-6" />
+      <path d="M4 13h5a2.5 2.5 0 0 0 5 0h5" />
+    </svg>
+  );
+}
+
 export function TrashIcon({ className }: IconProps) {
   return (
     <svg {...base} className={className}>

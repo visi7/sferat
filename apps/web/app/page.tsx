@@ -12,7 +12,9 @@ import PostCard from "@/components/postCard";
 import Turnstile from "@/components/Turnstile";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { MailIcon, LockIcon, EyeIcon, EyeOffIcon } from "@/components/FormIcons";
-import { BuildingIcon, ImageIcon, SparklesIcon } from "@/components/Icons";
+import { BuildingIcon, ImageIcon, InboxIcon, SparklesIcon } from "@/components/Icons";
+import { FeedSkeleton } from "@/components/Skeleton";
+import EmptyState from "@/components/EmptyState";
 
 type Post = {
   id: string;
@@ -707,11 +709,15 @@ setPosts(prev => reset ? withRep : [...prev, ...withRep]);
 
       {/* Feed */}
       <div className="space-y-3">
-        {loadingFeed && <p className="text-gray-500 text-sm">Loading…</p>}
+        {loadingFeed && <FeedSkeleton />}
         {feedError && <p className="text-red-600 text-sm">Error: {feedError}</p>}
 
         {!loadingFeed && !feedError && posts.length === 0 ? (
-          <p className="text-gray-600">No posts.</p>
+          <EmptyState
+            icon={InboxIcon}
+            title="No posts yet"
+            description="Be the first to start a discussion here."
+          />
         ) : (
           posts.map((p) => (
           <PostCard

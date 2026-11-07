@@ -10,7 +10,9 @@ import LeftNav from "@/components/LeftNav";
 import ProfileHeader from "@/components/ProfileHeader";
 import PostCard from "@/components/postCard";
 import ProfileRight, { type ProfileInfo } from "@/components/ProfileRight";
-import { MessageCircleIcon } from "@/components/Icons";
+import { InboxIcon, MessageCircleIcon, PencilIcon } from "@/components/Icons";
+import { ListSkeleton } from "@/components/Skeleton";
+import EmptyState from "@/components/EmptyState";
 import Link from "next/link";
 
 type Profile = { id:string; username:string; display_name:string|null; bio:string|null; avatar_url:string|null };
@@ -32,6 +34,7 @@ export default function ProfilePage() {
   const [bioValue, setBioValue] = useState("");
   const [savingBio, setSavingBio] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!username) return;
@@ -45,7 +48,7 @@ export default function ProfilePage() {
         .eq("username", username)
         .single();
 
-      if (!p) { setProfile(null); return; }
+      if (!p) { setProfile(null); setLoading(false); return; }
       setProfile(p as any);
       setBioValue((p as any).bio ?? "");
 
@@ -103,6 +106,7 @@ export default function ProfilePage() {
       }
 
       setStats({ postsCount, commentsCount, karma, convincedCount });
+      setLoading(false);
     })();
   }, [username]);
 
@@ -247,9 +251,9 @@ return (
                   <div>
                     {profile.bio ? (
                       <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{profile.bio}</p>
-                    ) : (
+                    ) : !loading ? (
                       <p className="text-sm text-gray-500">No bio yet.</p>
-                    )}
+                    ) : null}
                     {isMe && (
                       <button
                         className="mt-2 text-xs px-3 py-1.5 rounded-md border hover:bg-gray-50"
@@ -263,14 +267,16 @@ return (
               )}
 
               {tab === "posts" && (
-                posts.length === 0 ? <p>No posts yet.</p> :
+                loading ? <ListSkeleton count={4} /> :
+                posts.length === 0 ? <EmptyState icon={InboxIcon} title="No posts yet" compact /> :
                 <div className="space-y-3">{posts.map(p => (
                   <PostCard key={p.id} {...p} onChanged={()=>{}} />
                 ))}</div>
               )}
 
               {tab === "comments" && (
-                comments.length === 0 ? <p>No comments yet.</p> :
+                loading ? <ListSkeleton count={4} /> :
+                comments.length === 0 ? <EmptyState icon={MessageCircleIcon} title="No comments yet" compact /> :
                 <div className="space-y-3">
                   {comments.map(c => (
                     <article key={c.id} className="bg-white border rounded-xl p-4">
@@ -298,14 +304,15 @@ return (
                     ...comments.map((c) => ({ kind: "comment" as const, at: c.created_at, comment: c })),
                   ].sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
 
-                  if (activity.length === 0) return <p>No activity yet.</p>;
+                  if (loading) return <ListSkeleton count={4} />;
+                  if (activity.length === 0) return <EmptyState icon={InboxIcon} title="No activity yet" compact />;
 
                   return (
                     <div className="space-y-3">
                       {activity.map((item) =>
                         item.kind === "post" ? (
                           <div key={`p-${item.post.id}`} className="flex items-start gap-2 text-sm">
-                            <span className="text-gray-400">📝</span>
+                            <PencilIcon className="w-3.5 h-3.5 text-gray-400 mt-0.5" />
                             <div>
                               <span className="text-gray-600">Posted</span>{" "}
                               <Link className="underline" href={`/post/${item.post.id}`}>

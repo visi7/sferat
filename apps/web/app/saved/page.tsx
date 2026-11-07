@@ -6,6 +6,9 @@ import Shell from "@/components/shell";
 import LeftNav from "@/components/LeftNav";
 import RightAside from "@/components/RightAside";
 import PostCard from "@/components/postCard";
+import { BookmarkIcon } from "@/components/Icons";
+import { FeedSkeleton } from "@/components/Skeleton";
+import EmptyState from "@/components/EmptyState";
 
 type Row = {
   post_id: string;
@@ -105,8 +108,14 @@ export default function SavedPage() {
       <h2 className="text-xl font-semibold mb-4">Saved Posts</h2>
 
       {error && <p className="text-red-600 text-sm">Error: {error}</p>}
-      {loading && <p className="text-gray-500 text-sm">Loading…</p>}
-      {!loading && rows.length === 0 && <p className="text-gray-600">You haven’t saved any posts yet.</p>}
+      {loading && <FeedSkeleton />}
+      {!loading && rows.length === 0 && (
+        <EmptyState
+          icon={BookmarkIcon}
+          title="No saved posts yet"
+          description="Open the ⋮ menu on any post and tap Save to keep it here."
+        />
+      )}
 
       <div className="space-y-4">
         {rows.map((r) => (

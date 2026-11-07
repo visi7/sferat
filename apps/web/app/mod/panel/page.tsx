@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { supa } from '@/lib/supabase';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { FlagIcon } from '@/components/Icons';
+import { ListSkeleton } from '@/components/Skeleton';
+import EmptyState from '@/components/EmptyState';
 
 const SUSPEND_DURATIONS = [
   { label: '24 hours', hours: 24 },
@@ -376,7 +379,7 @@ export default function ModPanel() {
     return (
       <div className="p-4">
         <h1 className="text-xl font-bold mb-4">Moderator Panel</h1>
-        <p>Loading reports...</p>
+        <ListSkeleton count={5} />
       </div>
     );
   }
@@ -399,7 +402,7 @@ export default function ModPanel() {
             Home
           </Link>
         </div>
-        <p>No pending reports.</p>
+        <EmptyState icon={FlagIcon} title="No pending reports" />
       </div>
     );
   }

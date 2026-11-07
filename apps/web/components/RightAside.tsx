@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
-import { LightbulbIcon, TrophyIcon } from "@/components/Icons";
+import { LightbulbIcon, TrophyIcon, UserIcon } from "@/components/Icons";
+import { ListSkeleton } from "@/components/Skeleton";
+import EmptyState from "@/components/EmptyState";
 
 type Republic = { id: string; title: string; slug: string };
 type Profile = { id: string; username: string | null; display_name: string | null };
@@ -19,6 +21,7 @@ export default function RightAside() {
   const [trending, setTrending] = useState<Republic[]>([]);
   const [people, setPeople] = useState<Profile[]>([]);
   const [convincers, setConvincers] = useState<Convincer[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -55,6 +58,7 @@ export default function RightAside() {
       const { data: top, error: topErr } = await supa.rpc("top_convincers", { p_days: 7, p_limit: 5 });
       if (topErr) console.error("[RightAside] top convincers", topErr);
       setConvincers((top as Convincer[]) ?? []);
+      setLoading(false);
     })();
   }, []);
 
@@ -62,7 +66,11 @@ export default function RightAside() {
     <div className="sticky top-16 space-y-4">
       <section className="bg-white border rounded-xl p-3">
         <div className="text-xs uppercase tracking-wide text-gray-500 mb-2">Trending Republics</div>
-        {trending.length === 0 ? <p className="text-sm">—</p> : (
+        {loading ? (
+          <ListSkeleton count={3} />
+        ) : trending.length === 0 ? (
+          <EmptyState title="No trending Republics yet" compact />
+        ) : (
           <ul className="space-y-1">
             {trending.map(r => (
               <li key={r.id}>
@@ -81,7 +89,11 @@ export default function RightAside() {
           </div>
           <Link href="/leaderboard" className="text-xs underline text-gray-500 hover:text-gray-800">See all</Link>
         </div>
-        {convincers.length === 0 ? <p className="text-sm">—</p> : (
+        {loading ? (
+          <ListSkeleton count={3} />
+        ) : convincers.length === 0 ? (
+          <EmptyState icon={LightbulbIcon} title="No convincers yet this week" compact />
+        ) : (
           <ul className="space-y-1">
             {convincers.map((c, i) => (
               <li key={c.author_id} className="flex items-center justify-between">
@@ -101,7 +113,11 @@ export default function RightAside() {
 
       <section className="bg-white border rounded-xl p-3">
         <div className="text-xs uppercase tracking-wide text-gray-500 mb-2">Who to follow</div>
-        {people.length === 0 ? <p className="text-sm">—</p> : (
+        {loading ? (
+          <ListSkeleton count={3} />
+        ) : people.length === 0 ? (
+          <EmptyState icon={UserIcon} title="Nobody to suggest yet" compact />
+        ) : (
           <ul className="space-y-1">
             {people.map(p => (
               <li key={p.id} className="flex items-center justify-between">

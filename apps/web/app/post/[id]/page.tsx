@@ -5,6 +5,7 @@ import { use, useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import PostCard from "@/components/postCard";
 import { TrophyIcon } from "@/components/Icons";
+import { PostCardSkeleton } from "@/components/Skeleton";
 
 type Post = {
   id: string;
@@ -98,7 +99,11 @@ export default function PostPage({
   }, [id]);
 
   if (loading) {
-    return <main className="p-6">Loading…</main>;
+    return (
+      <main className="p-6 max-w-2xl mx-auto">
+        <PostCardSkeleton />
+      </main>
+    );
   }
 
   if (!post) {

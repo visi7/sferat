@@ -6,6 +6,8 @@ import Shell from "@/components/shell";
 import LeftNav from "@/components/LeftNav";
 import RightAside from "@/components/RightAside";
 import { LightbulbIcon, TrophyIcon } from "@/components/Icons";
+import { ListSkeleton } from "@/components/Skeleton";
+import EmptyState from "@/components/EmptyState";
 
 type Convincer = {
   author_id: string;
@@ -66,9 +68,14 @@ export default function LeaderboardPage() {
 
         <div className="bg-white border rounded-xl p-2">
           {loading ? (
-            <p className="p-4 text-sm text-gray-500">Loading…</p>
+            <div className="p-3">
+              <ListSkeleton count={6} />
+            </div>
           ) : rows.length === 0 ? (
-            <p className="p-4 text-sm text-gray-500">No "Convinced me" marks in this period yet.</p>
+            <EmptyState
+              icon={LightbulbIcon}
+              title="No “Convinced me” marks in this period yet"
+            />
           ) : (
             <ol className="divide-y">
               {rows.map((r, i) => (

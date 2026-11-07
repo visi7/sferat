@@ -5,6 +5,9 @@ import { useEffect, useMemo, useState } from "react";
 import { supa } from "@/lib/supabase";
 import ArenaManager from "@/components/agora/ArenaManager";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import { InboxIcon } from "@/components/Icons";
+import { ListSkeleton } from "@/components/Skeleton";
+import EmptyState from "@/components/EmptyState";
 
 type SponsoredPost = {
   id: string;
@@ -717,9 +720,9 @@ export default function ModAgoraPage() {
           </div>
         </div>
         {loading ? (
-          <p className="text-sm text-gray-500">Loading…</p>
+          <ListSkeleton count={4} />
         ) : filteredAds.length === 0 ? (
-          <p className="text-sm text-gray-500">Nothing here.</p>
+          <EmptyState icon={InboxIcon} title="Nothing here" compact />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {filteredAds.map((ad) => (
