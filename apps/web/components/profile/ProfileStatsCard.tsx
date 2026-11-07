@@ -1,3 +1,5 @@
+import { LightbulbIcon } from "@/components/Icons";
+
 type Props = {
   postsCount: number;
   commentsCount: number;
@@ -23,7 +25,9 @@ export default function ProfileStatsCard({ postsCount, commentsCount, karma, con
           <div className="text-xs text-gray-500">Karma</div>
         </div>
         <div>
-          <div className="text-lg font-semibold">💡 {convincedCount}</div>
+          <div className="text-lg font-semibold inline-flex items-center justify-center gap-1">
+            <LightbulbIcon className="w-4 h-4" /> {convincedCount}
+          </div>
           <div className="text-xs text-gray-500">Convinced</div>
         </div>
       </div>

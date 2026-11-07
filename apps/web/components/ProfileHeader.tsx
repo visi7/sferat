@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
 import SignInPrompt from "@/components/SignInPrompt";
 import Toast from "@/components/Toast";
+import FollowListModal from "@/components/FollowListModal";
+import { MoreVerticalIcon, PencilIcon } from "@/components/Icons";
 
 type Props = {
   profile: {
@@ -52,6 +54,27 @@ export default function ProfileHeader({
   const [reportBusy, setReportBusy] = useState(false);
   const [reportSent, setReportSent] = useState(false);
 
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [followListModal, setFollowListModal] = useState<"followers" | "following" | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const [{ count: followers }, { count: following }] = await Promise.all([
+        supa
+          .from("follows_users")
+          .select("follower_id", { count: "exact", head: true })
+          .eq("followed_user_id", profile.id),
+        supa
+          .from("follows_users")
+          .select("followed_user_id", { count: "exact", head: true })
+          .eq("follower_id", profile.id),
+      ]);
+      setFollowersCount(followers ?? 0);
+      setFollowingCount(following ?? 0);
+    })();
+  }, [profile.id]);
+
   useEffect(() => {
     if (isMe) return;
     (async () => {
@@ -90,6 +113,7 @@ export default function ProfileHeader({
           .eq("followed_user_id", profile.id);
         if (error) throw error;
         setIsFollowing(false);
+        setFollowersCount((n) => Math.max(0, n - 1));
       } else {
         const { error } = await supa
           .from("follows_users")
@@ -99,6 +123,7 @@ export default function ProfileHeader({
           );
         if (error) throw error;
         setIsFollowing(true);
+        setFollowersCount((n) => n + 1);
       }
     } catch (e: any) {
       setErrorMsg(e.message ?? "Something went wrong");
@@ -255,7 +280,7 @@ export default function ProfileHeader({
                 title="Change avatar"
                 aria-label="Change avatar"
               >
-                {uploading ? "…" : "✎"}
+                {uploading ? "…" : <PencilIcon className="w-3 h-3" />}
               </button>
             </>
           )}
@@ -314,12 +339,28 @@ export default function ProfileHeader({
                   title="Edit name"
                   aria-label="Edit name"
                 >
-                  ✎
+                  <PencilIcon className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
           )}
           <div className="text-gray-500 text-sm">@{profile.username}</div>
+          <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+            <button
+              type="button"
+              onClick={() => setFollowListModal("followers")}
+              className="hover:underline"
+            >
+              <span className="font-semibold text-gray-900">{followersCount}</span> Followers
+            </button>
+            <button
+              type="button"
+              onClick={() => setFollowListModal("following")}
+              className="hover:underline"
+            >
+              <span className="font-semibold text-gray-900">{followingCount}</span> Following
+            </button>
+          </div>
         </div>
       </div>
 
@@ -344,7 +385,7 @@ export default function ProfileHeader({
           title="More options"
           aria-label="More options"
         >
-          ⋮
+          <MoreVerticalIcon className="w-4 h-4" />
         </button>
 
         {menuOpen && (
@@ -509,6 +550,13 @@ export default function ProfileHeader({
 
       <SignInPrompt open={!!signInMsg} message={signInMsg ?? undefined} onClose={() => setSignInMsg(null)} />
       <Toast message={errorMsg} onClose={() => setErrorMsg(null)} />
+      {followListModal && (
+        <FollowListModal
+          userId={profile.id}
+          kind={followListModal}
+          onClose={() => setFollowListModal(null)}
+        />
+      )}
     </header>
   );
 }
