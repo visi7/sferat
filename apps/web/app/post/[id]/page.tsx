@@ -1,147 +1,37 @@
 // apps/web/app/post/[id]/page.tsx
-"use client";
-
-import { use, useEffect, useState } from "react";
+import type { Metadata } from "next";
 import { supa } from "@/lib/supabase";
-import PostCard from "@/components/postCard";
-import { TrophyIcon } from "@/components/Icons";
-import { PostCardSkeleton } from "@/components/Skeleton";
+import PostPageClient from "./PostPageClient";
 
-type Post = {
-  id: string;
-  title: string;
-  body: string;
-  republic_id: string;
-  author_id: string;
-  score: number;
-  created_at: string;
-  status?: string;
-  post_type?: "text" | "link" | "image" | "poll";
-  url?: string | null;
-  image_url?: string | null;
-  expires_at?: string | null;
-};
+type Props = { params: Promise<{ id: string }> };
 
-type Arena = {
-  id: string;
-  sponsor_name: string;
-  title: string;
-  prize_description: string | null;
-  ends_at: string;
-  status: "open" | "awarded";
-  winner_comment_id: string | null;
-};
-
-type WinnerComment = { body: string; username: string } | null;
-
-function daysUntil(iso: string): number {
-  return Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000);
-}
-
-export default function PostPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
-
-  const [post, setPost] = useState<Post | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [arena, setArena] = useState<Arena | null>(null);
-  const [winnerComment, setWinnerComment] = useState<WinnerComment>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      setLoading(true);
-
-      const p = await supa
-        .from("posts")
-        .select(
-          "id,title,body,republic_id,author_id,score,created_at,status,post_type,url,image_url,expires_at"
-        )
-        .eq("id", id)
-        .single();
-
-      if (!cancelled && !p.error) setPost(p.data as Post);
-      if (!cancelled) setLoading(false);
-
-      const a = await supa
-        .from("debate_arenas")
-        .select("id,sponsor_name,title,prize_description,ends_at,status,winner_comment_id")
-        .eq("post_id", id)
-        .maybeSingle();
-      if (!cancelled && a.data) {
-        const arenaRow = a.data as Arena;
-        setArena(arenaRow);
-        if (arenaRow.winner_comment_id) {
-          const c = await supa
-            .from("comments")
-            .select("body,author_id")
-            .eq("id", arenaRow.winner_comment_id)
-            .maybeSingle();
-          if (!cancelled && c.data) {
-            const { data: prof } = await supa
-              .from("profiles")
-              .select("username")
-              .eq("id", (c.data as any).author_id)
-              .maybeSingle();
-            setWinnerComment({ body: (c.data as any).body, username: prof?.username ?? "user" });
-          }
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [id]);
-
-  if (loading) {
-    return (
-      <main className="p-6 max-w-2xl mx-auto">
-        <PostCardSkeleton />
-      </main>
-    );
-  }
+// Faqja ishte krejt "use client" — Next.js s'lejon export metadata nga
+// komponentë client, kështu që çdo postim ndahej të njëjtin titull/
+// përshkrim gjenerik të sajtit te Google dhe kur linku ndahej në rrjete
+// sociale. Kjo e ndan në wrapper server (vetëm për metadata) + komponenti
+// ekzistues client (PostPageClient.tsx), pa ndryshuar sjelljen e faqes.
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const { data: post } = await supa
+    .from("posts")
+    .select("title,body")
+    .eq("id", id)
+    .maybeSingle();
 
   if (!post) {
-    return <main className="p-6">Post not found.</main>;
+    return { title: "Post not found — SFERAT" };
   }
 
-  // PostCard vetë e bën editimin, votimin dhe komentet (view + add + vote + report)
-  return (
-    <main className="p-6 max-w-2xl mx-auto space-y-3">
-      {arena && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-1">
-          <div className="flex items-center gap-2 text-xs flex-wrap">
-            <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-medium inline-flex items-center gap-1">
-              <TrophyIcon className="w-3.5 h-3.5" /> Sponsored Debate Arena
-            </span>
-            <span className="text-amber-800">{arena.sponsor_name}</span>
-          </div>
-          <p className="text-sm text-amber-900">
-            {arena.prize_description && <>Prize: <strong>{arena.prize_description}</strong> · </>}
-            {arena.status === "awarded"
-              ? "Winner announced."
-              : daysUntil(arena.ends_at) < 0
-              ? "Voting closed — winner coming soon."
-              : `Ends in ${daysUntil(arena.ends_at)}d.`}
-          </p>
-        </div>
-      )}
+  const title = post.title?.trim() || post.body?.slice(0, 70) || "A post on SFERAT";
+  const description = post.body?.slice(0, 160) || "Join the discussion on SFERAT.";
 
-      {winnerComment && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-1">
-          <div className="text-xs font-medium text-blue-800 flex items-center gap-1">
-            <TrophyIcon className="w-3.5 h-3.5" /> Winning argument — @{winnerComment.username}
-          </div>
-          <p className="text-sm text-blue-900 whitespace-pre-wrap break-words">{winnerComment.body}</p>
-        </div>
-      )}
+  return {
+    title: `${title} — SFERAT`,
+    description,
+    openGraph: { title, description, type: "article" },
+  };
+}
 
-      <PostCard {...post} onChanged={() => {}} />
-    </main>
-  );
+export default function PostPage({ params }: Props) {
+  return <PostPageClient params={params} />;
 }
