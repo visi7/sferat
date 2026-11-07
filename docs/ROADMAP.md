@@ -341,6 +341,14 @@ Referencë vizioni: `docs/VISION.md`
   - **Testuar**: build i pastër lokal — `post/[id]`, `profile/[username]`, `republic/[slug]` tani server-renditur (`ƒ`, jo statik) saktë si pritej për `generateMetadata` dinamik, `/sitemap.xml` ndërtohet pa gabim.
   - S'kërkon migrim SQL.
 
+- **Performanca: avatarët kalojnë te `next/image` (7 nëntor 2026)** — gjetje nga auditimi para-lançimit: zero përdorim i `next/image` në gjithë platformën, vetëm `<img>` i thjeshtë (pa ridimensionim/kompresim automatik, pa lazy loading real). Me kërkesë eksplicite të pronarit ("lë imazhet e postimeve për më vonë"), hapi i parë mbulon vetëm avatarët — madhësi fikse, rrezik i ulët.
+  - **9 vende** kaluan te `<Image>` me `width`/`height` fiks (të njëjta vlera me klasat Tailwind ekzistuese): `Avatar.tsx` (komponenti i përbashkët), `ProfileHeader.tsx`, `post/PostHeader.tsx`, `comments/CommentItem.tsx` (×2), `profile/RepublicCard.tsx`, `FollowListModal.tsx`, `leaderboard/page.tsx`, `profile/[username]/ProfilePageClient.tsx`, `agora/winners/page.tsx`.
+  - **`next.config.ts`**: shtuar `images.remotePatterns` për Supabase Storage (`**.supabase.co/storage/v1/object/**`) — mungonte fare, `next/image` do të dështonte në runtime për çdo avatar të ngarkuar nga përdoruesit pa këtë.
+  - **Kujdes i veçantë për `RepublicCard.tsx`**: ka tashmë funksionin "Share as image" (eksport PNG me `html-to-image`) që kap avatarin. Avatarit atje i është shtuar `priority` (ngarkim eager, jo lazy), që eksportimi të vazhdojë të kapë avatarin e ngarkuar plotësisht, pa rrezik "race condition" me lazy-loading-un e ri.
+  - **Jashtë fushëveprimit, me qëllim (shtyrë për raundin tjetër)**: imazhet e postimeve (`post/PostBody.tsx`, `PostEditModal.tsx`) dhe imazhet e reklamave (`agora/page.tsx`, `mod/agora/page.tsx`) — madhësi/aspekt i ndryshueshëm, kërkojnë `fill` + kontejner të përshtatur, më i rrezikuar.
+  - **Testuar**: build i pastër (26 rrugë, zero gabime TS), dev server + Playwright (console i pastër nga gabime lidhur me `Image`/hostname — gabimet e vetme të para ishin dështime pritshme fetch nga Supabase-i fiktiv i testimit lokal, jo nga ndryshimi).
+  - S'kërkon migrim SQL.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Backup i databazës — kontrolluar, s'ka mbrojtje automatike sot
