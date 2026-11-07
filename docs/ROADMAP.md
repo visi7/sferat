@@ -328,6 +328,13 @@ Referencë vizioni: `docs/VISION.md`
   - Verifikuar me kërkim teksti (grep) që s'mbetet asnjë emoji si ikonë në këto 6 skedarë. Testuar: build i pastër, zero gabime JS, `/agora` u pa drejtpërdrejt.
   - S'kërkon migrim SQL — fikse vetëm client-side.
 
+- **Profili: numri i Followers/Following + modal liste (11 nëntor 2026)** — opsion ndihmës i ri, kërkuar nga pronari ("profili ka nevojë për rregullim dhe opsione ndihmëse shtesë"). Gjetje: platforma s'tregonte askund numrin e ndjekësve/ndjekurve, megjithëse "Follow" është mekanizëm qendror (përdorues + Republika). Verifikuar RLS e `follows_users` (`follows_sel using(true)` — lexim publik, s'kërkoi migrim).
+  - **`FollowListModal.tsx` (i ri)**: modal që liston Followers/Following (avatar+username+display_name, klikueshëm → `/profile/[username]`), me `ListSkeleton` gjatë ngarkimit dhe `EmptyState` kur është bosh.
+  - **`ProfileHeader.tsx`**: numra "X Followers · Y Following" nën `@username`, klikueshëm për të hapur modalin përkatës. Numri i followers përditësohet optimisht (+1/-1) kur vetë përdoruesi shtyp Follow/Unfollow, pa pritur rifreskim të plotë.
+  - **3 emoji të tjerë të harruar nga sesionet e mëparshme** u gjetën dhe u hoqën: ✎ (butoni "Edit name" + badge-i i vogël "Change avatar") → `PencilIcon`, ⋮ ("More options") → `MoreVerticalIcon`, 💡 (stat-i "Convinced" te `ProfileStatsCard.tsx`) → `LightbulbIcon`.
+  - **Testuar me Playwright**: build i pastër, zero gabime JS, numrat dhe modali (gjendje bosh "No followers yet" me ikonë) u panë drejtpërdrejt duke përdorur një faqe testimi të përkohshme me të dhëna fiktive.
+  - S'kërkon migrim SQL.
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Backup i databazës — kontrolluar, s'ka mbrojtje automatike sot
