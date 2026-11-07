@@ -103,6 +103,36 @@ export default function NotificationBell() {
     })();
   }, []);
 
+  // përditësim i gjallë — dëgjon njoftime të reja te databaza (Supabase
+  // Realtime), jo vetëm në ngarkim fillestar; RLS-ja ekzistuese (user_id =
+  // auth.uid()) siguron që çdo abonim merr vetëm rreshtat e vet.
+  useEffect(() => {
+    let channel: ReturnType<typeof supa.channel> | null = null;
+
+    (async () => {
+      const s = (await supa.auth.getSession()).data.session;
+      const uid = s?.user?.id;
+      if (!uid) return;
+
+      channel = supa
+        .channel(`notifications-bell-${uid}`)
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${uid}` },
+          () => {
+            setUnreadCount((n) => n + 1);
+            // detyro rifreskim të listës herën tjetër që hapet dropdown-i
+            setList([]);
+          }
+        )
+        .subscribe();
+    })();
+
+    return () => {
+      if (channel) supa.removeChannel(channel);
+    };
+  }, []);
+
   async function loadIfNeeded() {
     if (list.length > 0 || loading) return;
     setLoading(true);
