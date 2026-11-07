@@ -303,6 +303,13 @@ Referencë vizioni: `docs/VISION.md`
   - **Testuar me Playwright** (Chromium headless, mjedis testimi pa databazë reale): build i pastër (26 rrugë), zero gabime JS, të 20 ikonat e reja verifikuar vizualisht një nga një, ballina/leaderboard parë drejtpërdrejt — të pastra, pa emoji, pa sfond të animuar.
   - S'kërkon migrim SQL — fikse vetëm client-side, s'ndryshon sjellje.
 
+- **Auditim komoditeti (11 nëntor 2026) — çdo klikim shkaktonte ringarkim të plotë të faqes, U MBYLL**: lindi nga pyetja "çfarë ka nevojë ende për t'u bërë që të jetë komode për përdorim". Gjetje: vetëm **1 faqe** (`/notifications`) përdorte `next/link`, pjesa tjetër (47+ vende) përdorte `<a href>` të thjeshtë për lidhje **të brendshme** — kjo shkakton ringarkim të **plotë** të faqes në çdo klikim (shkarkim i gjithë JS-së nga zero, humbje gjendjeje React, "flash" i bardhë i dukshëm), ndryshe nga sjellja SPA pa ringarkim që Next.js ofron vetë. Vlerësuar si kontribuesi #1 real i "diskomfortit" në përdorim, më shumë se çdo detaj vizual.
+  - Konvertuar sistematikisht në **24 skedarë** (`shell.tsx`, `LeftNav.tsx`, `RightAside.tsx`, `NotificationBell.tsx`, `SignInPrompt.tsx`, `ProfileHeader.tsx`, `post/PostHeader.tsx`, `comments/CommentItem.tsx`, + çdo faqe nën `app/`) çdo `<a href="/...">` (lidhje e brendshme) → `<Link href="/...">`.
+  - **E lënë qëllimisht `<a>`** (s'ka përfitim nga `Link`): lidhje të jashtme me `target="_blank"` (Terms/Privacy nga sign-up, preview postesh te `ArenaManager`), `mailto:`, dhe `ad.cta_url` (URL arbitrare sponsori, mund të jetë i jashtëm).
+  - **Testuar me Playwright**: build i pastër (26 rrugë, zero gabime TypeScript/JSX), dhe **konfirmuar teknikisht** (jo vetëm vizualisht) që klikimi i një `Link` tani është navigim SPA i vërtetë — një marker i vendosur te `window` para klikimit **mbijetoi** pas klikimit (provë që s'ndodhi ringarkim real faqeje), URL-ja ndryshoi saktë, zero gabime konsole.
+  - **Gjetje dytësore, më të vogla, të pazbatuara ende**: "Loading…" tekst i thjeshtë (15 vende) në vend të "skeleton" fantazmë; gjendje bosh ("No posts.", "—") shumë të thata, mund të përmirësohen me mesazh miqësor.
+  - S'kërkon migrim SQL — fikse vetëm client-side, s'ndryshon sjellje funksionale (vetëm performancë/UX e navigimit).
+
 ## 🔜 Shtyrë me qëllim — mos harro
 
 ### Backup i databazës — kontrolluar, s'ka mbrojtje automatike sot
