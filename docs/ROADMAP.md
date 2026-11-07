@@ -299,7 +299,7 @@ Referencë vizioni: `docs/VISION.md`
   - **`Icons.tsx` (i ri)**: 20 ikona SVG monokrome (stroke, `currentColor`), në të njëjtin stil si `FormIcons.tsx` ekzistuese.
   - **Zëvendësuar kudo ku shfaqet** (jo vetëm `app/page.tsx` — me kërkesë eksplicite "shko kudo ku shfaqet"): `shell.tsx` (hamburger/close/home/search/profile), `NotificationBell.tsx` + `notifications/page.tsx` (zilja + emoji të hequra nga tekstet e njoftimeve — teksti mbetet i qartë pa to), `LeftNav.tsx`/`RightAside.tsx`/`leaderboard/page.tsx` (trophy/lightbulb), `postCard.tsx` + `post/PostBody.tsx` + `post/PostToolbar.tsx` (kebab, edit, lock-gate, link preview, upvote/downvote, comments), `comments/CommentItem.tsx` + `CommentMenu.tsx` (vote/convince/report/edit/delete — komentet shfaqen brenda `postCard`, kudo në platformë), `post/[id]/page.tsx` (trophy te arena sponsorizuar), `profile/[username]/page.tsx` (ikonë komenti te Activity), `SignInPrompt.tsx` (ikonë ndërtese në vend të 🏛️).
   - **`GlowBackground` u hoq nga `app/page.tsx`** — ishte homepage-only (s'preket asnjë faqe tjetër), feed-i tani ka sfond të pastër, pa "blob" të animuar.
-  - **Jashtë fushëveprimit, me qëllim**: ngjyrat gradient të Republic Card (profili) — mbetën të paprekura siç kërkoi pronari; panelet admin `/mod/*` dhe Agora (`ArenaManager`, faqet `/agora`) — mjete të brendshme/sponsorizim, jo pjesë e eksperiencës normale të vizitorit.
+  - **Jashtë fushëveprimit, me qëllim (në këtë raund)**: ngjyrat gradient të Republic Card (profili) — mbetën të paprekura siç kërkoi pronari; panelet admin `/mod/*` dhe Agora (`ArenaManager`, faqet `/agora`) — lënë përkohësisht, **mbyllur më pas** (shih pikën "Agora dhe panelet admin" më poshtë).
   - **Testuar me Playwright** (Chromium headless, mjedis testimi pa databazë reale): build i pastër (26 rrugë), zero gabime JS, të 20 ikonat e reja verifikuar vizualisht një nga një, ballina/leaderboard parë drejtpërdrejt — të pastra, pa emoji, pa sfond të animuar.
   - S'kërkon migrim SQL — fikse vetëm client-side, s'ndryshon sjellje.
 
@@ -316,6 +316,16 @@ Referencë vizioni: `docs/VISION.md`
   - **Gjetje reale gjatë kësaj pune**: disa komponentë (`RightAside`, `notifications/page.tsx`, `profile/[username]/page.tsx`) s'kishin fare gjendje "loading" të gjurmuar — tregonin direkt mesazhin "bosh" **para** se fetch-i i të dhënave të kishte përfunduar realisht (rrezik real konfuzioni: dukej sikur s'ka asgjë, jo që po ngarkohet). Shtuar `loading` state në secilin, e gjurmuar deri në fund të zinxhirit të fetch-ve.
   - **Emoji tjetër i harruar u gjet dhe hoq**: 📝 (pikë aktiviteti "Posted" te `profile/[username]/page.tsx`) → `PencilIcon`.
   - **Testuar me Playwright**: build i pastër (26 rrugë), zero gabime JS, "skeleton"-at e `RightAside`-it dhe gjendjet bosh të ballinës/leaderboard/saved u panë drejtpërdrejt — konsistente, me ikona, pa tekst të thatë.
+  - S'kërkon migrim SQL — fikse vetëm client-side.
+
+- **Agora dhe panelet admin — mbyllja e pastrimit të emoji-ve (11 nëntor 2026)** — vazhdim i kërkuar eksplicitisht ("kontrollo edhe faqen e Agora-s dhe panelet admin") për pjesët e lëna qëllimisht jashtë raundit të parë.
+  - **3 ikona të reja** te `Icons.tsx`: `FilmIcon`, `MegaphoneIcon`, `AlertTriangleIcon`.
+  - **`/agora`**: 🏛️→`BuildingIcon`, 🏆→`TrophyIcon` (3 vende — titulli "Debate Arenas", butoni "Hall of Fame", etiketa "Winner announced").
+  - **`/agora/winners`**: 🏆→`TrophyIcon` (ikona kryesore + etiketa "Winner").
+  - **`/mod/panel`**: 🚩→`FlagIcon` (etiketa "Escalated" + butoni "Escalate to Manager"), ⛔→`BanIcon` (etiketa "Suspended" + butoni "Suspend").
+  - **`/mod/agora`**: 🏛️→`BuildingIcon`, 🏆→`TrophyIcon`, 🎬→`FilmIcon` (miniaturë video), 📢→`MegaphoneIcon` (miniaturë reklame pa media), ⚠️→`AlertTriangleIcon` ("Compliance incomplete").
+  - **`ArenaManager.tsx`**: 🏆→`TrophyIcon` (2 vende), 💡→`LightbulbIcon` (leaderboard-i i argumenteve).
+  - Verifikuar me kërkim teksti (grep) që s'mbetet asnjë emoji si ikonë në këto 6 skedarë. Testuar: build i pastër, zero gabime JS, `/agora` u pa drejtpërdrejt.
   - S'kërkon migrim SQL — fikse vetëm client-side.
 
 ## 🔜 Shtyrë me qëllim — mos harro
