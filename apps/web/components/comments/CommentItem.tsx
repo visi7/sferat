@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { CommentRow } from "@/types/content";
 import Link from "next/link";
+import Image from "next/image";
 import CommentMenu from "./CommentMenu";
 import { ArrowDownIcon, ArrowUpIcon, FlagIcon, LightbulbIcon } from "@/components/Icons";
 
@@ -68,8 +69,10 @@ export default function CommentItem({
       >
         {c.profiles?.username ? (
           <Link href={`/profile/${c.profiles.username}`} className="flex items-center gap-2 hover:underline">
-            <img
+            <Image
               src={c.profiles?.avatar_url || "/default-avatar.png"}
+              width={20}
+              height={20}
               className="w-5 h-5 rounded-full object-cover"
               alt=""
             />
@@ -77,8 +80,10 @@ export default function CommentItem({
           </Link>
         ) : (
           <>
-            <img
+            <Image
               src={c.profiles?.avatar_url || "/default-avatar.png"}
+              width={20}
+              height={20}
               className="w-5 h-5 rounded-full object-cover"
               alt=""
             />

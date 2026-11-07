@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import type { Author, PostCardProps } from "@/types/content";
 
 type Props = {
@@ -24,8 +25,10 @@ export default function PostHeader({
         href={author?.username ? `/profile/${author.username}` : "#"}
         className="flex items-center gap-2 hover:underline"
       >
-        <img
+        <Image
           src={author?.avatar_url || p.profiles?.avatar_url || "/default-avatar.png"}
+          width={32}
+          height={32}
           className="w-8 h-8 rounded-full object-cover"
           alt=""
         />

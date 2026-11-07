@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { supa } from "@/lib/supabase";
 import SignInPrompt from "@/components/SignInPrompt";
@@ -255,9 +256,11 @@ export default function ProfileHeader({
         {/* Avatar i rrumbullakët, klikohet direkt për ta ndryshuar */}
         <div className="relative w-16 h-16 shrink-0">
           <div className="w-16 h-16 rounded-full overflow-hidden border bg-white">
-            <img
+            <Image
               src={profile.avatar_url || "/default-avatar.png"}
               alt="avatar"
+              width={64}
+              height={64}
               className="w-full h-full object-cover"
             />
           </div>

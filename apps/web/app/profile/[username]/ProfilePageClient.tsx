@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Image from "next/image";
 import { supa } from "@/lib/supabase";
 import { prepareImageFile } from "@/lib/imageUpload";
 import Toast from "@/components/Toast";
@@ -280,11 +281,13 @@ return (
                 <div className="space-y-3">
                   {comments.map(c => (
                     <article key={c.id} className="bg-white border rounded-xl p-4">
-                      <img
+                      <Image
                         src={profile.avatar_url || "/default-avatar.png"}
-                         className="w-6 h-6 rounded-full object-cover mr-2"
-                          alt=""
-                            />
+                        width={24}
+                        height={24}
+                        className="w-6 h-6 rounded-full object-cover mr-2"
+                        alt=""
+                      />
                           <span className="text-xs text-gray-600">@{profile.username}</span>
 
                       <div className="text-xs text-gray-500">

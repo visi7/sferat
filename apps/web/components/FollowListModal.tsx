@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import { UserIcon, XIcon } from "@/components/Icons";
@@ -75,9 +76,11 @@ export default function FollowListModal({ userId, kind, onClose }: Props) {
                     onClick={onClose}
                     className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50"
                   >
-                    <img
+                    <Image
                       src={p.avatar_url || "/default-avatar.png"}
                       alt=""
+                      width={32}
+                      height={32}
                       className="w-8 h-8 rounded-full object-cover"
                     />
                     <div className="min-w-0">

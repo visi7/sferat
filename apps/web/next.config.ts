@@ -3,6 +3,13 @@ import { withSentryConfig } from "@sentry/nextjs/config";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      // Supabase Storage (avatarë + imazhe postimesh) — gjenerik, s'kërkon
+      // të dihet project-ref-i specifik.
+      { protocol: "https", hostname: "**.supabase.co", pathname: "/storage/v1/object/**" },
+    ],
+  },
 };
 
 export default withSentryConfig(nextConfig, {

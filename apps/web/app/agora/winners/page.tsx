@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import Shell from "@/components/shell";
@@ -132,9 +133,11 @@ export default function HallOfFamePage() {
                       href={`/profile/${w.winnerUsername}`}
                       className="flex items-center gap-2 text-xs text-gray-600 hover:underline"
                     >
-                      <img
+                      <Image
                         src={w.winnerAvatarUrl || "/default-avatar.png"}
                         alt=""
+                        width={20}
+                        height={20}
                         className="w-5 h-5 rounded-full object-cover"
                       />
                       {w.winnerDisplayName || `@${w.winnerUsername}`}

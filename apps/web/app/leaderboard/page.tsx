@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { supa } from "@/lib/supabase";
 import Shell from "@/components/shell";
@@ -81,9 +82,11 @@ export default function LeaderboardPage() {
               {rows.map((r, i) => (
                 <li key={r.author_id} className="flex items-center gap-3 p-3">
                   <span className="w-6 text-right text-sm text-gray-400 shrink-0">{i + 1}</span>
-                  <img
+                  <Image
                     src={r.avatar_url || "/default-avatar.png"}
                     alt=""
+                    width={32}
+                    height={32}
                     className="w-8 h-8 rounded-full object-cover shrink-0"
                   />
                   <Link

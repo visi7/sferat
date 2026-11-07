@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { toPng } from "html-to-image";
 
 type Props = {
@@ -244,9 +245,12 @@ export default function RepublicCard({ profile, stats }: Props) {
             </div>
 
             <div className="flex items-center gap-3">
-              <img
+              <Image
                 src={profile.avatar_url || "/default-avatar.png"}
                 alt=""
+                width={48}
+                height={48}
+                priority
                 className="w-12 h-12 rounded-full object-cover border-2 border-white/70"
               />
               <div>

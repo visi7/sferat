@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 
 type Props = {
   src?: string | null;
@@ -14,7 +15,7 @@ export default function Avatar({ src, alt = "avatar", size = 32, className = "" 
   const url = !err && src ? src : "/default-avatar.png";
 
   return (
-    <img
+    <Image
       src={url}
       alt={alt}
       width={size}
