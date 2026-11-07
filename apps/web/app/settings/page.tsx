@@ -28,6 +28,11 @@ export default function SettingsPage() {
   const [emailMsg, setEmailMsg] = useState<string | null>(null);
   const [emailErr, setEmailErr] = useState<string | null>(null);
 
+  const [newUsername, setNewUsername] = useState("");
+  const [savingUsername, setSavingUsername] = useState(false);
+  const [usernameMsg, setUsernameMsg] = useState<string | null>(null);
+  const [usernameErr, setUsernameErr] = useState<string | null>(null);
+
   const [showDelete, setShowDelete] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deleting, setDeleting] = useState(false);
@@ -193,6 +198,37 @@ export default function SettingsPage() {
     }
   }
 
+  async function changeUsername(e: React.FormEvent) {
+    e.preventDefault();
+    setUsernameErr(null);
+    setUsernameMsg(null);
+
+    const clean = newUsername.trim().toLowerCase();
+    if (!/^[a-z0-9_]{3,32}$/.test(clean)) {
+      setUsernameErr("3–32 characters: lowercase letters, numbers, and underscores only.");
+      return;
+    }
+    if (clean === username) {
+      setUsernameErr("That's already your username.");
+      return;
+    }
+
+    setSavingUsername(true);
+    try {
+      const { error } = await supa.from("profiles").update({ username: clean }).eq("id", uid);
+      if (error) {
+        throw new Error(error.code === "23505" ? "That username is already taken." : error.message);
+      }
+      setUsername(clean);
+      setNewUsername("");
+      setUsernameMsg(`Done — your profile link is now sferat.com/profile/${clean}. Old links to @${username} will stop working.`);
+    } catch (e: any) {
+      setUsernameErr(e.message ?? "Something went wrong");
+    } finally {
+      setSavingUsername(false);
+    }
+  }
+
   async function deleteAccount() {
     if (!uid || deleteConfirmText !== "DELETE") return;
     setDeleteErr(null);
@@ -309,6 +345,37 @@ export default function SettingsPage() {
             {savingEmail ? "Sending…" : "Update email"}
           </button>
         </form>
+      </section>
+
+      <section className="bg-white border rounded-xl p-4 space-y-3">
+        <h2 className="text-sm font-semibold">Change username</h2>
+        <p className="text-xs text-gray-500">
+          Your current handle is <strong>@{username}</strong>. Changing it updates your profile link —
+          old links to @{username} will stop working.
+        </p>
+        <form onSubmit={changeUsername} className="flex items-center gap-2">
+          <span className="text-sm text-gray-400">@</span>
+          <input
+            id="settings-new-username"
+            name="new-username"
+            type="text"
+            autoComplete="off"
+            placeholder="new_handle"
+            value={newUsername}
+            onChange={(e) => setNewUsername(e.target.value)}
+            className="flex-1 border rounded-md px-3 py-2 text-sm"
+            required
+          />
+          <button
+            type="submit"
+            disabled={savingUsername}
+            className="px-4 py-2 bg-black text-white rounded-md text-sm disabled:opacity-60"
+          >
+            {savingUsername ? "Saving…" : "Update"}
+          </button>
+        </form>
+        {usernameErr && <p className="text-red-600 text-xs">{usernameErr}</p>}
+        {usernameMsg && <p className="text-green-600 text-xs">{usernameMsg}</p>}
       </section>
 
       <section className="bg-white border rounded-xl p-4 space-y-3">

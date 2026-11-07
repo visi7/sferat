@@ -226,6 +226,8 @@ export default function ProfileHeader({
     setUploading(true);
     try {
       await onUploadAvatar(file);
+    } catch (e: any) {
+      setErrorMsg(e.message ?? "Couldn't update your avatar");
     } finally {
       setUploading(false);
     }

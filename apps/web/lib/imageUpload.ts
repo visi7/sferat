@@ -1,3 +1,10 @@
+// Bucket-et "avatars"/"images" te Supabase Storage s'kanë limit madhësie/lloji
+// të konfiguruar, kështu që pa këtë kontroll çdo skedar (madje jo-foto, apo
+// shumë i madh) do të ngarkohej pa gabim. Kontrolli bëhet këtu, në një vend
+// të vetëm, sepse çdo rrugë ngarkimi (avatar, kompozuesi, editimi i postimit)
+// kalon nëpër prepareImageFile.
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024; // 8MB
+
 // Fotot e kamerës në iPhone (dhe disa Android të rinj) ruhen si default në
 // HEIC/HEIF -- format që s'e deshifron dot asnjë shfletues (Chrome, Firefox,
 // Edge, Android WebView) brenda një <img>, vetëm Safari/iOS. Bucket-i
@@ -11,6 +18,13 @@ export async function prepareImageFile(file: File): Promise<File> {
     file.type === "image/heic" ||
     file.type === "image/heif" ||
     /\.hei[cf]$/i.test(file.name);
+
+  if (!isHeic && !file.type.startsWith("image/")) {
+    throw new Error("Please choose an image file.");
+  }
+  if (file.size > MAX_IMAGE_BYTES) {
+    throw new Error("Image is too large — please choose one under 8MB.");
+  }
 
   if (!isHeic) return file;
 
